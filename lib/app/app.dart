@@ -8,6 +8,7 @@ import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
 import '../dependency_injection.dart';
 import '../screens/login/login_page.dart';
+import '../screens/getting_started/getting_started_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -23,6 +24,9 @@ class MyApp extends StatelessWidget {
         userBloc: BlocProvider.of<UserBloc>(context),
         userRepository: Injector.of(context).userRepository,
       );
+    },
+    '/getting_started': (context) {
+      return GettingStartedPage();
     }
   };
 
@@ -66,7 +70,7 @@ class MyApp extends StatelessWidget {
               ),
             );
           },
-          initialRoute: '/login',
+          initialRoute: '/getting_started',
           routes: appRoutes,
           onGenerateRoute: onGenerateRoute,
         );

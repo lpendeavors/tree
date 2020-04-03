@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../util/asset_utils.dart';
 import '../../generated/l10n.dart';
 
-class GettingStarted extends StatefulWidget {
+class GettingStartedPage extends StatefulWidget {
   @override
   _GettingStartedState createState() => _GettingStartedState();
 }
 
-class _GettingStartedState extends State<GettingStarted> {
+class _GettingStartedState extends State<GettingStartedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

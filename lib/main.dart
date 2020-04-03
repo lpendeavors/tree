@@ -10,6 +10,8 @@ import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final firestore = Firestore.instance;
   final firebaseAuth = FirebaseAuth.instance;
   final sharedPrefUtil = SharedPrefUtil.instance;
