@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>308011847163-v3iioqg24so2di2admflnivqndjk6m4d.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.308011847163-v3iioqg24so2di2admflnivqndjk6m4d</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>308011847163-iph0hphvhtkivjnqamc2bp8sr2k20hlb.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBZVnk0bAgJ7qOPQNMUVuIejEJ5ZWbGAK4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>308011847163</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.TreeChurch.App</string>
+	<key>PROJECT_ID</key>
+	<string>tree-app-dabd0</string>
+	<key>STORAGE_BUCKET</key>
+	<string>tree-app-dabd0.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:308011847163:ios:3ead9ce4f26f59d600cf5e</string>
+	<key>DATABASE_URL</key>
+	<string>https://tree-app-dabd0.firebaseio.com</string>
+</dict>
+</plist>

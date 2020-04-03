@@ -1,0 +1,26 @@
+{
+  "app_title": "Tree",
+
+  "getting_started_title": "Life is Better Together",
+  "getting_started_button": "Get Started",
+  "already_have_an_account": "Already have an account?",
+  "login_here": "Login Here",
+
+  "login": "Login",
+  "exit_login": "Cancel?",
+  "exit_login_message": "Are you sure you want to exit?",
+  "login_success": "Login successful!",
+  "logout_success": "Logout successful!",
+  "logout_error": "An error occurred logging out",
+
+  "network_error": "A network error occurred",
+  "too_many_requests_error": "An error occurred. Too many requests",
+  "user_not_found_error": "User not found",
+  "wrong_password_error": "Incorrect password",
+  "invalid_email_error": "Invalid email address",
+  "weak_password_error": "Password is too weak",
+  "error_occurred": "An unknown error has occurred",
+
+  "no": "No",
+  "exit": "Exit"
+}
