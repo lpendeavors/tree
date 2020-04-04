@@ -74,7 +74,7 @@ class S {
 
   String get login {
     return Intl.message(
-      'Login',
+      'Sign In',
       name: 'login',
       desc: '',
       args: [],
@@ -121,6 +121,51 @@ class S {
     return Intl.message(
       'An error occurred logging out',
       name: 'logout_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String login_method(Object method) {
+    return Intl.message(
+      'Use your $method to login',
+      name: 'login_method',
+      desc: '',
+      args: [method],
+    );
+  }
+
+  String get sign_up {
+    return Intl.message(
+      'Sign Up',
+      name: 'sign_up',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get enter_phone_number {
+    return Intl.message(
+      'Enter your mobile number',
+      name: 'enter_phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get phone_number_hint {
+    return Intl.message(
+      '(678) 324-4041',
+      name: 'phone_number_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get forgot_password {
+    return Intl.message(
+      'Forget your password?',
+      name: 'forgot_password',
       desc: '',
       args: [],
     );
@@ -202,6 +247,24 @@ class S {
     return Intl.message(
       'Exit',
       name: 'exit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get email {
+    return Intl.message(
+      'email',
+      name: 'email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get phone {
+    return Intl.message(
+      'phone number',
+      name: 'phone',
       desc: '',
       args: [],
     );

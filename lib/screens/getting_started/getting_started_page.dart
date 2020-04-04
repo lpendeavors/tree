@@ -57,7 +57,7 @@ class _GettingStartedState extends State<GettingStartedPage> {
                   SizedBox(height: 50),
                   RaisedButton(
                     onPressed: () {
-                      // Go to register page
+                      Navigator.of(context).pushNamed('/register');
                     },
                     padding: EdgeInsets.all(18),
                     shape: RoundedRectangleBorder(
@@ -76,7 +76,7 @@ class _GettingStartedState extends State<GettingStartedPage> {
                   SizedBox(height: 10),
                   GestureDetector(
                     onTap: () {
-                      // Go to login page
+                      Navigator.of(context).pushNamed('/login');
                     },
                     child: RichText(
                       text: TextSpan(

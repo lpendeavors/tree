@@ -7,15 +7,11 @@ import '../../dependency_injection.dart';
 import './email_login_bloc.dart';
 import './phone_login_bloc.dart';
 import './login_state.dart';
-import '../register/register_bloc.dart';
-import '../register/register_page.dart';
-import '../forgot_password/forgot_password_bloc.dart';
-import '../forgot_password/forgot_password_page.dart';
-import '../../widgets/loading_indicator.dart';
 import '../../widgets/curved_scaffold.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../generated/l10n.dart';
+import '../../util/asset_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -38,7 +34,6 @@ class _LoginPageState extends State<LoginPage> {
   PhoneLoginBloc _phoneLoginBloc;
   List<StreamSubscription> _subscriptions;
 
-  final _phoneNumberFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
@@ -54,45 +49,194 @@ class _LoginPageState extends State<LoginPage> {
     _emailLoginBloc = EmailLoginBloc(widget.userRepository);
 
     _subscriptions = [
-      Rx.merge([
-        _emailLoginBloc.message$,
-        widget.userBloc.loginState$
-          .where((state) => state is LoggedInUser)
-        .map((_) => const LoginMessageSuccess()),
-      ]).listen(_showLoginMessage)
+//      Rx.merge([
+//        _emailLoginBloc.message$,
+//        widget.userBloc.loginState$
+//          .where((state) => state is LoggedInUser)
+//        .map((_) => const LoginMessageSuccess()),
+//      ]).listen(_showLoginMessage)
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    bool phoneLogin = false;
 
     return WillPopScope(
       onWillPop: _onWillPop,
       child: CurvedScaffold(
-        scaffoldKey: new GlobalKey<ScaffoldState>(),
         curveRadius: 25,
         appBar: Padding(
           padding: EdgeInsets.all(25),
-          child: Text(
-            s.login,
-            style: TextStyle(
-              //fontFamily: TrajanProBold,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  Text(
+                    s.login,
+                    style: TextStyle(
+                      fontFamily: TrajanProBold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+
+                    ],
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-
-              ],
-            ),
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                s.enter_phone_number,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: "Nirmala",
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      // Show country code dialog
+                    },
+                    child: Container(
+                      height: 30,
+                      width: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "+1",
+                          style: TextStyle(
+                            fontFamily: "NirmalaB",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Flexible(
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        autofocus: true,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: s.phone_number_hint,
+                          hintStyle: TextStyle(
+                            fontFamily: "Nirmala",
+                            fontSize: 20,
+                            color: Colors.black.withOpacity(0.2),
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontFamily: "Nirmala",
+                          fontSize: 20,
+                          color: Colors.black,
+                        ),
+                        cursorColor: Colors.black,
+                        cursorWidth: 1,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Container(
+                height: 2,
+                width: double.infinity,
+                color: Colors.black.withOpacity(0.2),
+                margin: EdgeInsets.only(bottom: 10),
+              ),
+              SizedBox(height: 10),
+              InkWell(
+                onTap: () {
+                  
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  child: Text(
+                    s.login_method(phoneLogin ? s.phone : s.email),
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                height: 50,
+                width: double.infinity,
+                child: RaisedButton(
+                  onPressed: phoneLogin
+                      ? () {}
+                      : _emailLoginBloc.submitLogin,
+                  color: Theme.of(context).primaryColor,
+                  child: Text(
+                    s.login,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'NirmalaB',
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed('/forgot_password');
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  child: Text(
+                    s.forgot_password,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -100,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  dispose() {
+  void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _emailLoginBloc.dispose();
     super.dispose();

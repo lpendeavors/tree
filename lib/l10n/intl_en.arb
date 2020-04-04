@@ -6,12 +6,18 @@
   "already_have_an_account": "Already have an account?",
   "login_here": "Login Here",
 
-  "login": "Login",
+  "login": "Sign In",
   "exit_login": "Cancel?",
   "exit_login_message": "Are you sure you want to exit?",
   "login_success": "Login successful!",
   "logout_success": "Logout successful!",
   "logout_error": "An error occurred logging out",
+  "login_method": "Use your {method} to login",
+
+  "sign_up": "Sign Up",
+  "enter_phone_number": "Enter your mobile number",
+  "phone_number_hint": "(678) 324-4041",
+  "forgot_password": "Forget your password?",
 
   "network_error": "A network error occurred",
   "too_many_requests_error": "An error occurred. Too many requests",
@@ -22,5 +28,7 @@
   "error_occurred": "An unknown error has occurred",
 
   "no": "No",
-  "exit": "Exit"
+  "exit": "Exit",
+  "email": "email",
+  "phone": "phone number"
 }

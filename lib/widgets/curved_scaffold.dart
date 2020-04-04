@@ -19,17 +19,19 @@ class CurvedScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+      //key: scaffoldKey,
       backgroundColor: bgColor,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [],
+            colors: [
+              Color(0xFF6CA748),
+              Color(0xFF6CA748),
+            ],
           ),
         ),
         child: Column(
           children: <Widget>[
-
             _scaffoldAppBar(),
             _scaffoldBody(),
           ],
@@ -67,8 +69,8 @@ class CurvedScaffold extends StatelessWidget {
             topLeft: Radius.circular(curveRadius),
             topRight: Radius.circular(curveRadius),
           ),
-          child: body,
-        ),
+          child: body),
+        //padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -76,14 +78,12 @@ class CurvedScaffold extends StatelessWidget {
               color: Colors.black.withOpacity(0.1),
               blurRadius: 5,
               spreadRadius: 5,
-              offset: Offset(0.5, 0.1)
-            ),
+              offset: Offset(0.5, 0.1))
           ],
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(curveRadius),
             topRight: Radius.circular(curveRadius),
-          ),
-        ),
+          )),
       ),
     );
   }
