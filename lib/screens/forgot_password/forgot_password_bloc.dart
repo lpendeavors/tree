@@ -39,7 +39,7 @@ class ForgotPasswordBloc implements BaseBloc {
   @override
   void dispose() => _dispose();
 
-  factory ForgotPasswordBloc(final FirebaseUserRepository userRepository) {
+  factory ForgotPasswordBloc(final FirestoreUserRepository userRepository) {
     assert(userRepository != null, 'userRepository must not be null');
 
     final isLoadingSubject = BehaviorSubject.seeded(false);
@@ -107,7 +107,7 @@ class ForgotPasswordBloc implements BaseBloc {
 
   static Stream<ForgotPasswordMessage> performSendEmail(
     String email,
-      FirebaseUserRepository userRepository,
+      FirestoreUserRepository userRepository,
       Sink<bool> isLoadingSink,
   ) async* {
     print('[FORGOT_PASSWORD_BLOC] performSendEmail');

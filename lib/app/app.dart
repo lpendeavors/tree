@@ -8,6 +8,7 @@ import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
 import '../dependency_injection.dart';
 import '../screens/login/login_page.dart';
+import '../screens/register/register_page.dart';
 import '../screens/getting_started/getting_started_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
@@ -21,6 +22,12 @@ class MyApp extends StatelessWidget {
   final appRoutes = <String, WidgetBuilder>{
     '/login': (context) {
       return LoginPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+        userRepository: Injector.of(context).userRepository,
+      );
+    },
+    '/register': (context) {
+      return RegisterPage(
         userBloc: BlocProvider.of<UserBloc>(context),
         userRepository: Injector.of(context).userRepository,
       );

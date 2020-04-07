@@ -48,7 +48,7 @@ class EmailLoginBloc implements BaseBloc {
   @override
   void dispose() => _dispose();
 
-  factory EmailLoginBloc(FirebaseUserRepository userRepository) {
+  factory EmailLoginBloc(FirestoreUserRepository userRepository) {
     ///
     /// Assert
     ///
@@ -66,7 +66,7 @@ class EmailLoginBloc implements BaseBloc {
     /// Streams
     ///
     final emailError$ = emailController.stream.map<EmailError>((email) {
-      if (isValidEmail((email))) return null;
+      if (isValidEmail(email)) return null;
       return const InvalidEmailAddress();
     });
 
@@ -136,7 +136,7 @@ class EmailLoginBloc implements BaseBloc {
   static Stream<LoginMessage> performLogin(
     String email,
     String password,
-    FirebaseUserRepository userRepository,
+    FirestoreUserRepository userRepository,
     Sink<bool> isLoadingController,
   ) async* {
     print('[DEBUG] performLogin');

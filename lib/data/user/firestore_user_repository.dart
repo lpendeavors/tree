@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 import '../../models/user_entity.dart';
 
-abstract class FirebaseUserRepository {
+abstract class FirestoreUserRepository {
   Stream<UserEntity> user();
 
   Future<void> signOut();
@@ -13,7 +14,14 @@ abstract class FirebaseUserRepository {
     @required String password,
   });
 
-  Future<void> phoneSignIn();
+  Future<void> phoneSignIn(
+    String phone,
+    Duration timeout,
+    PhoneVerificationCompleted completed,
+    PhoneVerificationFailed failed,
+    PhoneCodeSent sent,
+    PhoneCodeAutoRetrievalTimeout codeTimeout,
+  );
 
   Future<void> registerWithEmail({
     @required String fullName,

@@ -76,3 +76,17 @@ class PasswordAtLeastSixCharacters implements PasswordError {
 class InvalidEmailAddress implements EmailError {
   const InvalidEmailAddress();
 }
+
+@immutable
+abstract class PhoneError {}
+
+@immutable
+abstract class VerificationError {}
+
+class PhoneNumberTenDigits implements PhoneError {
+  const PhoneNumberTenDigits();
+}
+
+class VerificationInvalid implements VerificationError {
+  const VerificationInvalid();
+}

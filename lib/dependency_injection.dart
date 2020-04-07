@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
 class Injector extends InheritedWidget {
-  final FirebaseUserRepository userRepository;
+  final FirestoreUserRepository userRepository;
 
   Injector({
     Key key,

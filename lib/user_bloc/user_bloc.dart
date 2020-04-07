@@ -23,7 +23,7 @@ class UserBloc implements BaseBloc {
   ///
   final void Function() _dispose;
 
-  factory UserBloc(FirebaseUserRepository userRepository) {
+  factory UserBloc(FirestoreUserRepository userRepository) {
     final signOutController = PublishSubject<void>(sync: true);
 
     final user$ = userRepository.user()

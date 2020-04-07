@@ -52,7 +52,7 @@ class RegisterBloc implements BaseBloc {
   @override
   void dispose() => _dispose();
 
-  factory RegisterBloc(FirebaseUserRepository userRepository) {
+  factory RegisterBloc(FirestoreUserRepository userRepository) {
     ///
     /// Assert
     ///
@@ -139,7 +139,7 @@ class RegisterBloc implements BaseBloc {
   }
 
   static Stream<RegisterMessage> performRegister(
-    FirebaseUserRepository userRepository,
+    FirestoreUserRepository userRepository,
     String fullName,
     String email,
     String password,

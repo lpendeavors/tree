@@ -13,11 +13,18 @@
   "logout_success": "Logout successful!",
   "logout_error": "An error occurred logging out",
   "login_method": "Use your {method} to login",
+  "email_address": "EMAIL ADDRESS",
+  "email_hint": "Enter Email Address",
+  "password": "PASSWORD",
+  "password_hint": "Enter Password",
 
   "sign_up": "Sign Up",
   "enter_phone_number": "Enter your mobile number",
   "phone_number_hint": "(678) 324-4041",
   "forgot_password": "Forget your password?",
+  "verification": "Verification",
+  "verification_message": "Enter the 6 digit number sent to you",
+  "verification_resend": "Resend code",
 
   "network_error": "A network error occurred",
   "too_many_requests_error": "An error occurred. Too many requests",
@@ -30,5 +37,6 @@
   "no": "No",
   "exit": "Exit",
   "email": "email",
-  "phone": "phone number"
+  "phone": "phone number",
+  "verify": "Verify"
 }

@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/user_entity.dart';
 
-class FirestoreUserRepositoryImpl implements FirebaseUserRepository {
+class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   final FirebaseAuth _firebaseAuth;
   final Firestore _firestore;
 
@@ -21,10 +21,20 @@ class FirestoreUserRepositoryImpl implements FirebaseUserRepository {
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
 
   @override
-  Future<void> phoneSignIn() {
-    // TODO: implement phoneSignIn
-    return null;
-  }
+  Future<void> phoneSignIn(
+    String phone,
+    Duration timeout,
+    PhoneVerificationCompleted completed,
+    PhoneVerificationFailed failed,
+    PhoneCodeSent sent,
+    PhoneCodeAutoRetrievalTimeout codeTimeout,
+  ) => _firebaseAuth.verifyPhoneNumber(
+    phoneNumber: null,
+    timeout: null,
+    verificationCompleted: null,
+    verificationFailed: null,
+    codeSent: null,
+    codeAutoRetrievalTimeout: null);
 
   @override
   Future<void> registerWithEmail({

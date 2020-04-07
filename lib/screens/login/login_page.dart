@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:treeapp/models/country.dart';
+import 'package:treeapp/widgets/input_field.dart';
+
 import '../../app/app.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
@@ -12,11 +15,15 @@ import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../generated/l10n.dart';
 import '../../util/asset_utils.dart';
+import '../phone_verification/phone_verification_page.dart';
+import '../../widgets/app_bar.dart';
+import '../../widgets/modals/country_code_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class LoginPage extends StatefulWidget {
-  final FirebaseUserRepository userRepository;
+  final FirestoreUserRepository userRepository;
   final UserBloc userBloc;
 
   const LoginPage({
@@ -37,6 +44,8 @@ class _LoginPageState extends State<LoginPage> {
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
+  bool _phoneLogin = true;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +56,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     _emailLoginBloc = EmailLoginBloc(widget.userRepository);
+    _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
 
     _subscriptions = [
 //      Rx.merge([
@@ -61,47 +71,14 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    bool phoneLogin = false;
 
     return WillPopScope(
       onWillPop: _onWillPop,
       child: CurvedScaffold(
         curveRadius: 25,
-        appBar: Padding(
-          padding: EdgeInsets.all(25),
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Text(
-                    s.login,
-                    style: TextStyle(
-                      fontFamily: TrajanProBold,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-
-                    ],
-                  ),
-                ],
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
+        appBar: TreeAppBar(
+          title: s.login,
+          backButton: true,
         ),
         body: Container(
           width: MediaQuery.of(context).size.width,
@@ -109,72 +86,109 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                s.enter_phone_number,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: "Nirmala",
-                  fontSize: 14,
+              if (_phoneLogin) ...[
+                Text(
+                  s.enter_phone_number,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: "Nirmala",
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      // Show country code dialog
-                    },
-                    child: Container(
-                      height: 30,
-                      width: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "+1",
-                          style: TextStyle(
-                            fontFamily: "NirmalaB",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black.withOpacity(0.7),
-                            fontSize: 14,
+                SizedBox(height: 10),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return CountryCodeModal();
+                          },
+                        ).then((country) {
+                          if (country != null) {
+                            var selectedCountry = country as Country;
+                            _phoneLoginBloc.countryCodeChanged(selectedCountry.phoneCode);
+                          }
+                        });
+                      },
+                      child: Container(
+                        height: 30,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "+1",
+                            style: TextStyle(
+                              fontFamily: "NirmalaB",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black.withOpacity(0.7),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Flexible(
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        autofocus: true,
-                        keyboardType: TextInputType.phone,
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: s.phone_number_hint,
-                          hintStyle: TextStyle(
+                    SizedBox(height: 10),
+                    Flexible(
+                      child: Container(
+                        height: 50,
+                        child: TextField(
+                          onChanged: _phoneLoginBloc.phoneNumberChanged,
+                          controller: new MaskedTextController(mask: '(000) 000-0000'),
+                          autofocus: true,
+                          keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: s.phone_number_hint,
+                            hintStyle: TextStyle(
+                              fontFamily: "Nirmala",
+                              fontSize: 20,
+                              color: Colors.black.withOpacity(0.2),
+                            ),
+                          ),
+                          style: TextStyle(
                             fontFamily: "Nirmala",
                             fontSize: 20,
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black,
                           ),
+                          cursorColor: Colors.black,
+                          cursorWidth: 1,
+                          maxLines: 1,
                         ),
-                        style: TextStyle(
-                          fontFamily: "Nirmala",
-                          fontSize: 20,
-                          color: Colors.black,
-                        ),
-                        cursorColor: Colors.black,
-                        cursorWidth: 1,
-                        maxLines: 1,
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
+              if (!_phoneLogin) ...[
+                SizedBox(height: 10),
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      s.email_address,
+                      style: TextStyle(
+                        fontFamily: 'NirmalaB',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black.withOpacity(0.4),
+                        fontSize: 12,
+                      ),
+                    ),
+                    InputField(
+                      inputType: ,
+                    ),
+                    SizedBox(height: 10),
+
+                  ],
+                ),
+              ],
               SizedBox(height: 10),
               Container(
                 height: 2,
@@ -185,12 +199,14 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 10),
               InkWell(
                 onTap: () {
-                  
+                  setState(() {
+                    _phoneLogin = !_phoneLogin;
+                  });
                 },
                 child: Container(
                   alignment: Alignment.center,
                   child: Text(
-                    s.login_method(phoneLogin ? s.phone : s.email),
+                    s.login_method(_phoneLogin ? s.email : s.phone),
                     style: TextStyle(
                       fontSize: 14,
                     ),
@@ -202,8 +218,8 @@ class _LoginPageState extends State<LoginPage> {
                 height: 50,
                 width: double.infinity,
                 child: RaisedButton(
-                  onPressed: phoneLogin
-                      ? () {}
+                  onPressed: _phoneLogin
+                      ? _getVerificationCode
                       : _emailLoginBloc.submitLogin,
                   color: Theme.of(context).primaryColor,
                   child: Text(
@@ -277,7 +293,16 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 
-  _showSnackBar(message) {
+  void _getVerificationCode() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PhoneVerificationPage(phoneLoginBloc: _phoneLoginBloc),
+      ),
+    );
+  }
+
+  void _showSnackBar(message) {
     Scaffold.of(context, nullOk: true)?.showSnackBar(
       SnackBar(
         content: Text(message),

@@ -135,6 +135,42 @@ class S {
     );
   }
 
+  String get email_address {
+    return Intl.message(
+      'EMAIL ADDRESS',
+      name: 'email_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get email_hint {
+    return Intl.message(
+      'Enter Email Address',
+      name: 'email_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get password {
+    return Intl.message(
+      'PASSWORD',
+      name: 'password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get password_hint {
+    return Intl.message(
+      'Enter Password',
+      name: 'password_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get sign_up {
     return Intl.message(
       'Sign Up',
@@ -166,6 +202,33 @@ class S {
     return Intl.message(
       'Forget your password?',
       name: 'forgot_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verification {
+    return Intl.message(
+      'Verification',
+      name: 'verification',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verification_message {
+    return Intl.message(
+      'Enter the 6 digit number sent to you',
+      name: 'verification_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verification_resend {
+    return Intl.message(
+      'Resend code',
+      name: 'verification_resend',
       desc: '',
       args: [],
     );
@@ -265,6 +328,15 @@ class S {
     return Intl.message(
       'phone number',
       name: 'phone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verify {
+    return Intl.message(
+      'Verify',
+      name: 'verify',
       desc: '',
       args: [],
     );

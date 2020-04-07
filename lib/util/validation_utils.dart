@@ -11,3 +11,11 @@ bool isValidEmail(String email) {
 bool isValidFullName(String name) {
   return name.length >= 3;
 }
+
+bool isPhoneNumberValid(String phone) {
+  return phone.length == 10;
+}
+
+bool isValidVerificationCode(String verification) {
+  return verification.length == 6;
+}

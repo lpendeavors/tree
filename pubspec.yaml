@@ -42,6 +42,7 @@ dependencies:
   built_value: ^6.5.0
   distinct_value_connectable_stream: ^1.0.3+1
   cache_image: ^1.0.5
+  flutter_masked_text: ^0.8.0
 
 dev_dependencies:
   flutter_test:
