@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
+import 'package:tuple/tuple.dart';
 import '../../models/user_entity.dart';
 
 abstract class FirestoreUserRepository {
@@ -13,7 +14,7 @@ abstract class FirestoreUserRepository {
     @required String password,
   });
 
-  Future<String> phoneSignIn(
+  Future<Tuple2<String,bool>> phoneSignIn(
     String phone
   );
 

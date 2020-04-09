@@ -44,11 +44,6 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    var loginState = widget.userBloc.loginState$.value;
-    if (loginState is LoggedInUser) {
-      Navigator.of(context).pushNamed('/');
-    }
-
     _emailLoginBloc = EmailLoginBloc(widget.userRepository);
     _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
 

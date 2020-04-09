@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../generated/l10n.dart';
+import '../../user_bloc/user_bloc.dart';
+import '../../user_bloc/user_login_state.dart';
 
 class GettingStartedPage extends StatefulWidget {
+  final UserBloc userBloc;
+
+  const GettingStartedPage({
+    Key key,
+    @required this.userBloc,
+  }) : super(key: key);
+
   @override
   _GettingStartedState createState() => _GettingStartedState();
 }
 
 class _GettingStartedState extends State<GettingStartedPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    var loginState = widget.userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      Navigator.of(context).pushNamed('/');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

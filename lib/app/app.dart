@@ -41,7 +41,9 @@ class MyApp extends StatelessWidget {
       );
     },
     '/getting_started': (context) {
-      return GettingStartedPage();
+      return GettingStartedPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+      );
     }
   };
 

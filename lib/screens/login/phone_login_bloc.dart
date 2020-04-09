@@ -7,6 +7,7 @@ import '../../data/user/firestore_user_repository.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tuple/tuple.dart';
 
 ///
 /// BLoC
@@ -127,9 +128,14 @@ class PhoneLoginBloc implements BaseBloc {
     print('[DEBUG] send verification code');
     try {
       isLoadingController.add(true);
-      String verificationId = await userRepository
+      Tuple2<String,bool> verification = await userRepository
           .phoneSignIn("$countryCode$phone");
-      yield LoginPhoneSuccess(verificationId);
+      print(verification);
+      if (verification.item2) {
+        yield const LoginMessageSuccess();
+      } else {
+        yield LoginPhoneSuccess(verification.item1);
+      }
     } catch (e) {
       yield _getLoginError(e);
     } finally {

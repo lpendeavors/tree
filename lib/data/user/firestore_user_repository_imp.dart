@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/user_entity.dart';
 
@@ -95,15 +93,15 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<String> phoneSignIn(String phone) async {
-    var completer = Completer<String>();
+  Future<Tuple2<String,bool>> phoneSignIn(String phone) async {
+    var completer = Completer<Tuple2<String,bool>>();
 
     await _firebaseAuth.verifyPhoneNumber(
       phoneNumber: phone,
       timeout: Duration(seconds: 60),
-      verificationCompleted: (phoneAuthCredential) async {},
-      verificationFailed: (authException) => Exception(authException.message),
-      codeSent: (s, [x]) => completer.complete((s)),
+      verificationCompleted: (phoneAuthCredential) => completer.complete(Tuple2(null, true)),
+      verificationFailed: (authException) => completer.completeError(authException),
+      codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
       codeAutoRetrievalTimeout: (timeout) => print(timeout)
     ).catchError((error) => Future.error(error));
 
