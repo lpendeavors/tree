@@ -413,6 +413,42 @@ class S {
       args: [],
     );
   }
+
+  String get home_tab_title {
+    return Intl.message(
+      'Home',
+      name: 'home_tab_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_tab_title {
+    return Intl.message(
+      'Explore',
+      name: 'explore_tab_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get chat_tab_title {
+    return Intl.message(
+      'Chat',
+      name: 'chat_tab_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get profile_tab_title {
+    return Intl.message(
+      'Profile',
+      name: 'profile_tab_title',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

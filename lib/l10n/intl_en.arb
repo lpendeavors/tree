@@ -47,5 +47,10 @@
   "verify": "Verify",
   "or": "OR",
   "church": "church",
-  "person": "person"
+  "person": "person",
+
+  "home_tab_title": "Home",
+  "explore_tab_title": "Explore",
+  "chat_tab_title": "Chat",
+  "profile_tab_title": "Profile"
 }

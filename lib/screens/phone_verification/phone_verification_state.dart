@@ -3,7 +3,8 @@ import 'package:meta/meta.dart';
 ///
 /// Verification Message
 ///
-@immutable class VerificationMessage {}
+@immutable
+class VerificationMessage {}
 
 class PhoneVerificationSuccess implements VerificationMessage {
   const PhoneVerificationSuccess();

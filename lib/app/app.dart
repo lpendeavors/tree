@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:rxdart/rxdart.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
@@ -12,6 +11,7 @@ import '../screens/register/register_page.dart';
 import '../screens/getting_started/getting_started_page.dart';
 import '../screens/phone_verification/phone_verification_page.dart';
 import '../screens/phone_verification/phone_verification_bloc.dart';
+import '../screens/home_tabs/home_tabs_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -23,10 +23,7 @@ class MyApp extends StatelessWidget {
 
   final appRoutes = <String, WidgetBuilder>{
     '/': (context) {
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-      );
+      return HomeTabsPage();
     },
     '/login': (context) {
       return LoginPage(
