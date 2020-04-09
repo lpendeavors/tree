@@ -171,12 +171,39 @@ class S {
     );
   }
 
+  String get phone_login_success {
+    return Intl.message(
+      'Verification sent',
+      name: 'phone_login_success',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get sign_up {
     return Intl.message(
       'Sign Up',
       name: 'sign_up',
       desc: '',
       args: [],
+    );
+  }
+
+  String get sign_up_continue {
+    return Intl.message(
+      'Continue',
+      name: 'sign_up_continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String sign_up_as(Object entity) {
+    return Intl.message(
+      'Sign Up as a $entity',
+      name: 'sign_up_as',
+      desc: '',
+      args: [entity],
     );
   }
 
@@ -198,10 +225,10 @@ class S {
     );
   }
 
-  String get forgot_password {
+  String get phone_number_mask {
     return Intl.message(
-      'Forget your password?',
-      name: 'forgot_password',
+      '(000) 000-0000',
+      name: 'phone_number_mask',
       desc: '',
       args: [],
     );
@@ -229,6 +256,24 @@ class S {
     return Intl.message(
       'Resend code',
       name: 'verification_resend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verification_hint {
+    return Intl.message(
+      'We\'ll send you a text verification code',
+      name: 'verification_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get forgot_password {
+    return Intl.message(
+      'Forget your password?',
+      name: 'forgot_password',
       desc: '',
       args: [],
     );
@@ -337,6 +382,33 @@ class S {
     return Intl.message(
       'Verify',
       name: 'verify',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get or {
+    return Intl.message(
+      'OR',
+      name: 'or',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get church {
+    return Intl.message(
+      'church',
+      name: 'church',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get person {
+    return Intl.message(
+      'person',
+      name: 'person',
       desc: '',
       args: [],
     );

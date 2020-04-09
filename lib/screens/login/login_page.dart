@@ -1,26 +1,20 @@
 import 'dart:async';
 
-import 'package:treeapp/models/country.dart';
-import 'package:treeapp/widgets/input_field.dart';
-
-import '../../app/app.dart';
-import '../../bloc/bloc_provider.dart';
-import '../../data/user/firestore_user_repository.dart';
-import '../../dependency_injection.dart';
 import './email_login_bloc.dart';
 import './phone_login_bloc.dart';
 import './login_state.dart';
+import '../../data/user/firestore_user_repository.dart';
 import '../../widgets/curved_scaffold.dart';
+import '../../widgets/input_label.dart';
+import '../../widgets/app_bar.dart';
+import '../../widgets/modals/country_code_modal.dart';
+import '../../widgets/input_field.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../generated/l10n.dart';
-import '../../util/asset_utils.dart';
-import '../phone_verification/phone_verification_page.dart';
-import '../../widgets/app_bar.dart';
-import '../../widgets/modals/country_code_modal.dart';
+import '../../models/country.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class LoginPage extends StatefulWidget {
   final FirestoreUserRepository userRepository;
@@ -59,12 +53,13 @@ class _LoginPageState extends State<LoginPage> {
     _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
 
     _subscriptions = [
-//      Rx.merge([
-//        _emailLoginBloc.message$,
-//        widget.userBloc.loginState$
-//          .where((state) => state is LoggedInUser)
-//        .map((_) => const LoginMessageSuccess()),
-//      ]).listen(_showLoginMessage)
+      Rx.merge([
+        _emailLoginBloc.message$,
+        _phoneLoginBloc.message$,
+        widget.userBloc.loginState$
+            .where((state) => state is LoggedInUser)
+            .map((_) async => const LoginMessageSuccess()),
+      ]).listen(_showLoginMessage)
     ];
   }
 
@@ -102,14 +97,15 @@ class _LoginPageState extends State<LoginPage> {
                     GestureDetector(
                       onTap: () {
                         showDialog(
-                          context: context,
+                        context: context,
                           builder: (BuildContext context) {
                             return CountryCodeModal();
                           },
                         ).then((country) {
                           if (country != null) {
                             var selectedCountry = country as Country;
-                            _phoneLoginBloc.countryCodeChanged(selectedCountry.phoneCode);
+                            _phoneLoginBloc
+                              .countryCodeChanged(selectedCountry.phoneCode);
                           }
                         });
                       },
@@ -133,33 +129,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(width: 10),
                     Flexible(
                       child: Container(
                         height: 50,
-                        child: TextField(
-                          onChanged: _phoneLoginBloc.phoneNumberChanged,
-                          controller: new MaskedTextController(mask: '(000) 000-0000'),
+                        child: TreeInputField(
                           autofocus: true,
-                          keyboardType: TextInputType.phone,
-                          textInputAction: TextInputAction.done,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: s.phone_number_hint,
-                            hintStyle: TextStyle(
-                              fontFamily: "Nirmala",
-                              fontSize: 20,
-                              color: Colors.black.withOpacity(0.2),
-                            ),
-                          ),
-                          style: TextStyle(
-                            fontFamily: "Nirmala",
-                            fontSize: 20,
-                            color: Colors.black,
-                          ),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          maxLines: 1,
+                          inputType: TextInputType.phone,
+                          inputAction: TextInputAction.done,
+                          hintText: s.phone_number_hint,
+                          onChange: _phoneLoginBloc.phoneNumberChanged
                         ),
                       ),
                     ),
@@ -172,20 +151,30 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      s.email_address,
-                      style: TextStyle(
-                        fontFamily: 'NirmalaB',
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black.withOpacity(0.4),
-                        fontSize: 12,
-                      ),
-                    ),
-                    InputField(
-                      inputType: ,
+                    TreeInputLabel(text: s.email_address),
+                    TreeInputField(
+                      inputType: TextInputType.emailAddress,
+                      inputAction: TextInputAction.next,
+                      autofocus: true,
+                      hintText: s.email_hint,
+                      hasIcon: true,
+                      icon: Icons.email,
+                      selfFocusNode: _emailFocusNode,
+                      nextFocusNode: _passwordFocusNode,
+                      onChange: _emailLoginBloc.emailChanged,
                     ),
                     SizedBox(height: 10),
-
+                    TreeInputLabel(text: s.password),
+                    TreeInputField(
+                      inputType: TextInputType.text,
+                      inputAction: TextInputAction.done,
+                      hintText: s.password_hint,
+                      hasIcon: true,
+                      icon: Icons.lock,
+                      obscure: true,
+                      selfFocusNode: _passwordFocusNode,
+                      onChange: _emailLoginBloc.passwordChanged,
+                    )
                   ],
                 ),
               ],
@@ -219,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 child: RaisedButton(
                   onPressed: _phoneLogin
-                      ? _getVerificationCode
+                      ? _phoneLoginBloc.submitLogin
                       : _emailLoginBloc.submitLogin,
                   color: Theme.of(context).primaryColor,
                   child: Text(
@@ -293,15 +282,6 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 
-  void _getVerificationCode() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PhoneVerificationPage(phoneLoginBloc: _phoneLoginBloc),
-      ),
-    );
-  }
-
   void _showSnackBar(message) {
     Scaffold.of(context, nullOk: true)?.showSnackBar(
       SnackBar(
@@ -311,12 +291,21 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _showLoginMessage(LoginMessage message) async {
+  void _showLoginMessage(Object message) async {
+    print(message);
     final s = S.of(context);
     if (message is LoginMessageSuccess) {
       _showSnackBar(s.login_success);
       await Future.delayed(const Duration(seconds: 2));
       Navigator.popUntil(context, ModalRoute.withName('/'));
+    }
+    if (message is LoginPhoneSuccess) {
+      _showSnackBar(s.phone_login_success);
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.of(context).pushNamed(
+        '/phone_verification',
+        arguments: message.verificationId,
+      );
     }
     if (message is LoginMessageError) {
       final error = message.error;

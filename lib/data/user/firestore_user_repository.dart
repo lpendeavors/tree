@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 import '../../models/user_entity.dart';
 
@@ -14,13 +13,13 @@ abstract class FirestoreUserRepository {
     @required String password,
   });
 
-  Future<void> phoneSignIn(
-    String phone,
-    Duration timeout,
-    PhoneVerificationCompleted completed,
-    PhoneVerificationFailed failed,
-    PhoneCodeSent sent,
-    PhoneCodeAutoRetrievalTimeout codeTimeout,
+  Future<String> phoneSignIn(
+    String phone
+  );
+
+  Future<void> verifyPhoneCode(
+    String verificationId,
+    String smsCode,
   );
 
   Future<void> registerWithEmail({

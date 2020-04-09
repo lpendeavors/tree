@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,22 +22,6 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
 
   @override
-  Future<void> phoneSignIn(
-    String phone,
-    Duration timeout,
-    PhoneVerificationCompleted completed,
-    PhoneVerificationFailed failed,
-    PhoneCodeSent sent,
-    PhoneCodeAutoRetrievalTimeout codeTimeout,
-  ) => _firebaseAuth.verifyPhoneNumber(
-    phoneNumber: null,
-    timeout: null,
-    verificationCompleted: null,
-    verificationFailed: null,
-    codeSent: null,
-    codeAutoRetrievalTimeout: null);
-
-  @override
   Future<void> registerWithEmail({
     String fullName,
     String email,
@@ -55,8 +40,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     await _updateUserData(
       firebaseUser,
       <String, dynamic>{
-        'created_at': FieldValue.serverTimestamp(),
-        'updated_at': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       },
     );
 
@@ -66,14 +51,14 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> _updateUserData(FirebaseUser user, [Map<String, dynamic> addition]) {
     final data = <String, dynamic> {
       'email': user.email,
-      'full_name': user.displayName
+      'fullName': user.displayName
     };
 
     data.addAll(addition);
 
     print('[USER_REPO] _updateUserData data=$data');
 
-    return _firestore.document('user/${user.uid}').setData(data, merge: true);
+    return _firestore.document('userBase/${user.uid}').setData(data, merge: true);
   }
 
   @override
@@ -105,7 +90,35 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     if (uid == null) {
       return null;
     }
-    return _firestore.document('users/$uid').snapshots().map(
+    return _firestore.document('userBase/$uid').snapshots().map(
         (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
+  }
+
+  @override
+  Future<String> phoneSignIn(String phone) async {
+    var completer = Completer<String>();
+
+    await _firebaseAuth.verifyPhoneNumber(
+      phoneNumber: phone,
+      timeout: Duration(seconds: 60),
+      verificationCompleted: (phoneAuthCredential) async {},
+      verificationFailed: (authException) => Exception(authException.message),
+      codeSent: (s, [x]) => completer.complete((s)),
+      codeAutoRetrievalTimeout: (timeout) => print(timeout)
+    ).catchError((error) => Future.error(error));
+
+    return completer.future;
+  }
+
+  @override
+  Future<void> verifyPhoneCode(
+    String verificationId,
+    String smsCode
+  ) async {
+    AuthCredential credential = PhoneAuthProvider
+        .getCredential(verificationId: verificationId, smsCode: smsCode);
+
+    return _firebaseAuth.signInWithCredential(credential)
+        .catchError((error) => Future.error(error));
   }
 }

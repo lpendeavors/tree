@@ -13,9 +13,18 @@ bool isValidFullName(String name) {
 }
 
 bool isPhoneNumberValid(String phone) {
-  return phone.length == 10;
+  var phoneNumber = phone
+      .replaceAll("(", "")
+      .replaceAll(")", "")
+      .replaceAll("-", "")
+      .replaceAll(" ", "");
+  return phoneNumber.length == 10;
 }
 
 bool isValidVerificationCode(String verification) {
   return verification.length == 6;
+}
+
+bool isValidVerificationId(String id) {
+  return id.length > 0;
 }

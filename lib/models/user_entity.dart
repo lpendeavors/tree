@@ -12,21 +12,35 @@ part 'user_entity.g.dart';
 class UserEntity extends Equatable implements FirebaseModel {
   @JsonKey(name: 'documentId')
   final String documentId;
-
   final String email;
-
-  @JsonKey(name: 'full_name')
+  final String firstName;
+  final String lastName;
   final String fullName;
+  final bool isChurch;
+  final int isOnline1;
+  final bool isPublic;
+  final bool newApp1;
+  final String password;
+  final String phoneNumber;
+  final bool phoneVerified;
+  final String pushNotificationToken;
+  final List<Map<int,String>> searchData;
+  final bool signUpComplete;
+  final Timestamp time;
+  final Timestamp timeOnline;
+  final Timestamp timeUpdated;
+  final String tokenID;
+  final List<Map<int,dynamic>> treeTrophies;
+  final bool trophyCreated;
+  final String uid;
+  final int visibility;
 
   @JsonKey(
-    name: 'created_at',
     fromJson: timestampFromJson,
     toJson: timestampToJson
   )
   final Timestamp createdAt;
-
   @JsonKey(
-    name: 'updated_at',
     fromJson: timestampFromJson,
     toJson: timestampToJson
   )
@@ -38,6 +52,26 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.fullName,
     this.createdAt,
     this.updatedAt,
+    this.firstName,
+    this.isChurch,
+    this.isOnline1,
+    this.isPublic,
+    this.lastName,
+    this.newApp1,
+    this.password,
+    this.phoneNumber,
+    this.phoneVerified,
+    this.pushNotificationToken,
+    this.searchData,
+    this.signUpComplete,
+    this.time,
+    this.timeOnline,
+    this.timeUpdated,
+    this.tokenID,
+    this.treeTrophies,
+    this.trophyCreated,
+    this.uid,
+    this.visibility,
   });
 
   String get id => this.documentId;
@@ -49,7 +83,33 @@ class UserEntity extends Equatable implements FirebaseModel {
 
   @override
   List get props {
-    return [documentId, email, fullName, createdAt, updatedAt];
+    return [
+      documentId,
+      email,
+      fullName,
+      createdAt,
+      updatedAt,
+      firstName,
+      isChurch,
+      isOnline1,
+      isPublic,
+      lastName,
+      newApp1,
+      password,
+      phoneNumber,
+      phoneVerified,
+      pushNotificationToken,
+      searchData,
+      signUpComplete,
+      time,
+      timeOnline,
+      timeUpdated,
+      tokenID,
+      treeTrophies,
+      trophyCreated,
+      uid,
+      visibility,
+    ];
   }
 
   @override

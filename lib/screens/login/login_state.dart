@@ -10,6 +10,11 @@ class LoginMessageSuccess implements LoginMessage {
   const LoginMessageSuccess();
 }
 
+class LoginPhoneSuccess implements LoginMessage {
+  final String verificationId;
+  const LoginPhoneSuccess(this.verificationId);
+}
+
 class LoginMessageError implements LoginMessage {
   final LoginError error;
   const LoginMessageError(this.error);

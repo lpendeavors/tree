@@ -3,13 +3,15 @@ import 'dart:async';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:treeapp/generated/l10n.dart';
+import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
 import '../dependency_injection.dart';
 import '../screens/login/login_page.dart';
 import '../screens/register/register_page.dart';
 import '../screens/getting_started/getting_started_page.dart';
+import '../screens/phone_verification/phone_verification_page.dart';
+import '../screens/phone_verification/phone_verification_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -20,6 +22,12 @@ class MyApp extends StatelessWidget {
   );
 
   final appRoutes = <String, WidgetBuilder>{
+    '/': (context) {
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+      );
+    },
     '/login': (context) {
       return LoginPage(
         userBloc: BlocProvider.of<UserBloc>(context),
@@ -38,7 +46,21 @@ class MyApp extends StatelessWidget {
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
-
+    if (routerSettings.name == '/phone_verification') {
+      return MaterialPageRoute(
+        settings: routerSettings,
+        builder: (context) {
+          return PhoneVerificationPage(
+            initPhoneVerificationBloc: () {
+              return PhoneVerificationBloc(
+                userRepository: Injector.of(context).userRepository,
+                verificationId: routerSettings.arguments as String
+              );
+            },
+          );
+        }
+      );
+    }
   };
 
   @override

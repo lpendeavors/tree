@@ -21,10 +21,13 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m0(method) => "Use your ${method} to login";
 
+  static m1(entity) => "Sign Up as a ${entity}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
     "already_have_an_account" : MessageLookupByLibrary.simpleMessage("Already have an account?"),
     "app_title" : MessageLookupByLibrary.simpleMessage("Tree"),
+    "church" : MessageLookupByLibrary.simpleMessage("church"),
     "email" : MessageLookupByLibrary.simpleMessage("email"),
     "email_address" : MessageLookupByLibrary.simpleMessage("EMAIL ADDRESS"),
     "email_hint" : MessageLookupByLibrary.simpleMessage("Enter Email Address"),
@@ -45,14 +48,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "logout_success" : MessageLookupByLibrary.simpleMessage("Logout successful!"),
     "network_error" : MessageLookupByLibrary.simpleMessage("A network error occurred"),
     "no" : MessageLookupByLibrary.simpleMessage("No"),
+    "or" : MessageLookupByLibrary.simpleMessage("OR"),
     "password" : MessageLookupByLibrary.simpleMessage("PASSWORD"),
     "password_hint" : MessageLookupByLibrary.simpleMessage("Enter Password"),
+    "person" : MessageLookupByLibrary.simpleMessage("person"),
     "phone" : MessageLookupByLibrary.simpleMessage("phone number"),
+    "phone_login_success" : MessageLookupByLibrary.simpleMessage("Verification sent"),
     "phone_number_hint" : MessageLookupByLibrary.simpleMessage("(678) 324-4041"),
+    "phone_number_mask" : MessageLookupByLibrary.simpleMessage("(000) 000-0000"),
     "sign_up" : MessageLookupByLibrary.simpleMessage("Sign Up"),
+    "sign_up_as" : m1,
+    "sign_up_continue" : MessageLookupByLibrary.simpleMessage("Continue"),
     "too_many_requests_error" : MessageLookupByLibrary.simpleMessage("An error occurred. Too many requests"),
     "user_not_found_error" : MessageLookupByLibrary.simpleMessage("User not found"),
     "verification" : MessageLookupByLibrary.simpleMessage("Verification"),
+    "verification_hint" : MessageLookupByLibrary.simpleMessage("We\'ll send you a text verification code"),
     "verification_message" : MessageLookupByLibrary.simpleMessage("Enter the 6 digit number sent to you"),
     "verification_resend" : MessageLookupByLibrary.simpleMessage("Resend code"),
     "verify" : MessageLookupByLibrary.simpleMessage("Verify"),

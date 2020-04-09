@@ -1,17 +1,44 @@
+import 'dart:async';
+
+import './phone_verification_state.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/curved_scaffold.dart';
-import '../login/phone_login_bloc.dart';
 import '../../generated/l10n.dart';
+import './phone_verification_bloc.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter/material.dart';
 
-class PhoneVerificationPage extends StatelessWidget {
-  final PhoneLoginBloc phoneLoginBloc;
+class PhoneVerificationPage extends StatefulWidget {
+  final PhoneVerificationBloc Function() initPhoneVerificationBloc;
 
   const PhoneVerificationPage({
     Key key,
-    @required this.phoneLoginBloc,
+    @required this.initPhoneVerificationBloc,
   }) : super(key: key);
+
+  @override
+  _PhoneVerificationPageState createState() => _PhoneVerificationPageState();
+}
+
+class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
+  PhoneVerificationBloc _phoneVerificationBloc;
+  List<StreamSubscription> _subscriptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneVerificationBloc = widget.initPhoneVerificationBloc();
+    _subscriptions = [
+      _phoneVerificationBloc.message$.listen(_showMessageResult),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _subscriptions.forEach((s) => s.cancel());
+    _phoneVerificationBloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +78,7 @@ class PhoneVerificationPage extends StatelessWidget {
                 cursorWidth: 2,
                 maxLines: 1,
                 keyboardType: TextInputType.phone,
-                onChanged: phoneLoginBloc.verificationCodeChanged,
+                onChanged: _phoneVerificationBloc.verficationCodeChanged,
                 style: TextStyle(
                   fontSize: 40,
                   fontFamily: 'Nirmala',
@@ -123,7 +150,7 @@ class PhoneVerificationPage extends StatelessWidget {
               height: 50,
               width: double.infinity,
               child: RaisedButton(
-                onPressed: phoneLoginBloc.submitLogin,
+                onPressed: _phoneVerificationBloc.submitLogin,
                 color: Colors.black.withOpacity(0.7),
                 textColor: Colors.white,
                 child: Text(
@@ -144,5 +171,12 @@ class PhoneVerificationPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showMessageResult(VerificationMessage message) {
+    var s = S.of(context);
+    if (message is PhoneVerificationSuccess) {
+      Navigator.of(context).pushNamed('/home');
+    }
   }
 }

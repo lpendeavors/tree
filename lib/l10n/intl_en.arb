@@ -17,14 +17,20 @@
   "email_hint": "Enter Email Address",
   "password": "PASSWORD",
   "password_hint": "Enter Password",
+  "phone_login_success": "Verification sent",
 
   "sign_up": "Sign Up",
+  "sign_up_continue": "Continue",
+  "sign_up_as": "Sign Up as a {entity}",
   "enter_phone_number": "Enter your mobile number",
   "phone_number_hint": "(678) 324-4041",
-  "forgot_password": "Forget your password?",
+  "phone_number_mask": "(000) 000-0000",
   "verification": "Verification",
   "verification_message": "Enter the 6 digit number sent to you",
   "verification_resend": "Resend code",
+  "verification_hint": "We'll send you a text verification code",
+
+  "forgot_password": "Forget your password?",
 
   "network_error": "A network error occurred",
   "too_many_requests_error": "An error occurred. Too many requests",
@@ -38,5 +44,8 @@
   "exit": "Exit",
   "email": "email",
   "phone": "phone number",
-  "verify": "Verify"
+  "verify": "Verify",
+  "or": "OR",
+  "church": "church",
+  "person": "person"
 }
