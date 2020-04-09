@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
   final RouteFactory onGenerateRoute = (routerSettings) {
     if (routerSettings.name == '/phone_verification') {
       return MaterialPageRoute(
-        settings: routerSettings,
         builder: (context) {
           return PhoneVerificationPage(
             initPhoneVerificationBloc: () {
@@ -58,7 +57,8 @@ class MyApp extends StatelessWidget {
               );
             },
           );
-        }
+        },
+        settings: routerSettings,
       );
     }
   };

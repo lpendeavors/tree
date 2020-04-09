@@ -112,8 +112,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> verifyPhoneCode(
-    String verificationId,
-    String smsCode
+    String smsCode,
+    String verificationId
   ) async {
     AuthCredential credential = PhoneAuthProvider
         .getCredential(verificationId: verificationId, smsCode: smsCode);

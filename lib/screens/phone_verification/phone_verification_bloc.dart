@@ -124,7 +124,7 @@ class PhoneVerificationBloc implements BaseBloc {
     FirestoreUserRepository userRepository,
     Sink<bool> isLoadingController,
   ) async* {
-    print('[DEBUG] send confirmation code');
+    print('[DEBUG] send confirmation code id=$id, code=$code');
     try {
       isLoadingController.add(true);
       await userRepository.verifyPhoneCode(
@@ -142,6 +142,7 @@ class PhoneVerificationBloc implements BaseBloc {
   static PhoneVerificationError _getVerificationError(error) {
     if (error is PlatformException) {
       switch (error.code) {
+        case 'ERROR_INVALID_VERIFICATION_ID':
 
       }
     }

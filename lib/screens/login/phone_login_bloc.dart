@@ -129,7 +129,6 @@ class PhoneLoginBloc implements BaseBloc {
       isLoadingController.add(true);
       String verificationId = await userRepository
           .phoneSignIn("$countryCode$phone");
-      print(verificationId);
       yield LoginPhoneSuccess(verificationId);
     } catch (e) {
       yield _getLoginError(e);
