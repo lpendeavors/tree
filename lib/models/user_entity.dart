@@ -24,7 +24,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String phoneNumber;
   final bool phoneVerified;
   final String pushNotificationToken;
-  final List<Map<int,String>> searchData;
+  final List<String> searchData;
   final bool signUpComplete;
   final String tokenID;
   final List<Trophy> treeTrophies;

@@ -23,17 +23,16 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     phoneNumber: json['phoneNumber'] as String,
     phoneVerified: json['phoneVerified'] as bool,
     pushNotificationToken: json['pushNotificationToken'] as String,
-    searchData: (json['searchData'] as List)
-        ?.map((e) => (e as Map<String, dynamic>)?.map(
-              (k, e) => MapEntry(int.parse(k), e as String),
-            ))
-        ?.toList(),
+    searchData: (json['searchData'] as List)?.map((e) => e as String)?.toList(),
     signUpComplete: json['signUpComplete'] as bool,
     time: timestampFromJson(json['time'] as Timestamp),
     timeOnline: timestampFromJson(json['timeOnline'] as Timestamp),
     timeUpdated: timestampFromJson(json['timeUpdated'] as Timestamp),
     tokenID: json['tokenID'] as String,
-    treeTrophies: json['treeTrophies'] as List,
+    treeTrophies: (json['treeTrophies'] as List)
+        ?.map((e) =>
+            e == null ? null : Trophy.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
     visibility: json['visibility'] as int,
@@ -55,12 +54,10 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'phoneNumber': instance.phoneNumber,
       'phoneVerified': instance.phoneVerified,
       'pushNotificationToken': instance.pushNotificationToken,
-      'searchData': instance.searchData
-          ?.map((e) => e?.map((k, e) => MapEntry(k.toString(), e)))
-          ?.toList(),
+      'searchData': instance.searchData,
       'signUpComplete': instance.signUpComplete,
       'tokenID': instance.tokenID,
-      'treeTrophies': instance.treeTrophies,
+      'treeTrophies': instance.treeTrophies?.map((e) => e?.toJson())?.toList(),
       'trophyCreated': instance.trophyCreated,
       'uid': instance.uid,
       'visibility': instance.visibility,
