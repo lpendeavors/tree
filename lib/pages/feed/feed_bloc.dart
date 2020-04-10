@@ -88,26 +88,26 @@ class FeedBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      postRepository.posts(uid: loginState.uid, isAdmin: loginState.isAdmin)
-          .map((entities) {
-            return _entitiesToFeedItems(
-              entities,
-              loginState.uid,
-            );
-          })
-          .map((feedItems) {
-            return _kInitialFeedListState.copyWith(
-              feedItems: feedItems,
-              isLoading: false,
-            );
-          })
-          .startWith(_kInitialFeedListState)
-          .onErrorReturnWith((e) {
-            return _kInitialFeedListState.copyWith(
-              error: e,
-              isLoading: false,
-            );
-          });
+      return postRepository.posts(uid: loginState.uid)
+        .map((entities) {
+          return _entitiesToFeedItems(
+            entities,
+            loginState.uid,
+          );
+        })
+        .map((feedItems) {
+          return _kInitialFeedListState.copyWith(
+            feedItems: feedItems,
+            isLoading: false,
+          );
+        })
+        .startWith(_kInitialFeedListState)
+        .onErrorReturnWith((e) {
+          return _kInitialFeedListState.copyWith(
+            error: e,
+            isLoading: false,
+          );
+        });
     }
 
     return Stream.value(

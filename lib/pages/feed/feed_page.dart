@@ -131,51 +131,52 @@ class _FeedPageState extends State<FeedPage> {
           stream: _feedBloc.feedListState$,
           initialData: _feedBloc.feedListState$.value,
           builder: (context, snapshot) {
-//            var data = snapshot.data;
-//
-//            if (data.error != null) {
-//              return Center(
-//                child: Text(
-//                  S.of(context).error_occurred,
-//                ),
-//              );
-//            }
-//
-//            if (data.isLoading) {
+            var data = snapshot.data;
+
+            if (data.error != null) {
+              print(data.error);
+              return Center(
+                child: Text(
+                  S.of(context).error_occurred,
+                ),
+              );
+            }
+
+            if (data.isLoading) {
               return Center(
                 child: CircularProgressIndicator(),
               );
-//            }
-//
-//            if (data.feedItems.isEmpty) {
-//              return Center(
-//                child: Column(
-//                  mainAxisSize: MainAxisSize.max,
-//                  crossAxisAlignment: CrossAxisAlignment.center,
-//                  mainAxisAlignment: MainAxisAlignment.center,
-//                  children: <Widget>[
-//                    Icon(
-//                      Icons.add,
-//                      size: 48,
-//                      color: Theme.of(context).primaryColor,
-//                    )
-//                  ],
-//                ),
-//              );
-//            }
-//
-//            return ListView.builder(
-//              itemCount: data.feedItems.length,
-//              physics: BouncingScrollPhysics(),
-//              itemBuilder: (context, index) {
-//                return Column(
-//                  crossAxisAlignment: CrossAxisAlignment.start,
-//                  children: <Widget>[
-//
-//                  ],
-//                );
-//              },
-//            );
+            }
+
+            if (data.feedItems.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.add,
+                      size: 48,
+                      color: Theme.of(context).primaryColor,
+                    )
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: data.feedItems.length,
+              physics: BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+
+                  ],
+                );
+              },
+            );
           },
         ),
       ),

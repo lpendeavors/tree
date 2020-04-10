@@ -8,7 +8,6 @@ abstract class FirestorePostRepository {
 
   Stream<List<PostEntity>> posts({
     @required String uid,
-    @required bool isAdmin,
   });
 
   Future<Map<String, String>> savePost(PostEntity post);

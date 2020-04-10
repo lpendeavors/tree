@@ -22,6 +22,7 @@ class _GettingStartedState extends State<GettingStartedPage> {
     super.initState();
 
     var loginState = widget.userBloc.loginState$.value;
+    print(loginState);
     if (loginState is LoggedInUser) {
       Navigator.of(context).pushNamed('/');
     }

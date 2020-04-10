@@ -31,6 +31,9 @@ class UserEntity extends Equatable implements FirebaseModel {
   final bool trophyCreated;
   final String uid;
   final int visibility;
+  final int time;
+  final int timeOnline;
+  final int timeUpdated;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -46,17 +49,6 @@ class UserEntity extends Equatable implements FirebaseModel {
       fromJson: timestampFromJson,
       toJson: timestampToJson
   )
-  final Timestamp time;
-  @JsonKey(
-      fromJson: timestampFromJson,
-      toJson: timestampToJson
-  )
-  final Timestamp timeOnline;
-  @JsonKey(
-      fromJson: timestampFromJson,
-      toJson: timestampToJson
-  )
-  final Timestamp timeUpdated;
 
   const UserEntity({
     this.documentId,

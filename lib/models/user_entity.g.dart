@@ -25,9 +25,9 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     pushNotificationToken: json['pushNotificationToken'] as String,
     searchData: (json['searchData'] as List)?.map((e) => e as String)?.toList(),
     signUpComplete: json['signUpComplete'] as bool,
-    time: timestampFromJson(json['time'] as Timestamp),
-    timeOnline: timestampFromJson(json['timeOnline'] as Timestamp),
-    timeUpdated: timestampFromJson(json['timeUpdated'] as Timestamp),
+    time: json['time'] as int,
+    timeOnline: json['timeOnline'] as int,
+    timeUpdated: json['timeUpdated'] as int,
     tokenID: json['tokenID'] as String,
     treeTrophies: (json['treeTrophies'] as List)
         ?.map((e) =>
@@ -61,9 +61,9 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'trophyCreated': instance.trophyCreated,
       'uid': instance.uid,
       'visibility': instance.visibility,
+      'time': instance.time,
+      'timeOnline': instance.timeOnline,
+      'timeUpdated': instance.timeUpdated,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
-      'time': timestampToJson(instance.time),
-      'timeOnline': timestampToJson(instance.timeOnline),
-      'timeUpdated': timestampToJson(instance.timeUpdated),
     };

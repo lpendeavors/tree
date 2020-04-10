@@ -24,13 +24,10 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   @override
   Stream<List<PostEntity>> posts({
     String uid,
-    bool isAdmin,
   }) {
     return _firestore
       .collection('postBase')
       .where('parties', arrayContains: uid)
-      .where('isAdmin', isEqualTo: isAdmin)
-      .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
   }

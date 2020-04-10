@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
         _phoneLoginBloc.message$,
         widget.userBloc.loginState$
             .where((state) => state is LoggedInUser)
-            .map((_) async => const LoginMessageSuccess()),
+            .map((_) => const LoginMessageSuccess()),
       ]).listen(_showLoginMessage)
     ];
   }
@@ -287,7 +287,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showLoginMessage(Object message) async {
-    print(message);
     final s = S.of(context);
     if (message is LoginMessageSuccess) {
       _showSnackBar(s.login_success);
