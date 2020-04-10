@@ -34,6 +34,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "email_hint" : MessageLookupByLibrary.simpleMessage("Enter Email Address"),
     "enter_phone_number" : MessageLookupByLibrary.simpleMessage("Enter your mobile number"),
     "error_occurred" : MessageLookupByLibrary.simpleMessage("An unknown error has occurred"),
+    "events" : MessageLookupByLibrary.simpleMessage("Events"),
     "exit" : MessageLookupByLibrary.simpleMessage("Exit"),
     "exit_login" : MessageLookupByLibrary.simpleMessage("Cancel?"),
     "exit_login_message" : MessageLookupByLibrary.simpleMessage("Are you sure you want to exit?"),

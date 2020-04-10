@@ -6,6 +6,7 @@ import './user_bloc/user_bloc.dart';
 import './app/app.dart';
 import './bloc/bloc_provider.dart';
 import './data/user/firestore_user_repository_imp.dart';
+import './data/post/firestore_post_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -22,11 +23,13 @@ Future<void> main() async {
   await firestore.settings(persistenceEnabled: true);
 
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
+  final postRepository = FirestorePostRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   runApp(
     Injector(
         userRepository: userRepository,
+        postRepository: postRepository,
         child: BlocProvider<UserBloc>(
           bloc: userBloc,
           child: BlocProvider<LocaleBloc>(

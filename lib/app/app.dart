@@ -6,12 +6,12 @@ import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
 import '../dependency_injection.dart';
-import '../screens/login/login_page.dart';
-import '../screens/register/register_page.dart';
-import '../screens/getting_started/getting_started_page.dart';
-import '../screens/phone_verification/phone_verification_page.dart';
-import '../screens/phone_verification/phone_verification_bloc.dart';
-import '../screens/home_tabs/home_tabs_page.dart';
+import '../pages/login/login_page.dart';
+import '../pages/register/register_page.dart';
+import '../pages/getting_started/getting_started_page.dart';
+import '../pages/phone_verification/phone_verification_page.dart';
+import '../pages/phone_verification/phone_verification_bloc.dart';
+import '../pages/home_tabs/home_tabs_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -23,7 +23,10 @@ class MyApp extends StatelessWidget {
 
   final appRoutes = <String, WidgetBuilder>{
     '/': (context) {
-      return HomeTabsPage();
+      return HomeTabsPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+        postRepository: Injector.of(context).postRepository,
+      );
     },
     '/login': (context) {
       return LoginPage(

@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../../models/country.dart';
-import '../../screens/login/login_state.dart';
-import '../../screens/login/phone_login_bloc.dart';
-import '../../screens/register/register_state.dart';
+import '../../pages/login/login_state.dart';
+import '../../pages/login/phone_login_bloc.dart';
+import '../../pages/register/register_state.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/curved_scaffold.dart';
 import '../../widgets/input_field.dart';

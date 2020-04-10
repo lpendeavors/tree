@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
+import '../../data/post/firestore_post_repository.dart';
+import '../../user_bloc/user_bloc.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
+import '../feed/feed_bloc.dart';
+import '../feed/feed_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
+  final UserBloc userBloc;
+
+  final FirestorePostRepository postRepository;
+
+  const HomeTabsPage({
+    Key key,
+    this.userBloc,
+    this.postRepository,
+  }) : super(key: key);
+
   @override
   _HomeTabsPageState createState() => _HomeTabsPageState();
 }
@@ -31,10 +45,12 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
         onPageChanged: (page) => setState(() { _currentPage = page; }),
         physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.green,
+          FeedPage(
+            userBloc: widget.userBloc,
+            feedBloc: FeedBloc(
+              userBloc: widget.userBloc,
+              postRepository: widget.postRepository,
+            ),
           ),
           Container(
             height: double.infinity,
@@ -89,6 +105,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                       onTap: () => _changePage(1),
                       isActive: _currentPage == 1,
                     ),
+                    Spacer(),
                     TreeTabItem(
                       title: S.of(context).chat_tab_title,
                       icon: Icons.forum,
@@ -105,11 +122,37 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                 ),
               ),
             ),
-
+            Align(
+              alignment: Alignment.topCenter,
+              child: GestureDetector(
+                onTap: () {
+                  _showAddPopupMenu();
+                },
+                child: Container(
+                  margin: EdgeInsets.only(top: 5),
+                  width: 60,
+                  height: 60,
+                  child: Center(
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _showAddPopupMenu() {
+
   }
 
   void _changePage(int page) {

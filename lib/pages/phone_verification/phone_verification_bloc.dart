@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../screens/phone_verification/phone_verification_state.dart';
+import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../util/validation_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';

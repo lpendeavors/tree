@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../screens/forgot_password/forgot_password_state.dart';
+import '../../pages/forgot_password/forgot_password_state.dart';
 import '../../util/validation_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';

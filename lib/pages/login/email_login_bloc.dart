@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../screens/login/login_state.dart';
+import '../../pages/login/login_state.dart';
 import '../../util/validation_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

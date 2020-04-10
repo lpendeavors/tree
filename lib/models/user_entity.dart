@@ -10,7 +10,6 @@ part 'user_entity.g.dart';
 @immutable
 @JsonSerializable()
 class UserEntity extends Equatable implements FirebaseModel {
-  @JsonKey(name: 'documentId')
   final String documentId;
   final String email;
   final String firstName;
@@ -26,9 +25,6 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String pushNotificationToken;
   final List<Map<int,String>> searchData;
   final bool signUpComplete;
-  final Timestamp time;
-  final Timestamp timeOnline;
-  final Timestamp timeUpdated;
   final String tokenID;
   final List<Map<int,dynamic>> treeTrophies;
   final bool trophyCreated;
@@ -45,6 +41,21 @@ class UserEntity extends Equatable implements FirebaseModel {
     toJson: timestampToJson
   )
   final Timestamp updatedAt;
+  @JsonKey(
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
+  )
+  final Timestamp time;
+  @JsonKey(
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
+  )
+  final Timestamp timeOnline;
+  @JsonKey(
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
+  )
+  final Timestamp timeUpdated;
 
   const UserEntity({
     this.documentId,

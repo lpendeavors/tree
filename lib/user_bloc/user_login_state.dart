@@ -10,16 +10,18 @@ class LoggedInUser extends Equatable implements LoginState {
   final String uid;
   final String email;
   final String fullName;
+  final bool isAdmin;
 
   const LoggedInUser({
     @required this.uid,
     @required this.email,
     @required this.fullName,
+    @required this.isAdmin,
   });
 
   @override
   List get props {
-    return [uid, email, fullName];
+    return [uid, email, fullName, isAdmin];
   }
 
   @override

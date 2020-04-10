@@ -414,6 +414,15 @@ class S {
     );
   }
 
+  String get events {
+    return Intl.message(
+      'Events',
+      name: 'events',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get home_tab_title {
     return Intl.message(
       'Home',

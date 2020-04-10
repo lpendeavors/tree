@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:distinct_value_connectable_stream/distinct_value_connectable_stream.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../screens/register/register_state.dart';
+import '../../pages/register/register_state.dart';
 import '../../util/validation_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
