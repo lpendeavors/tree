@@ -4,11 +4,12 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../util/model_utils.dart';
 import './firebase_model.dart';
+import './trophy.dart';
 
 part 'user_entity.g.dart';
 
 @immutable
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class UserEntity extends Equatable implements FirebaseModel {
   final String documentId;
   final String email;
@@ -26,7 +27,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<Map<int,String>> searchData;
   final bool signUpComplete;
   final String tokenID;
-  final List<Map<int,dynamic>> treeTrophies;
+  final List<Trophy> treeTrophies;
   final bool trophyCreated;
   final String uid;
   final int visibility;

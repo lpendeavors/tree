@@ -33,11 +33,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     timeOnline: timestampFromJson(json['timeOnline'] as Timestamp),
     timeUpdated: timestampFromJson(json['timeUpdated'] as Timestamp),
     tokenID: json['tokenID'] as String,
-    treeTrophies: (json['treeTrophies'] as List)
-        ?.map((e) => (e as Map<String, dynamic>)?.map(
-              (k, e) => MapEntry(int.parse(k), e),
-            ))
-        ?.toList(),
+    treeTrophies: json['treeTrophies'] as List,
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
     visibility: json['visibility'] as int,
@@ -64,9 +60,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
           ?.toList(),
       'signUpComplete': instance.signUpComplete,
       'tokenID': instance.tokenID,
-      'treeTrophies': instance.treeTrophies
-          ?.map((e) => e?.map((k, e) => MapEntry(k.toString(), e)))
-          ?.toList(),
+      'treeTrophies': instance.treeTrophies,
       'trophyCreated': instance.trophyCreated,
       'uid': instance.uid,
       'visibility': instance.visibility,

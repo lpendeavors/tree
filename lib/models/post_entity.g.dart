@@ -74,7 +74,7 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'pushNotificationToken': instance.pushNotificationToken,
       'tags': instance.tags,
       'tokenID': instance.tokenID,
-      'postData': instance.postData,
+      'postData': instance.postData?.map((e) => e?.toJson())?.toList(),
       'type': instance.type,
       'uid': instance.uid,
       'userImage': instance.userImage,
