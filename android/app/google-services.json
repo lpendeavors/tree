@@ -1,0 +1,80 @@
+{
+  "project_info": {
+    "project_number": "308011847163",
+    "firebase_url": "https://tree-app-dabd0.firebaseio.com",
+    "project_id": "tree-app-dabd0",
+    "storage_bucket": "tree-app-dabd0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:308011847163:android:f1b34a51a62d56e500cf5e",
+        "android_client_info": {
+          "package_name": "com.fluidangle.treeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "308011847163-v8gptdouvqef50crusbtqfheip564iie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fluidangle.treeapp",
+            "certificate_hash": "3425222c7b32c7ca442e6ef7d853b5f9df45a68b"
+          }
+        },
+        {
+          "client_id": "308011847163-oqdllmib48u3ctun7cthtc3ete72r4gf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fluidangle.treeapp",
+            "certificate_hash": "a345bf6ecb47daf03e83482aafe729294b1f60a4"
+          }
+        },
+        {
+          "client_id": "308011847163-7iqotd0m8acli8jhrgnae92bvsjti6u0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fluidangle.treeapp",
+            "certificate_hash": "3ba93056cdd7bb6466eac331ea6beffdb76e7df3"
+          }
+        },
+        {
+          "client_id": "308011847163-iph0hphvhtkivjnqamc2bp8sr2k20hlb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fluidangle.treeapp",
+            "certificate_hash": "2759bcadeb3d542926fda10e6e0f38380a73bf06"
+          }
+        },
+        {
+          "client_id": "308011847163-n6leopetlfqtjff8k1sjktvakkq1gfec.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1cXtOV6Sul6iqeS-lLfF3do9HbYlKhw4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "308011847163-n6leopetlfqtjff8k1sjktvakkq1gfec.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "308011847163-v3iioqg24so2di2admflnivqndjk6m4d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.TreeChurch.App",
+                "app_store_id": "1437700451"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
