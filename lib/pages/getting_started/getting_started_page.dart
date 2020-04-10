@@ -101,8 +101,15 @@ class _GettingStartedState extends State<GettingStartedPage> {
                     child: RichText(
                       text: TextSpan(
                         children: [
-                          TextSpan(
-                            text: S.of(context).already_have_an_account
+                          WidgetSpan(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 4.0),
+                              child: RichText(
+                                  text: TextSpan(
+                                      text: S.of(context).already_have_an_account
+                                  )
+                              ),
+                            ),
                           ),
                           TextSpan(
                             text: S.of(context).login_here,

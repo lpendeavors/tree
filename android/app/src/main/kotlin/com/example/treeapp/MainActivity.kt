@@ -1,4 +1,4 @@
-package com.example.treeapp
+package com.fluidangle.treeapp
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
