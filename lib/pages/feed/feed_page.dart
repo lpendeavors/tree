@@ -37,7 +37,7 @@ class _FeedPageState extends State<FeedPage> {
     _subscriptions = [
       widget.userBloc.loginState$
         .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
+        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 

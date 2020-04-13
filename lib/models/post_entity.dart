@@ -47,17 +47,17 @@ class PostEntity extends Equatable implements FirebaseModel {
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp createAt;
+  final Timestamp createdAt;
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp updateAt;
+  final Timestamp updatedAt;
 
   const PostEntity({
     this.documentId,
-    this.createAt,
-    this.updateAt,
+    this.createdAt,
+    this.updatedAt,
     this.visibility,
     this.tokenID,
     this.pushNotificationToken,
@@ -104,7 +104,7 @@ class PostEntity extends Equatable implements FirebaseModel {
       byAdmin,
       churchName,
       country,
-      createAt,
+      createdAt,
       databaseName,
       docId,
       email,
@@ -129,7 +129,7 @@ class PostEntity extends Equatable implements FirebaseModel {
       tokenID,
       type,
       uid,
-      updateAt,
+      updatedAt,
       userImage,
       username,
       visibility,

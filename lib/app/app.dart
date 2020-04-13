@@ -12,6 +12,8 @@ import '../pages/getting_started/getting_started_page.dart';
 import '../pages/phone_verification/phone_verification_page.dart';
 import '../pages/phone_verification/phone_verification_bloc.dart';
 import '../pages/home_tabs/home_tabs_page.dart';
+import '../pages/notifications/notifications_page.dart';
+import '../pages/notifications/notifications_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -43,6 +45,15 @@ class MyApp extends StatelessWidget {
     '/getting_started': (context) {
       return GettingStartedPage(
         userBloc: BlocProvider.of<UserBloc>(context),
+      );
+    },
+    '/notifications': (context) {
+      return NotificationsPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+        notificationsBloc: NotificationsBloc(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          notificationRepository: Injector.of(context).notificationRepository,
+        ),
       );
     }
   };

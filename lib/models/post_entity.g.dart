@@ -9,8 +9,8 @@ part of 'post_entity.dart';
 PostEntity _$PostEntityFromJson(Map<String, dynamic> json) {
   return PostEntity(
     documentId: json['documentId'] as String,
-    createAt: timestampFromJson(json['createAt'] as Timestamp),
-    updateAt: timestampFromJson(json['updateAt'] as Timestamp),
+    createdAt: timestampFromJson(json['createdAt'] as Timestamp),
+    updatedAt: timestampFromJson(json['updatedAt'] as Timestamp),
     visibility: json['visibility'] as int,
     tokenID: json['tokenID'] as String,
     pushNotificationToken: json['pushNotificationToken'] as String,
@@ -80,6 +80,6 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'userImage': instance.userImage,
       'username': instance.username,
       'visibility': instance.visibility,
-      'createAt': timestampToJson(instance.createAt),
-      'updateAt': timestampToJson(instance.updateAt),
+      'createdAt': timestampToJson(instance.createdAt),
+      'updatedAt': timestampToJson(instance.updatedAt),
     };

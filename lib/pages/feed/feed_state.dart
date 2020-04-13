@@ -55,7 +55,7 @@ class FeedListState extends Equatable {
   }
 
   @override
-  List<Object> get props => null;
+  List get props => [feedItems, isLoading, error];
 
   @override
   bool get stringify => true;
@@ -64,13 +64,23 @@ class FeedListState extends Equatable {
 @immutable
 class FeedItem extends Equatable {
   final String id;
+  final List<String> tags;
+  final int type;
+  final DateTime timePosted;
+  final String message;
+  final String name;
 
   const FeedItem({
     @required this.id,
+    @required this.tags,
+    @required this.type,
+    @required this.timePosted,
+    @required this.message,
+    @required this.name,
   });
 
   @override
-  List<Object> get props => [id];
+  List get props => [id, tags, type, timePosted, message, name];
 
   @override
   bool get stringify => true;

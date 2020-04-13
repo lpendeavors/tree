@@ -125,6 +125,11 @@ class FeedBloc implements BaseBloc {
     return entities.map((entity) {
       return FeedItem(
         id: entity.documentId,
+        tags: entity.tags,
+        type: entity.type,
+        //timePosted: entity.createdAt.toDate(),
+        message: entity.postMessage,
+        name: entity.isChurch ? entity.churchName : entity.fullName,
       );
     }).toList();
   }
