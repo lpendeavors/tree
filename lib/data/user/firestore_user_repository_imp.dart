@@ -100,9 +100,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       phoneNumber: phone,
       timeout: Duration(seconds: 60),
       verificationCompleted: (phoneAuthCredential) => completer.complete(Tuple2(null, true)),
-      verificationFailed: (authException) => completer.completeError(authException),
+      verificationFailed: (authException) => completer.completeError(authException.message),
       codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
-      codeAutoRetrievalTimeout: (timeout) => print(timeout)
+      codeAutoRetrievalTimeout: (timeout) => print(timeout),
     ).catchError((error) => Future.error(error));
 
     return completer.future;

@@ -82,7 +82,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                height: 70,
+                height: 65,
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.white,

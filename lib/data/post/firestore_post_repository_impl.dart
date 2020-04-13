@@ -27,7 +27,8 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   }) {
     return _firestore
       .collection('postBase')
-      .where('parties', arrayContains: uid)
+      .limit(15)
+      .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
   }

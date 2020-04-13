@@ -6,6 +6,7 @@ import '../../widgets/curved_scaffold.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
+import './widgets/feed_list_item.dart';
 import './feed_bloc.dart';
 import './feed_state.dart';
 import 'package:flutter/material.dart';
@@ -169,11 +170,8 @@ class _FeedPageState extends State<FeedPage> {
               itemCount: data.feedItems.length,
               physics: BouncingScrollPhysics(),
               itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-
-                  ],
+                return FeedListItem(
+                  feedItem: data.feedItems[index],
                 );
               },
             );
