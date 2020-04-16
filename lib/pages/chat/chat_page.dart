@@ -3,9 +3,11 @@ import 'dart:ui';
 
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
+import './chat_state.dart';
+import '../chat_room/chat_room_bloc.dart';
+
 
 class ChatPage extends StatefulWidget {
-
 
   ChatPage({
     Key key,
@@ -135,6 +137,7 @@ class _ChatPageState extends State<ChatPage> {
                 Flexible(
                   child: GestureDetector(
                     onTap: () {
+                      _pageController.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeOutSine);
                       setState(() {
                         _currentTab = 2;
                       });
@@ -166,37 +169,75 @@ class _ChatPageState extends State<ChatPage> {
       body: PageView(
         controller: _pageController,
         children: <Widget>[
+          ConversationList(),
           ChatRoomList(),
-          ChatRoomList2()
+          GroupList(),
         ],
       )
     );
   }
 }
 
-class ChatRoomList extends StatelessWidget {
+class ConversationList extends StatefulWidget {
+
+  @override
+  _ConversationListState createState() => _ConversationListState();
+}
+
+class _ConversationListState extends State<ConversationList> {
+  List<StreamSubscription> _subscriptions;
+  FeedBloc _feedBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _feedBloc = widget.feedBloc;
+    /*_subscriptions = [
+      widget.userBloc.loginState$
+          .where((state) => state is Unauthenticated)
+          .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
+    ];*/
+  }
+
+  @override
+  void dispose() {
+    //_subscriptions.forEach((s) => s.cancel());
+    //_feedBloc.dispose();
+    print('_ConversationListState#dispose');
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: 3,
-        itemBuilder: (context, index){
-          return ChatRoomItem();
+    return Container(
+      child: StreamBuilder<RoomListState>(
+        //stream: _feedBloc.feedListState$,
+        //initialData: _feedBloc.feedListState$.value,
+        builder: (context, snapshot) {
+          RoomListState data = snapshot.data;
+          return ListView.builder(
+              itemCount: data.roomItems.length,
+              physics: BouncingScrollPhysics(),
+              itemBuilder: (context, index){
+                return ChatRoomView(
+                  roomItem: data.roomItems[index],
+                );
+              }
+          );
         }
+      ),
     );
   }
 }
-class ChatRoomItem extends StatelessWidget {
-  final String imageUrl;
-  final String roomTitle;
-  final String previewText;
-  final String chatTime;
 
-  const ChatRoomItem({
+class ChatRoomView extends StatelessWidget {
+  final RoomItem roomItem;
+
+  const ChatRoomView({
     Key key,
-    this.imageUrl = "https://firebasestorage.googleapis.com/v0/b/tree-app-dabd0.appspot.com/o/0005a0a0-f5b0-11e9-b218-a78e6009bf12?alt=media&token=67fff13a-b95c-49d3-bfc1-1fc85bcd34d9",
-    this.roomTitle = "Test Room",
-    this.previewText = "This room is fake!!!",
-    this.chatTime = "11:47 PM"
+    this.roomItem
   }) : super(key: key);
 
   @override
@@ -219,7 +260,7 @@ class ChatRoomItem extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: Image(
-                        image: CacheImage(imageUrl),
+                        image: CacheImage(this.roomItem.imageUrl),
                         width: 40.0,
                         height: 40.0,
                         fit: BoxFit.cover
@@ -250,7 +291,7 @@ class ChatRoomItem extends StatelessWidget {
                               children: <Widget>[
                                 Flexible(
                                   child: Text(
-                                    roomTitle,
+                                    this.roomItem.roomTitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'NirmalaB', fontSize: 18.0),
@@ -277,7 +318,7 @@ class ChatRoomItem extends StatelessWidget {
                             width: 5.0,
                           ),
                           Text(
-                            chatTime,
+                            this.roomItem.chatTime,
                             style: TextStyle(color: Colors.black26, fontFamily: 'Nirmala', fontSize: 14.0),
                           ),
                         ],
@@ -301,7 +342,7 @@ class ChatRoomItem extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(2.0),
                                   child: Text(
-                                    previewText,
+                                    this.roomItem.previewText,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.black45, fontFamily: 'Nirmala', fontSize: 12.0)
@@ -326,163 +367,28 @@ class ChatRoomItem extends StatelessWidget {
   }
 }
 
-class ChatRoomList2 extends StatelessWidget {
+class ChatRoomList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: 4,
-        itemBuilder: (context, index){
-          return ChatRoomItem2();
-        }
+    return new Container(
+      color: Colors.teal,
     );
   }
 }
-class ChatRoomItem2 extends StatelessWidget {
-  final String imageUrl;
-  final String roomTitle;
-  final String previewText;
-  final String chatTime;
 
-  const ChatRoomItem2({
-    Key key,
-    this.imageUrl = "https://firebasestorage.googleapis.com/v0/b/tree-app-dabd0.appspot.com/o/0005a0a0-f5b0-11e9-b218-a78e6009bf12?alt=media&token=67fff13a-b95c-49d3-bfc1-1fc85bcd34d9",
-    this.roomTitle = "Test Room",
-    this.previewText = "This room is fake!!!",
-    this.chatTime = "11:47 PM"
-  }) : super(key: key);
-
+class GroupList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: (){
-
-      },
-      child: Container(
-        padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.all(3),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20.0),
-                    child: Image(
-                        image: CacheImage(imageUrl),
-                        width: 40.0,
-                        height: 40.0,
-                        fit: BoxFit.cover
-                    ),
-                  ),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(width: 1, color: Theme.of(context).primaryColor)
-                  ),
-                ),
-                SizedBox(width: 10.0),
-                Flexible(
-                  flex: 1,
-                  fit: FlexFit.tight,
-                  child: new Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Flexible(
-                            flex: 1,
-                            fit: FlexFit.tight,
-                            child: Row(
-                              children: <Widget>[
-                                Flexible(
-                                  child: Text(
-                                    roomTitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'NirmalaB', fontSize: 18.0),
-                                  ),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.fromLTRB(6.0, 0.0, 0.0, 0.0),
-                                  padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 2.0),
-                                  decoration: BoxDecoration(
-                                      color: Theme.of(context).indicatorColor,
-                                      borderRadius: BorderRadius.circular(25.0)
-                                  ),
-                                  child: Text(
-                                    "Chat Room",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'NirmalaB', fontSize: 12.0),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 5.0,
-                          ),
-                          Text(
-                            chatTime,
-                            style: TextStyle(color: Colors.black26, fontFamily: 'Nirmala', fontSize: 14.0),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 5.0,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(25.0)
-                        ),
-                        child: new Padding(
-                          padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 2.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Flexible(
-                                flex: 1,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Text(
-                                      previewText,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: Colors.black45, fontFamily: 'Nirmala', fontSize: 12.0)
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.0),
-            new Divider()
-          ],
-        ),
-      ),
+    return new Container(
+      color: Colors.orange,
     );
   }
 }
 
 /*
 Notes:
-Correct Names
-Make all three tabs work properly
-Stop loading fake data
-Work from the ground up state? -> bloc -> repository
+Load real chat rooms
+
+
 Possibly rework database???
  */
