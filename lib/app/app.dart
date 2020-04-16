@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
   final appTheme = ThemeData(
     primarySwatch: Colors.green,
     primaryColor: Color(0xFF6CA748),
+    indicatorColor: Color(0xff5c4eb2)
   );
 
   final appRoutes = <String, WidgetBuilder>{

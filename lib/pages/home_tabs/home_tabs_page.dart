@@ -5,6 +5,7 @@ import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
+import '../chat/chat_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -57,11 +58,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             width: double.infinity,
             color: Colors.blue,
           ),
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.purple,
-          ),
+          ChatPage(),
           Container(
             height: double.infinity,
             width: double.infinity,

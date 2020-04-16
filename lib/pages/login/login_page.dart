@@ -247,6 +247,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _emailLoginBloc.dispose();
+    _phoneLoginBloc.dispose();
     super.dispose();
   }
 
