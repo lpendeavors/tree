@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import '../../bloc/bloc_provider.dart';
-import '../../data/post/firestore_post_repository.dart';
+import '../../data/room/firestore_room_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/group_entity.dart';
+import '../../models/new/room_entity.dart';
 import '../chat/chat_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -15,7 +15,7 @@ const _kInitialRoomListState = RoomListState(
     roomItems: []
 );
 
-class ChatBloc implements BaseBloc {
+class ChatRoomBloc implements BaseBloc {
 
   ///
   /// Output streams
@@ -27,20 +27,20 @@ class ChatBloc implements BaseBloc {
   ///
   final void Function() _dispose;
 
-  ChatBloc._({
+  ChatRoomBloc._({
     @required this.roomListState$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
-  factory ChatBloc({
+  factory ChatRoomBloc({
     @required UserBloc userBloc,
-    @required FirestorePostRepository postRepository,
+    @required FirestoreRoomRepository roomRepository,
   }){
     ///
     /// Assert
     ///
     assert(userBloc != null, 'userBloc cannot be null');
-    assert(postRepository != null, 'postRepository cannot be null');
+    assert(roomRepository != null, 'postRepository cannot be null');
 
     ///
     /// Stream controllers
@@ -49,17 +49,17 @@ class ChatBloc implements BaseBloc {
     ///
     /// Streams
     ///
-    final feedListState$ = _getRoomList(
+    final roomListState$ = _getRoomList(
       userBloc,
-      postRepository,
+      roomRepository,
     ).publishValueSeeded(_kInitialRoomListState);
 
     final subscriptions = <StreamSubscription>[
-      feedListState$.connect()
+      roomListState$.connect()
     ];
 
-    return ChatBloc._(
-        roomListState$: feedListState$,
+    return ChatRoomBloc._(
+        roomListState$: roomListState$,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
         }
@@ -71,7 +71,7 @@ class ChatBloc implements BaseBloc {
 
   static Stream<RoomListState> _toState(
       LoginState loginState,
-      FirestorePostRepository postRepository,
+      FirestoreRoomRepository roomRepository,
   ){
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -83,7 +83,7 @@ class ChatBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return postRepository.posts(uid: loginState.uid)
+      return roomRepository.rooms(uid: loginState.uid)
           .map((entities) {
         return _entitiesToRoomItems(
           entities,
@@ -114,15 +114,14 @@ class ChatBloc implements BaseBloc {
   }
 
   static List<RoomItem> _entitiesToRoomItems(
-      List<GroupEntity> entities,
+      List<RoomEntity> entities,
       String uid,
   ){
     return entities.map((entity) {
-      var roomTitle = null;
       return RoomItem(
         id: entity.documentId,
-        imageUrl: entity.image,
-        roomTitle: entity.churchName ?? entity.fullName,
+        imageUrl: entity.photo,
+        roomTitle: entity.title,
         previewText: "Preview Text",
         chatTime: "Time"
       );
@@ -131,6 +130,6 @@ class ChatBloc implements BaseBloc {
 
   static Stream<RoomListState> _getRoomList(
       UserBloc userBloc,
-      FirestorePostRepository postRepository,
+      FirestoreRoomRepository roomRepository,
   ){}
 }

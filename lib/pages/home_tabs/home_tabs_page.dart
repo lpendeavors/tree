@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/chat_room/chat_room_bloc.dart';
 import '../../data/post/firestore_post_repository.dart';
+import '../../data/room/firestore_room_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
@@ -11,11 +13,13 @@ class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
 
   final FirestorePostRepository postRepository;
+  final FirestoreRoomRepository roomRepository;
 
   const HomeTabsPage({
     Key key,
     this.userBloc,
     this.postRepository,
+    this.roomRepository,
   }) : super(key: key);
 
   @override
@@ -58,7 +62,13 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             width: double.infinity,
             color: Colors.blue,
           ),
-          ChatPage(),
+          ChatPage(
+            userBloc: widget.userBloc,
+            chatRoomBloc: ChatRoomBloc(
+              userBloc: widget.userBloc,
+              roomRepository: widget.roomRepository,
+            ),
+          ),
           Container(
             height: double.infinity,
             width: double.infinity,

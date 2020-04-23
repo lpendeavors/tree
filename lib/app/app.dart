@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
       return HomeTabsPage(
         userBloc: BlocProvider.of<UserBloc>(context),
         postRepository: Injector.of(context).postRepository,
+        roomRepository: Injector.of(context).roomRepository,
       );
     },
     '/login': (context) {

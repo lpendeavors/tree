@@ -5,12 +5,18 @@ import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
 import './chat_state.dart';
 import '../chat_room/chat_room_bloc.dart';
+import '../../user_bloc/user_bloc.dart';
+import '../../user_bloc/user_login_state.dart';
 
 
 class ChatPage extends StatefulWidget {
+  final UserBloc userBloc;
+  final ChatRoomBloc chatRoomBloc;
 
   ChatPage({
     Key key,
+    @required this.userBloc,
+    @required this.chatRoomBloc,
   }) : super(key: key);
 
   @override
@@ -19,6 +25,25 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final PageController _pageController = PageController();
   int _currentTab = 0;
+  List<StreamSubscription> _subscriptions;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _subscriptions = [
+      widget.userBloc.loginState$
+          .where((state) => state is Unauthenticated)
+          .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _subscriptions.forEach((s) => s.cancel());
+    print('_ChatPageState#dispose');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +194,7 @@ class _ChatPageState extends State<ChatPage> {
       body: PageView(
         controller: _pageController,
         children: <Widget>[
-          ConversationList(),
+          ConversationList(chatRoomBloc: widget.chatRoomBloc),
           ChatRoomList(),
           GroupList(),
         ],
@@ -180,30 +205,29 @@ class _ChatPageState extends State<ChatPage> {
 
 class ConversationList extends StatefulWidget {
 
+  final ChatRoomBloc chatRoomBloc;
+
+  const ConversationList({
+    Key key,
+    @required this.chatRoomBloc,
+  }) : super(key: key);
+
   @override
   _ConversationListState createState() => _ConversationListState();
 }
 
 class _ConversationListState extends State<ConversationList> {
-  List<StreamSubscription> _subscriptions;
-  FeedBloc _feedBloc;
+  ChatRoomBloc _chatRoomBloc;
 
   @override
   void initState() {
     super.initState();
-
-    _feedBloc = widget.feedBloc;
-    /*_subscriptions = [
-      widget.userBloc.loginState$
-          .where((state) => state is Unauthenticated)
-          .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
-    ];*/
+    _chatRoomBloc = widget.chatRoomBloc;
   }
 
   @override
   void dispose() {
-    //_subscriptions.forEach((s) => s.cancel());
-    //_feedBloc.dispose();
+    _chatRoomBloc.dispose();
     print('_ConversationListState#dispose');
 
     super.dispose();
@@ -213,8 +237,8 @@ class _ConversationListState extends State<ConversationList> {
   Widget build(BuildContext context) {
     return Container(
       child: StreamBuilder<RoomListState>(
-        //stream: _feedBloc.feedListState$,
-        //initialData: _feedBloc.feedListState$.value,
+        stream: _chatRoomBloc.roomListState$,
+        initialData: _chatRoomBloc.roomListState$.value,
         builder: (context, snapshot) {
           RoomListState data = snapshot.data;
           return ListView.builder(
@@ -388,7 +412,4 @@ class GroupList extends StatelessWidget {
 /*
 Notes:
 Load real chat rooms
-
-
-Possibly rework database???
  */
