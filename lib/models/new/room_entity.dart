@@ -5,6 +5,8 @@ import 'package:meta/meta.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 
+part 'room_entity.g.dart';
+
 @immutable
 @JsonSerializable(explicitToJson: true)
 class RoomEntity extends Equatable implements FirebaseModel {

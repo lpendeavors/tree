@@ -7,6 +7,7 @@ import '../firebase_model.dart';
 import './owner_data.dart';
 import './asset_data.dart';
 
+part 'message_entity.g.dart';
 
 @immutable
 @JsonSerializable(explicitToJson: true)

@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
+part 'asset_data.g.dart';
+
 @immutable
 @JsonSerializable()
 class AssetData extends Equatable {

@@ -6,6 +6,7 @@ import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './owner_data.dart';
 
+part 'comment_entity.g.dart';
 
 @immutable
 @JsonSerializable(explicitToJson: true)

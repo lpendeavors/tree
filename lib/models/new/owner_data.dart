@@ -2,16 +2,19 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
+part 'owner_data.g.dart';
 
 @immutable
 @JsonSerializable()
 class OwnerData extends Equatable {
   final String name;
   final String photo;
+  final String uid;
 
   const OwnerData({
     this.name,
-    this.photo
+    this.photo,
+    this.uid
   });
 
   factory OwnerData.fromJson(Map<String, dynamic> json) => _$OwnerDataFromJson(json);
@@ -21,7 +24,8 @@ class OwnerData extends Equatable {
   List get props {
     return [
       name,
-      photo
+      photo,
+      uid
     ];
   }
 

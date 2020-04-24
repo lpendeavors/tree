@@ -17,14 +17,24 @@ class FirestoreRoomRepositoryImpl implements FirestoreRoomRepository{
   }) {
     return _firestore
         .collectionGroup('participants')
-        .where(FieldPath.documentId, isEqualTo: uid)
+        .where('uid', isEqualTo: uid)
         .snapshots()
-        .map(_toEntities);
+        .asyncMap(_toEntities);
   }
 
-  List<RoomEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
-      return RoomEntity.fromDocumentSnapshot(documentSnapshot);
-    }).toList();
+  Future<List<RoomEntity>> _toEntities(QuerySnapshot querySnapshot) async {
+    List<String> ids = [];
+    List<RoomEntity> result = [];
+
+    for(var i = 0; i < querySnapshot.documents.length; i++) {
+      ids.add(querySnapshot.documents[i].data['room']);
+    }
+
+    await Future.forEach(ids, (id) async {
+      QuerySnapshot snapshot = await _firestore.collection('(rooms)').where(FieldPath.documentId, isEqualTo: id).getDocuments();
+      result.add(RoomEntity.fromDocumentSnapshot(snapshot.documents[0]));
+    });
+
+    return result;
   }
 }

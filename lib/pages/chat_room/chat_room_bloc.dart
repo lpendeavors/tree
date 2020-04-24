@@ -118,6 +118,7 @@ class ChatRoomBloc implements BaseBloc {
       String uid,
   ){
     return entities.map((entity) {
+      print(entity.toString());
       return RoomItem(
         id: entity.documentId,
         imageUrl: entity.photo,
@@ -131,5 +132,12 @@ class ChatRoomBloc implements BaseBloc {
   static Stream<RoomListState> _getRoomList(
       UserBloc userBloc,
       FirestoreRoomRepository roomRepository,
-  ){}
+  ){
+    return userBloc.loginState$.switchMap((loginState) {
+      return _toState(
+        loginState,
+        roomRepository,
+      );
+    });
+  }
 }
