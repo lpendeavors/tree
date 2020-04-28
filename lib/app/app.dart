@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
   final appTheme = ThemeData(
     primarySwatch: Colors.green,
     primaryColor: Color(0xFF6CA748),
+    indicatorColor: Color(0xff5c4eb2)
   );
 
   final appRoutes = <String, WidgetBuilder>{
@@ -36,7 +37,8 @@ class MyApp extends StatelessWidget {
       return HomeTabsPage(
         userBloc: BlocProvider.of<UserBloc>(context),
         postRepository: Injector.of(context).postRepository,
-        userRepository: Injector.of(context).userRepository,
+        roomRepository: Injector.of(context).roomRepository,
+        userRepository: Injector.of(context).userRepository
       );
     },
     '/login': (context) {

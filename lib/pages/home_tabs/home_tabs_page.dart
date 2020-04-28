@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/chat_room/chat_room_bloc.dart';
 import '../../data/post/firestore_post_repository.dart';
+import '../../data/room/firestore_room_repository.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
+import '../chat/chat_page.dart';
 import '../explore/explore_bloc.dart';
 import '../explore/explore_tabs_page.dart';
 
@@ -13,11 +16,13 @@ class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
   final FirestorePostRepository postRepository;
   final FirestoreUserRepository userRepository;
+  final FirestoreRoomRepository roomRepository;
 
   const HomeTabsPage({
     Key key,
     @required this.userBloc,
     @required this.postRepository,
+    @required this.roomRepository,
     @required this.userRepository,
   }) : super(key: key);
 
@@ -64,10 +69,12 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               userRepository: widget.userRepository,
             ),
           ),
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.purple,
+          ChatPage(
+            userBloc: widget.userBloc,
+            chatRoomBloc: ChatRoomBloc(
+              userBloc: widget.userBloc,
+              roomRepository: widget.roomRepository,
+            ),
           ),
           Container(
             height: double.infinity,
