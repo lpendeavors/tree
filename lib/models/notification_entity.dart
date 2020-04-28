@@ -14,6 +14,7 @@ class NotificationEntity extends Equatable implements FirebaseModel {
   final String body;
   final String databaseName;
   final String docId;
+  final String fullName;
   final String image;
   final String message;
   final int notificationType;
@@ -45,6 +46,7 @@ class NotificationEntity extends Equatable implements FirebaseModel {
     this.documentId,
     this.updatedAt,
     this.tokenID,
+    this.fullName,
     this.image,
     this.docId,
     this.time,
@@ -87,6 +89,7 @@ class NotificationEntity extends Equatable implements FirebaseModel {
       notificationType,
       ownerId,
       status,
+      fullName,
     ];
   }
 

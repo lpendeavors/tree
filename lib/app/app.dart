@@ -12,6 +12,16 @@ import '../pages/getting_started/getting_started_page.dart';
 import '../pages/phone_verification/phone_verification_page.dart';
 import '../pages/phone_verification/phone_verification_bloc.dart';
 import '../pages/home_tabs/home_tabs_page.dart';
+import '../pages/notifications/notifications_page.dart';
+import '../pages/notifications/notifications_bloc.dart';
+import '../pages/events/events_tabs_page.dart';
+import '../pages/events/events_bloc.dart';
+import '../pages/event_types/event_types_page.dart';
+import '../pages/event_details/event_details_page.dart';
+import '../pages/event_details/event_details_bloc.dart';
+import '../pages/event_edit/event_edit_page.dart';
+import '../pages/event_edit/event_edit_bloc.dart';
+import '../pages/explore/explore_tabs_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -28,6 +38,7 @@ class MyApp extends StatelessWidget {
         userBloc: BlocProvider.of<UserBloc>(context),
         postRepository: Injector.of(context).postRepository,
         roomRepository: Injector.of(context).roomRepository,
+        userRepository: Injector.of(context).userRepository
       );
     },
     '/login': (context) {
@@ -46,7 +57,28 @@ class MyApp extends StatelessWidget {
       return GettingStartedPage(
         userBloc: BlocProvider.of<UserBloc>(context),
       );
-    }
+    },
+    '/notifications': (context) {
+      return NotificationsPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+        notificationsBloc: NotificationsBloc(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          notificationRepository: Injector.of(context).notificationRepository,
+        ),
+      );
+    },
+    '/events': (context) {
+      return EventsTabsPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+        eventsBloc: EventsBloc(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          eventRepository: Injector.of(context).eventRepository,
+        ),
+      );
+    },
+    '/event_types': (context) {
+      return EventTypesPage();
+    },
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
@@ -57,12 +89,49 @@ class MyApp extends StatelessWidget {
             initPhoneVerificationBloc: () {
               return PhoneVerificationBloc(
                 userRepository: Injector.of(context).userRepository,
-                verificationId: routerSettings.arguments as String
+                verificationId: routerSettings.arguments as String,
               );
             },
           );
         },
         settings: routerSettings,
+      );
+    }
+
+    if (routerSettings.name == '/event_details') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return EventDetailsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEventDetailsBloc: () {
+              return EventDetailsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                eventRepository: Injector.of(context).eventRepository,
+                eventId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/edit_event') {
+      return MaterialPageRoute(
+        builder: (context) {
+          Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+          return EventEditPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEventEditBloc: () {
+              return EventEditBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                eventRepository: Injector.of(context).eventRepository,
+                eventId: args['eventId'],
+                eventType: args['eventType'],
+              );
+            },
+            eventType: args['eventType'],
+          );
+        }
       );
     }
   };

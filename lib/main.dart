@@ -8,6 +8,8 @@ import './bloc/bloc_provider.dart';
 import './data/user/firestore_user_repository_imp.dart';
 import './data/post/firestore_post_repository_impl.dart';
 import './data/room/firestore_room_repository_impl.dart';
+import './data/notification/firestore_notification_repository_impl.dart';
+import './data/event/firestore_event_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -26,18 +28,23 @@ Future<void> main() async {
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
   final postRepository = FirestorePostRepositoryImpl(firestore);
   final roomRepository = FirestoreRoomRepositoryImpl(firestore);
+  final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
+  final eventRepository = FirestoreEventRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   runApp(
     Injector(
-      userRepository: userRepository,
-      postRepository: postRepository,
-      roomRepository: roomRepository,
-      child: BlocProvider<UserBloc>(
-        bloc: userBloc,
-        child: BlocProvider<LocaleBloc>(
-          bloc: LocaleBloc(sharedPrefUtil),
-          child: MyApp(),
+        userRepository: userRepository,
+        postRepository: postRepository,
+        roomRepository: roomRepository,
+        notificationRepository: notificationRepository,
+        eventRepository: eventRepository,
+        child: BlocProvider<UserBloc>(
+          bloc: userBloc,
+          child: BlocProvider<LocaleBloc>(
+            bloc: LocaleBloc(sharedPrefUtil),
+            child: MyApp(),
+          ),
         ),
       ),
     ),

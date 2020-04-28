@@ -24,7 +24,7 @@ class EventEntity extends Equatable implements FirebaseModel {
   final int eventIndex;
   final double eventLatitude;
   final double eventLongitude;
-  final int eventPrice;
+  final double eventPrice;
   final int eventStartDate;
   final int eventStartTime;
   final String eventTitle;
@@ -43,7 +43,7 @@ class EventEntity extends Equatable implements FirebaseModel {
   final String pushNotificationToken;
   final String reason;
   final List<String> searchData;
-  final int sponsorFee;
+  final double sponsorFee;
   final int time;
   final int status;
   final int timeUpdated;

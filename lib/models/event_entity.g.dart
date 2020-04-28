@@ -45,7 +45,7 @@ EventEntity _$EventEntityFromJson(Map<String, dynamic> json) {
     eventIndex: json['eventIndex'] as int,
     eventLatitude: (json['eventLatitude'] as num)?.toDouble(),
     eventLongitude: (json['eventLongitude'] as num)?.toDouble(),
-    eventPrice: json['eventPrice'] as int,
+    eventPrice: (json['eventPrice'] as num)?.toDouble(),
     eventStartDate: json['eventStartDate'] as int,
     eventStartTime: json['eventStartTime'] as int,
     eventTitle: json['eventTitle'] as String,
@@ -53,7 +53,7 @@ EventEntity _$EventEntityFromJson(Map<String, dynamic> json) {
     isSponsored: json['isSponsored'] as bool,
     location: json['location'] as String,
     reason: json['reason'] as String,
-    sponsorFee: json['sponsorFee'] as int,
+    sponsorFee: (json['sponsorFee'] as num)?.toDouble(),
     status: json['status'] as int,
   );
 }

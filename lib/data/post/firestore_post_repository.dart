@@ -10,5 +10,7 @@ abstract class FirestorePostRepository {
     @required String uid,
   });
 
+  Stream<List<PostEntity>> get();
+
   Future<Map<String, String>> savePost(PostEntity post);
 }

@@ -7,6 +7,8 @@ import '../../models/user_entity.dart';
 abstract class FirestoreUserRepository {
   Stream<UserEntity> user();
 
+  Stream<List<UserEntity>> get();
+
   Future<void> signOut();
 
   Future<void> signInWithEmailAndPassword({

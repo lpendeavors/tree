@@ -621,6 +621,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  smart_text_view:
+    dependency: "direct main"
+    description:
+      name: smart_text_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   source_gen:
     dependency: transitive
     description:
@@ -677,6 +684,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.2.11"
+  timeago:
+    dependency: "direct main"
+    description:
+      name: timeago
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.26"
   timing:
     dependency: transitive
     description:
