@@ -1,6 +1,7 @@
 import './data/notification/firestore_notification_repository.dart';
 import './data/post/firestore_post_repository.dart';
 import './data/user/firestore_user_repository.dart';
+import './data/event/firestore_event_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
@@ -8,12 +9,14 @@ class Injector extends InheritedWidget {
   final FirestoreUserRepository userRepository;
   final FirestorePostRepository postRepository;
   final FirestoreNotificationRepository notificationRepository;
+  final FirestoreEventRepository eventRepository;
 
   Injector({
     Key key,
     @required this.userRepository,
     @required this.postRepository,
     @required this.notificationRepository,
+    @required this.eventRepository,
     @required Widget child,
   }) : super(key: key, child: child);
 
@@ -24,5 +27,6 @@ class Injector extends InheritedWidget {
   bool updateShouldNotify(Injector oldWidget) =>
     userRepository != oldWidget.userRepository &&
     postRepository != oldWidget.postRepository &&
-    notificationRepository != oldWidget.notificationRepository;
+    notificationRepository != oldWidget.notificationRepository &&
+    eventRepository != oldWidget.eventRepository;
 }

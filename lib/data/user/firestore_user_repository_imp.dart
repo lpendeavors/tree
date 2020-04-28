@@ -20,6 +20,20 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
 
   @override
+  Stream<List<UserEntity>> get() {
+    return _firestore
+      .collection('userBase')
+      .snapshots()
+      .map(_toEntities);
+  }
+
+  List<UserEntity> _toEntities(QuerySnapshot querySnapshot) {
+    return querySnapshot.documents.map((documentSnapshot) {
+      return UserEntity.fromDocumentSnapshot(documentSnapshot);
+    }).toList();
+  }
+
+  @override
   Future<void> registerWithEmail({
     String fullName,
     String email,

@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import '../../util/asset_utils.dart';
 import '../../widgets/curved_scaffold.dart';
+import '../../widgets/empty_list_view.dart';
+import './widgets/notifications_list_item.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
@@ -51,9 +53,73 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          S.of(context).notifications_title
+        ),
+      ),
+      backgroundColor: Colors.white,
+      body: Container(
+        child: StreamBuilder<NotificationsListState>(
+          stream: _notificationsBloc.notificationsListState$,
+          initialData: _notificationsBloc.notificationsListState$.value,
+          builder: (context, snapshot) {
+            var data = snapshot.data;
+            print(snapshot.data);
+
+            if (data.error != null) {
+              print(data.error);
+              return Center(
+                child: Text(
+                  S.of(context).error_occurred,
+                ),
+              );
+            }
+
+            if (data.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (data.notificationItems.isEmpty) {
+              return Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height - 150,
+                child: Center(
+                  child: EmptyListView(
+                    title: S.of(context).notifications_empty_title,
+                    description: S.of(context).notifications_empty_desc,
+                    icon: Icons.notifications,
+                  ),
+                ),
+              );
+            }
+
+            return ListView.separated(
+              itemCount: data.notificationItems.length,
+              physics: BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return NotificationsListItem(
+                  notificationItem: data.notificationItems[index],
+                );
+              },
+              separatorBuilder: (context, index) {
+                return Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    height: 0.5,
+                    width: MediaQuery.of(context).size.width / 1.3,
+                    child: Divider(),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
     );
   }
 }

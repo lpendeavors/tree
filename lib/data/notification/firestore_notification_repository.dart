@@ -8,5 +8,7 @@ abstract class FirestoreNotificationRepository {
 
   Stream<List<NotificationEntity>> get();
 
+  Stream<List<NotificationEntity>> getByOwner(String ownerId);
+
   Future<Map<String, String>> save(NotificationEntity notification);
 }

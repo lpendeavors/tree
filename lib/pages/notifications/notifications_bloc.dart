@@ -8,6 +8,7 @@ import '../../models/notification_entity.dart';
 import './notifications_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 const _kInitialNotificationsListState = NotificationsListState(
   error: null,
@@ -88,7 +89,7 @@ class NotificationsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return notificationRepository.get()
+      return notificationRepository.getByOwner(loginState.uid)
         .map((entities) {
           return _entitiesToNotificationItems(entities);
         })
@@ -121,6 +122,11 @@ class NotificationsBloc implements BaseBloc {
     return entities.map((entity) {
       return NotificationItem(
         id: entity.id,
+        body: entity.body,
+        time: timeago.format(entity.createdAt.toDate()),
+        sharedBy: entity.fullName,
+        isNew: entity.readBy.contains(entity.id),
+        image: entity.image,
       );
     }).toList();
   }

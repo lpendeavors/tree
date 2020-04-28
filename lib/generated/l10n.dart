@@ -342,6 +342,357 @@ class S {
     );
   }
 
+  String get notifications_title {
+    return Intl.message(
+      'Notifications',
+      name: 'notifications_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get notifications_empty_title {
+    return Intl.message(
+      'No Notifications',
+      name: 'notifications_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get notifications_empty_desc {
+    return Intl.message(
+      '~You have no notifications yet~',
+      name: 'notifications_empty_desc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_search_hint {
+    return Intl.message(
+      'Search Events',
+      name: 'events_search_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_tab_explore {
+    return Intl.message(
+      'EXPLORE',
+      name: 'events_tab_explore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_tab_map {
+    return Intl.message(
+      'MAP',
+      name: 'events_tab_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_tab_mine {
+    return Intl.message(
+      'MY EVENTS',
+      name: 'events_tab_mine',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_empty_title {
+    return Intl.message(
+      'No Events',
+      name: 'events_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get events_empty_desc {
+    return Intl.message(
+      '~You have no events yet~',
+      name: 'events_empty_desc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_sponsored_title {
+    return Intl.message(
+      '🔥 Sponsored Event',
+      name: 'event_sponsored_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get create_event_title {
+    return Intl.message(
+      'Create Event',
+      name: 'create_event_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_objective_title {
+    return Intl.message(
+      'Choose your objective',
+      name: 'event_objective_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_details_title {
+    return Intl.message(
+      'Event Details',
+      name: 'event_details_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_attendees_title {
+    return Intl.message(
+      'ATTENDEES',
+      name: 'event_attendees_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_rejected_reason_title {
+    return Intl.message(
+      'Declined Reason',
+      name: 'event_rejected_reason_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_description_title {
+    return Intl.message(
+      'DESCRIPTION',
+      name: 'event_description_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_attend_title {
+    return Intl.message(
+      'ATTEND',
+      name: 'event_attend_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_create_title {
+    return Intl.message(
+      'CREATE',
+      name: 'event_create_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_add_photos {
+    return Intl.message(
+      'Add photos',
+      name: 'event_add_photos',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_save_title {
+    return Intl.message(
+      'SAVE',
+      name: 'event_save_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_title {
+    return Intl.message(
+      'Event title',
+      name: 'event_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_start_end_date {
+    return Intl.message(
+      'Select event start and end date',
+      name: 'event_start_end_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get describe_event {
+    return Intl.message(
+      'Briefly describe this event',
+      name: 'describe_event',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_details_hint {
+    return Intl.message(
+      'Please include all necessary information',
+      name: 'event_details_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_destination_link {
+    return Intl.message(
+      'Destination Link (If Any)',
+      name: 'event_destination_link',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_web_address {
+    return Intl.message(
+      'Web address',
+      name: 'event_web_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_cost_label {
+    return Intl.message(
+      'Cost of the event (Optional)',
+      name: 'event_cost_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_venue_label {
+    return Intl.message(
+      'Venue of event',
+      name: 'event_venue_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_venue_hint {
+    return Intl.message(
+      'Where will this event be held?',
+      name: 'event_venue_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_sponsored_hint {
+    return Intl.message(
+      'Request for this event to be a Sponsored Event(Special advertising benefits included)',
+      name: 'event_sponsored_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_budget_label {
+    return Intl.message(
+      'What is your budget?',
+      name: 'event_budget_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get event_estimate_label {
+    return Intl.message(
+      'Estimated number of people that will see your event',
+      name: 'event_estimate_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_search_hint {
+    return Intl.message(
+      'Search and discover',
+      name: 'explore_search_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_find_connections {
+    return Intl.message(
+      'FIND CONNECTIONS',
+      name: 'explore_find_connections',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_posts {
+    return Intl.message(
+      'EXPLORE',
+      name: 'explore_posts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_posts_empty {
+    return Intl.message(
+      '',
+      name: 'explore_posts_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get explore_post_empty_desc {
+    return Intl.message(
+      '',
+      name: 'explore_post_empty_desc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get connections_empty_title {
+    return Intl.message(
+      'No Request Found',
+      name: 'connections_empty_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get connections_empty_desc {
+    return Intl.message(
+      '',
+      name: 'connections_empty_desc',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get no {
     return Intl.message(
       'No',
@@ -418,6 +769,24 @@ class S {
     return Intl.message(
       'Events',
       name: 'events',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get view_map {
+    return Intl.message(
+      'View on map',
+      name: 'view_map',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get cancel {
+    return Intl.message(
+      'Cancel',
+      name: 'cancel',
       desc: '',
       args: [],
     );

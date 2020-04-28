@@ -50,13 +50,30 @@ class NotificationsListState extends Equatable {
 @immutable
 class NotificationItem extends Equatable {
   final String id;
+  final String image;
+  final String time;
+  final bool isNew;
+  final String sharedBy;
+  final String body;
 
   const NotificationItem({
     this.id,
+    this.time,
+    this.image,
+    this.isNew,
+    this.sharedBy,
+    this.body,
   });
 
   @override
-  List get props => [id];
+  List get props => [
+    id,
+    body,
+    sharedBy,
+    image,
+    time,
+    isNew,
+  ];
 
   @override
   bool get stringify => true;

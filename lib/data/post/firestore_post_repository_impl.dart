@@ -33,6 +33,16 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
       .map(_toEntities);
   }
 
+  @override
+  Stream<List<PostEntity>> get() {
+    return _firestore
+      .collection('postBase')
+      .limit(50)
+      .orderBy('time', descending: true)
+      .snapshots()
+      .map(_toEntities);
+  }
+
   List<PostEntity> _toEntities(QuerySnapshot querySnapshot) {
     return querySnapshot.documents.map((documentSnapshot) {
       return PostEntity.fromDocumentSnapshot(documentSnapshot);

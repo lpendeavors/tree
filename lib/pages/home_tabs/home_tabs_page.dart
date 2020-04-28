@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../data/post/firestore_post_repository.dart';
+import '../../data/user/firestore_user_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
+import '../explore/explore_bloc.dart';
+import '../explore/explore_tabs_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
-
   final FirestorePostRepository postRepository;
+  final FirestoreUserRepository userRepository;
 
   const HomeTabsPage({
     Key key,
-    this.userBloc,
-    this.postRepository,
+    @required this.userBloc,
+    @required this.postRepository,
+    @required this.userRepository,
   }) : super(key: key);
 
   @override
@@ -52,10 +56,13 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               postRepository: widget.postRepository,
             ),
           ),
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.blue,
+          ExploreTabsPage(
+            userBloc: widget.userBloc,
+            exploreBloc: ExploreBloc(
+              userBloc: widget.userBloc,
+              postRepository: widget.postRepository,
+              userRepository: widget.userRepository,
+            ),
           ),
           Container(
             height: double.infinity,

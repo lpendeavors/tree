@@ -27,6 +27,7 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
 
   @override
   Future<Map<String, String>> save(NotificationEntity notification) {
+    // TODO: implement save
     return null;
   }
 
@@ -36,4 +37,14 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
     }).toList();
   }
 
+  @override
+  Stream<List<NotificationEntity>> getByOwner(String ownerId) {
+    return _firestore
+        .collection('notificationBase')
+        .where('ownerId', isEqualTo: ownerId)
+        .limit(15)
+        .orderBy('time', descending: true)
+        .snapshots()
+        .map(_toEntities);
+  }
 }
