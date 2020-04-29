@@ -131,10 +131,8 @@ class EventEditItem extends Equatable {
   final DateTime endDate;
   final DateTime endTime;
   final String image;
-  final String webAddress;
   final double eventCost;
   final String venue;
-  final double budget;
 
   const EventEditItem({
     @required this.id,
@@ -144,10 +142,8 @@ class EventEditItem extends Equatable {
     @required this.endDate,
     @required this.endTime,
     @required this.image,
-    @required this.webAddress,
     @required this.eventCost,
     @required this.venue,
-    @required this.budget,
   });
 
   @override
@@ -159,10 +155,8 @@ class EventEditItem extends Equatable {
     endDate,
     endTime,
     image,
-    webAddress,
     eventCost,
     venue,
-    budget,
   ];
 
   @override

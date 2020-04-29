@@ -8,8 +8,8 @@ part 'location_data.g.dart';
 @JsonSerializable()
 class LocationData extends Equatable {
   final String address;
-  final int lat;
-  final int long;
+  final double lat;
+  final double long;
 
   const LocationData({
     this.address,

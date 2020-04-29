@@ -3,8 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../util/model_utils.dart';
-import './firebase_model.dart';
-import './church_info.dart';
+import 'firebase_model.dart';
 
 part 'request_entity.g.dart';
 
@@ -12,70 +11,20 @@ part 'request_entity.g.dart';
 @JsonSerializable(explicitToJson: true)
 class RequestEntity extends Equatable implements FirebaseModel {
   final String documentId;
-  final bool byAdmin;
-  final ChurchInfo churchInfo;
-  final String churchName;
-  final String city;
-  final String country;
-  final String databaseName;
-  final String docId;
-  final String email;
-  final String fullName;
-  final int gender;
-  final String image;
-  final bool isChurch;
-  final bool isVerified;
-  final String ownerId;
-  final String personId;
-  final String phoneNo;
-  final String pushNotificationToken;
-  final int time;
-  final int timeUpdated;
-  final String tokenID;
-  final String uid;
-  final String userImage;
-  final String username;
-  final int visibility;
+  final String from;
+  final String to;
 
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp createdAt;
-  @JsonKey(
-    fromJson: timestampFromJson,
-    toJson: timestampToJson,
-  )
-  final Timestamp updatedAt;
+  final Timestamp date;
 
   const RequestEntity({
-    this.churchInfo,
-    this.visibility,
-    this.userImage,
-    this.username,
-    this.timeUpdated,
-    this.phoneNo,
-    this.ownerId,
-    this.fullName,
-    this.databaseName,
-    this.country,
-    this.churchName,
-    this.byAdmin,
-    this.gender,
-    this.createdAt,
-    this.updatedAt,
-    this.isChurch,
-    this.image,
     this.documentId,
-    this.email,
-    this.tokenID,
-    this.uid,
-    this.time,
-    this.personId,
-    this.docId,
-    this.pushNotificationToken,
-    this.city,
-    this.isVerified,
+    this.from,
+    this.to,
+    this.date
   });
 
   String get id => this.documentId;
@@ -88,33 +37,10 @@ class RequestEntity extends Equatable implements FirebaseModel {
   @override
   List get props {
     return [
-      churchInfo,
-      visibility,
-      userImage,
-      username,
-      timeUpdated,
-      phoneNo,
-      ownerId,
-      fullName,
-      databaseName,
-      country,
-      churchName,
-      byAdmin,
-      gender,
-      createdAt,
-      updatedAt,
-      isChurch,
-      image,
       documentId,
-      email,
-      tokenID,
-      uid,
-      time,
-      personId,
-      docId,
-      pushNotificationToken,
-      city,
-      isVerified,
+      from,
+      to,
+      date
     ];
   }
 

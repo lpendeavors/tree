@@ -22,7 +22,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Stream<List<UserEntity>> get() {
     return _firestore
-      .collection('userBase')
+      .collection('(users)')
       .snapshots()
       .map(_toEntities);
   }
@@ -52,8 +52,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     await _updateUserData(
       firebaseUser,
       <String, dynamic>{
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
+        'joined': FieldValue.serverTimestamp()
       },
     );
 
@@ -63,14 +62,15 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> _updateUserData(FirebaseUser user, [Map<String, dynamic> addition]) {
     final data = <String, dynamic> {
       'email': user.email,
-      'fullName': user.displayName
+      'firstName': user.displayName.split(' ')[0],
+      'lastName': user.displayName.split(' ')[1]
     };
 
     data.addAll(addition);
 
     print('[USER_REPO] _updateUserData data=$data');
 
-    return _firestore.document('userBase/${user.uid}').setData(data, merge: true);
+    return _firestore.document('(users)/${user.uid}').setData(data, merge: true);
   }
 
   @override
@@ -102,7 +102,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     if (uid == null) {
       return null;
     }
-    return _firestore.document('userBase/$uid').snapshots().map(
+    return _firestore.collection('(users)').document(uid).snapshots().map(
         (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
   }
 

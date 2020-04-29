@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import './church_info.dart';
+import 'church_info.dart';
 
 part 'reply_search.g.dart';
 

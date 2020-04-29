@@ -34,17 +34,16 @@ Future<void> main() async {
 
   runApp(
     Injector(
-        userRepository: userRepository,
-        postRepository: postRepository,
-        roomRepository: roomRepository,
-        notificationRepository: notificationRepository,
-        eventRepository: eventRepository,
-        child: BlocProvider<UserBloc>(
-          bloc: userBloc,
-          child: BlocProvider<LocaleBloc>(
-            bloc: LocaleBloc(sharedPrefUtil),
-            child: MyApp(),
-          ),
+      userRepository: userRepository,
+      postRepository: postRepository,
+      roomRepository: roomRepository,
+      notificationRepository: notificationRepository,
+      eventRepository: eventRepository,
+      child: BlocProvider<UserBloc>(
+        bloc: userBloc,
+        child: BlocProvider<LocaleBloc>(
+          bloc: LocaleBloc(sharedPrefUtil),
+          child: MyApp(),
         ),
       ),
     ),

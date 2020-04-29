@@ -10,6 +10,11 @@ class RegisterMessageSuccess implements RegisterMessage {
   const RegisterMessageSuccess();
 }
 
+class RegisterPhoneSuccess implements RegisterMessage {
+  final String verificationId;
+  const RegisterPhoneSuccess(this.verificationId);
+}
+
 class RegisterMessageError implements RegisterMessage {
   final RegisterError error;
   const RegisterMessageError(this.error);

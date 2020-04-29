@@ -71,7 +71,7 @@ class UserBloc implements BaseBloc {
     }
 
     return LoggedInUser(
-      fullName: userEntity.fullName,
+      fullName: "${userEntity.firstName} ${userEntity.lastName}",
       email: userEntity.email,
       uid: userEntity.id
     );

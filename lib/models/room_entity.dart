@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import '../../util/model_utils.dart';
-import '../firebase_model.dart';
+import '../util/model_utils.dart';
+import 'firebase_model.dart';
 
 part 'room_entity.g.dart';
 

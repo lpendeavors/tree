@@ -1,5 +1,3 @@
-import './country.dart';
-
 import 'country.dart';
 
 final List<Country> countryList = [

@@ -1,4 +1,4 @@
-import '../models/event_type.dart';
+import '../models/old/event_type.dart';
 import './asset_utils.dart';
 
 List<EventType> eventTypes = [

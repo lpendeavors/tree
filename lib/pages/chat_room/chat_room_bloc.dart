@@ -4,7 +4,7 @@ import '../../bloc/bloc_provider.dart';
 import '../../data/room/firestore_room_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/new/room_entity.dart';
+import '../../models/room_entity.dart';
 import '../chat/chat_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';

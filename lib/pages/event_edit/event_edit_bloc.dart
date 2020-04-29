@@ -388,16 +388,14 @@ class EventEditBloc implements BaseBloc {
   ) {
     return EventEditItem(
       id: entity.documentId,
-      title: entity.eventTitle,
-      startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
-      startTime: DateTime.fromMillisecondsSinceEpoch(entity.eventStartTime),
-      endDate: DateTime.fromMillisecondsSinceEpoch(entity.eventEndTime),
-      endTime: DateTime.fromMillisecondsSinceEpoch(entity.eventEndTime),
-      image: entity.image,
-      webAddress: entity.eventWebAddress,
-      eventCost: entity.eventPrice,
-      venue: entity.location,
-      budget: entity.sponsorFee,
+      title: entity.title,
+      startDate: entity.startDate.toDate(),
+      startTime: entity.startDate.toDate(),
+      endDate: entity.endDate.toDate(),
+      endTime: entity.endDate.toDate(),
+      image: entity.owner.photo,
+      eventCost: entity.cost,
+      venue: entity.location.address,
     );
   }
 

@@ -224,7 +224,24 @@ class _RegisterPageState extends State<RegisterPage> {
 
   }
 
-  _showRegisterMessage(LoginMessage message) async {
+  void _showSnackBar(message) {
+    Scaffold.of(context, nullOk: true)?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
+  _showRegisterMessage(LoginMessage message) async {
+    final s = S.of(context);
+    if (message is LoginPhoneSuccess) {
+      _showSnackBar(s.phone_login_success);
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.of(context).pushNamed(
+        '/phone_verification',
+        arguments: message.verificationId,
+      );
+    }
   }
 }

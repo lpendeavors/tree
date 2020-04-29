@@ -127,11 +127,10 @@ class ExploreBloc implements BaseBloc {
   ) {
     return entities.map((entity) {
       return ConnectionItem(
-        id: entity.uid,
-        fullName: entity.fullName ?? '',
-        location: '',
-        church: '',
-        isChurch: entity.isChurch ?? false,
+        id: entity.id,
+        fullName: '${entity.firstName} ${entity.lastName}',
+        location: entity.location,
+        isChurch: entity.church,
       );
     }).toList();
   }
@@ -141,8 +140,8 @@ class ExploreBloc implements BaseBloc {
   ) {
     return entities.map((entity) {
       return PostItem(
-        id: entity.uid,
-        image: entity.image,
+        id: entity.owner.uid,
+        image: entity.owner.photo,
       );
     }).toList();
   }
