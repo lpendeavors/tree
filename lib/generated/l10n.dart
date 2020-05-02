@@ -234,6 +234,24 @@ class S {
     );
   }
 
+  String get phone_register_success {
+    return Intl.message(
+      'Verification sent',
+      name: 'phone_register_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get register_success {
+    return Intl.message(
+      'Sign Up Completed',
+      name: 'register_success',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get verification {
     return Intl.message(
       'Verification',
@@ -272,7 +290,7 @@ class S {
 
   String get forgot_password {
     return Intl.message(
-      'Forget your password?',
+      'Forgot your password?',
       name: 'forgot_password',
       desc: '',
       args: [],

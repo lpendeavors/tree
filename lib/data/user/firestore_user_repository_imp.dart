@@ -50,27 +50,40 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     var firebaseUser = result.user;
 
     await _updateUserData(
-      firebaseUser,
+      firebaseUser.uid,
       <String, dynamic>{
-        'joined': FieldValue.serverTimestamp()
+        'joined': FieldValue.serverTimestamp(),
+        'firstName': firebaseUser.displayName.split(' ')[0],
+        'lastName': firebaseUser.displayName.split(' ').length > 1 ? firebaseUser.displayName.split(' ')[1] : '',
+        'email': email
       },
     );
 
     print('[USER_REPO] registerWithEmail firebaseUser=$firebaseUser');
   }
 
-  Future<void> _updateUserData(FirebaseUser user, [Map<String, dynamic> addition]) {
-    final data = <String, dynamic> {
-      'email': user.email,
-      'firstName': user.displayName.split(' ')[0],
-      'lastName': user.displayName.split(' ')[1]
-    };
+  @override
+  Future<void> registerWithPhone({
+    String phone,
+    String uid
+  }) async {
+    print(
+        '[USER_REPO] registerWithPhone phone=${phone}'
+    );
 
-    data.addAll(addition);
+    await _updateUserData(
+      uid,
+      <String, dynamic>{
+        'joined': FieldValue.serverTimestamp(),
+        'phone': phone
+      }
+    );
 
-    print('[USER_REPO] _updateUserData data=$data');
+    print('[USER_REPO] registerWithPhone firebaseUser=$user');
+  }
 
-    return _firestore.document('(users)/${user.uid}').setData(data, merge: true);
+  Future<void> _updateUserData(String uid, [Map<String, dynamic> addition]) {
+    return _firestore.document('(users)/${uid}').setData(addition, merge: true);
   }
 
   @override
@@ -123,7 +136,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<void> verifyPhoneCode(
+  Future<AuthResult> verifyPhoneCode(
     String smsCode,
     String verificationId
   ) async {

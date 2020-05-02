@@ -1,63 +1,71 @@
 import 'dart:async';
+import 'dart:io';
 
-import '../../pages/login/login_state.dart';
-import '../../util/validation_utils.dart';
+import 'package:distinct_value_connectable_stream/distinct_value_connectable_stream.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:flutter/material.dart';
+import '../../pages/register/register_state.dart';
+import '../../util/validation_utils.dart';
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
 ///
-/// BLoC
+/// BLoC handle registering new account
 ///
-class PhoneLoginBloc implements BaseBloc {
+class PhoneRegisterBloc implements BaseBloc {
   ///
-  /// Input Functions
+  /// Input functions
   ///
-  final void Function() submitLogin;
+  final void Function() submitRegister;
   final void Function(String) countryCodeChanged;
   final void Function(String) phoneNumberChanged;
+  final void Function(AuthResult) verificationResultChanged;
+  final void Function() submitUser;
 
   ///
   /// Output streams
   ///
   final ValueStream<bool> isLoading$;
-  final Stream<LoginMessage> message$;
+  final Stream<RegisterMessage> message$;
   final Stream<PhoneError> phoneError;
 
   ///
   /// Clean up
   ///
-  @override
   final void Function() _dispose;
 
-  PhoneLoginBloc._({
+  PhoneRegisterBloc._({
     @required this.phoneNumberChanged,
     @required this.countryCodeChanged,
-    @required this.submitLogin,
+    @required this.verificationResultChanged,
     @required this.isLoading$,
+    @required this.submitRegister,
+    @required this.submitUser,
     @required this.message$,
     @required this.phoneError,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
   @override
-  void dispose() => _dispose;
+  void dispose() => _dispose();
 
-  factory PhoneLoginBloc(FirestoreUserRepository userRepository) {
+  factory PhoneRegisterBloc(FirestoreUserRepository userRepository) {
     ///
     /// Assert
     ///
     assert(userRepository != null, 'userRepository cannot be null');
 
     ///
-    /// Controllers
+    /// Stream controllers
     ///
     final countryCodeController = BehaviorSubject<String>.seeded('+1');
     final phoneController = BehaviorSubject<String>.seeded('');
-    final submitLoginController = PublishSubject<void>();
+    final verificationResultController = BehaviorSubject<AuthResult>.seeded(null);
+    final submitRegisterController = PublishSubject<void>();
+    final submitUserController = PublishSubject<void>();
     final isLoadingController = BehaviorSubject<bool>.seeded(false);
 
     ///
@@ -69,15 +77,15 @@ class PhoneLoginBloc implements BaseBloc {
     });
 
     final allFieldsAreValid$ = Rx.combineLatest(
-      [
-        phoneError$,
-      ],
-      (allErrors) => allErrors.every((error) {
-        print(error);
-        return error == null;
-      }));
+    [
+      phoneError$,
+    ],
+    (allErrors) => allErrors.every((error) {
+      print(error);
+      return error == null;
+    }));
 
-    final message$ = submitLoginController
+    final message$ = submitRegisterController
       .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
       .where((isValid) => isValid)
       .exhaustMap(
@@ -89,9 +97,6 @@ class PhoneLoginBloc implements BaseBloc {
         ),
       ).publish();
 
-    ///
-    /// Subscriptions and controllers
-    ///
     final subscriptions = <StreamSubscription>[
       message$.connect(),
     ];
@@ -99,16 +104,19 @@ class PhoneLoginBloc implements BaseBloc {
     final controllers = <StreamController>[
       isLoadingController,
       phoneController,
-      submitLoginController
+      submitRegisterController,
+      submitUserController,
+      verificationResultController
     ];
 
-    ///
-    /// Return BLoc
-    ///
-    return PhoneLoginBloc._(
+    return PhoneRegisterBloc._(
       phoneNumberChanged: phoneController.add,
+      verificationResultChanged: verificationResultController.add,
       countryCodeChanged: countryCodeController.add,
-      submitLogin: () => submitLoginController.add(null),
+      submitRegister: () => submitRegisterController.add(null),
+      submitUser: (){
+        saveUserToDatabase(userRepository, verificationResultController.value);
+      },
       isLoading$: isLoadingController.stream,
       message$: message$,
       dispose: () async {
@@ -119,35 +127,43 @@ class PhoneLoginBloc implements BaseBloc {
     );
   }
 
-  static Stream<LoginMessage> sendVerificationCode(
-    String countryCode,
-    String phone,
-    FirestoreUserRepository userRepository,
-    Sink<bool> isLoadingController,
-  ) async* {
-    print('[DEBUG] send verification code');
-    try {
-      isLoadingController.add(true);
-      Tuple2<String,bool> verification = await userRepository
-          .phoneSignIn("$countryCode$phone");
-      if (verification.item2) {
-        yield const LoginMessageSuccess();
-      } else {
-        yield LoginPhoneSuccess(verification.item1);
-      }
-    } catch (e) {
-      yield _getLoginError(e);
-    } finally {
-      isLoadingController.add(false);
+  static void saveUserToDatabase(
+      FirestoreUserRepository userRepository,
+      AuthResult authResult
+  ){
+    if(authResult != null){
+      userRepository.registerWithPhone(uid: authResult.user.uid, phone: authResult.user.phoneNumber);
     }
   }
 
-  static LoginMessageError _getLoginError(error) {
+  static Stream<RegisterMessage> sendVerificationCode(
+    String countryCode,
+    String phone,
+    FirestoreUserRepository userRepository,
+    Sink<bool> isLoadingSink
+  ) async* {
+    print('[DEBUG] send verification code');
+    try {
+      isLoadingSink.add(true);
+      Tuple2<String,bool> verification = await userRepository.phoneSignIn("$countryCode$phone");
+      if (verification.item2) {
+        yield const RegisterMessageSuccess();
+      } else {
+        yield RegisterPhoneSuccess(verification.item1);
+      }
+    } catch (e) {
+      yield _getRegisterError(e);
+    } finally {
+      isLoadingSink.add(false);
+    }
+  }
+
+  static RegisterMessageError _getRegisterError(error) {
     if (error is PlatformException) {
       switch (error.code) {
 
       }
     }
-    return LoginMessageError(UnknownLoginError(error));
+    return RegisterMessageError(UnknownRegisterError(error));
   }
 }

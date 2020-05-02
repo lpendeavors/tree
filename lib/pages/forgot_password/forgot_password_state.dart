@@ -14,9 +14,9 @@ class SendPasswordResetEmailSuccess implements ForgotPasswordMessage {
 @immutable
 abstract class ForgotPasswordError {}
 
-class UnknownError implements ForgotPasswordError {
+class UnknownForgotError implements ForgotPasswordError {
   final error;
-  const UnknownError([this.error]);
+  const UnknownForgotError([this.error]);
 }
 
 class InvalidEmailError implements ForgotPasswordError {

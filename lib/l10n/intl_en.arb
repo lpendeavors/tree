@@ -25,11 +25,14 @@
   "enter_phone_number": "Enter your mobile number",
   "phone_number_hint": "(678) 324-4041",
   "phone_number_mask": "(000) 000-0000",
+  "phone_register_success": "Verification sent",
+  "register_success": "Sign Up Completed",
+
   "verification": "Verification",
   "verification_message": "Enter the 6 digit number sent to you",
   "verification_resend": "Resend code",
   "verification_hint": "We'll send you a text verification code",
-  "forgot_password": "Forget your password?",
+  "forgot_password": "Forgot your password?",
 
   "network_error": "A network error occurred",
   "too_many_requests_error": "An error occurred. Too many requests",

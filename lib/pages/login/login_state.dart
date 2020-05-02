@@ -56,13 +56,13 @@ class WeakPasswordError implements LoginError {
 
 ///
 
-class UnknownError implements LoginError {
+class UnknownLoginError implements LoginError {
   final Object error;
 
-  const UnknownError(this.error);
+  const UnknownLoginError(this.error);
 
   @override
-  String toString() => 'UnknownError{error: $error}';
+  String toString() => 'UnknownLoginError{error: $error}';
 }
 
 ///

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:treeapp/pages/phone_verification/phone_verification_state.dart';
+
 import './email_login_bloc.dart';
 import './phone_login_bloc.dart';
 import './login_state.dart';
@@ -287,6 +289,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void _returnedFromVerification(Object message){
+    print('_returnedFromVerification');
+    if(message is PhoneVerificationSuccess){
+      Navigator.of(context).pushNamed('/');
+    }
+  }
+
   void _showLoginMessage(Object message) async {
     final s = S.of(context);
     if (message is LoginMessageSuccess) {
@@ -300,7 +309,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pushNamed(
         '/phone_verification',
         arguments: message.verificationId,
-      );
+      ).then(_returnedFromVerification);
     }
     if (message is LoginMessageError) {
       final error = message.error;
@@ -333,7 +342,7 @@ class _LoginPageState extends State<LoginPage> {
 //      if (error is InvalidCredentialError) {
 //        _showSnackBar(s.invalid_credential_error);
 //      }
-      if (error is UnknownError) {
+      if (error is UnknownLoginError) {
         _showSnackBar(s.error_occurred);
       }
     }

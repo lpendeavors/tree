@@ -63,13 +63,13 @@ class WeakPasswordError implements RegisterError {
 }
 
 ///
-class UnknownError implements RegisterError {
+class UnknownRegisterError implements RegisterError {
   final Object error;
 
-  const UnknownError(this.error);
+  const UnknownRegisterError(this.error);
 
   @override
-  String toString() => 'UnknownError{error: $error}';
+  String toString() => 'UnknownRegisterError{error: $error}';
 }
 
 ///
@@ -83,6 +83,20 @@ abstract class PasswordError {}
 
 @immutable
 abstract class FullNameError {}
+
+@immutable
+abstract class PhoneError {}
+
+@immutable
+abstract class VerificationError {}
+
+class PhoneNumberTenDigits implements PhoneError {
+  const PhoneNumberTenDigits();
+}
+
+class VerificationInvalid implements VerificationError {
+  const VerificationInvalid();
+}
 
 class PasswordMustBeAtLeast6Characters implements PasswordError {
   const PasswordMustBeAtLeast6Characters();

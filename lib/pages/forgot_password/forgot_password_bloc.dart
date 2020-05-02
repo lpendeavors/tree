@@ -127,7 +127,7 @@ class ForgotPasswordBloc implements BaseBloc {
             break;
         }
       } else {
-        yield SendPasswordResetEmailFailure(UnknownError());
+        yield SendPasswordResetEmailFailure(UnknownForgotError());
       }
     } finally {
       isLoadingSink.add(false);

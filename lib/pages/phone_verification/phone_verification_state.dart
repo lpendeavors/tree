@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 ///
@@ -7,7 +8,8 @@ import 'package:meta/meta.dart';
 class VerificationMessage {}
 
 class PhoneVerificationSuccess implements VerificationMessage {
-  const PhoneVerificationSuccess();
+  final AuthResult result;
+  const PhoneVerificationSuccess(this.result);
 }
 
 class PhoneVerificationError implements VerificationMessage {
@@ -25,13 +27,13 @@ class WrongCodeError implements VerificationError {
   const WrongCodeError();
 }
 
-class UnknownError implements VerificationError {
+class UnknownVerificationError implements VerificationError {
   final Object error;
 
-  const UnknownError(this.error);
+  const UnknownVerificationError(this.error);
 
   @override
-  String toString() => 'UnknownError{error: $error}';
+  String toString() => 'UnknownVerificationError{error: $error}';
 }
 
 ///
