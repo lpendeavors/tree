@@ -290,7 +290,6 @@ class _LoginPageState extends State<LoginPage> {
     final s = S.of(context);
     if (message is LoginMessageSuccess) {
       _showSnackBar(s.login_success);
-      await Future.delayed(const Duration(seconds: 2));
       Navigator.popUntil(context, ModalRoute.withName('/'));
     }
     if (message is LoginPhoneSuccess) {

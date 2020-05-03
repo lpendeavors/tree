@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../generated/l10n.dart';
@@ -17,15 +19,17 @@ class GettingStartedPage extends StatefulWidget {
 }
 
 class _GettingStartedState extends State<GettingStartedPage> {
+  List<StreamSubscription> _subscriptions;
+
   @override
   void initState() {
     super.initState();
 
-    var loginState = widget.userBloc.loginState$.value;
-    print(loginState);
-    if (loginState is LoggedInUser) {
-      Navigator.of(context).pushNamed('/');
-    }
+    _subscriptions = [
+      widget.userBloc.loginState$
+        .where((state) => state is LoggedInUser)
+        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
+    ];
   }
 
   @override

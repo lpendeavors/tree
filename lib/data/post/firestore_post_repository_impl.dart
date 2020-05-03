@@ -37,7 +37,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   Stream<List<PostEntity>> get() {
     return _firestore
       .collection('postBase')
-      .limit(50)
+      .limit(15)
       .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);

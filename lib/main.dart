@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import './app/app_locale_bloc.dart';
 import './user_bloc/user_bloc.dart';
+import './pages/feed/feed_bloc.dart';
 import './app/app.dart';
 import './bloc/bloc_provider.dart';
 import './data/user/firestore_user_repository_imp.dart';
@@ -16,22 +20,34 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final firestore = Firestore.instance;
+  final crashlytics = Crashlytics.instance;
   final firebaseAuth = FirebaseAuth.instance;
   final sharedPrefUtil = SharedPrefUtil.instance;
 
   ///
   /// Setup firestore
   ///
-  await firestore.settings(persistenceEnabled: true);
+  await firestore.settings(persistenceEnabled: false);
+
+  ///
+  /// Setup crashlytics
+  ///
+  crashlytics.enableInDevMode = true;
+  FlutterError.onError = crashlytics.recordFlutterError;
 
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
   final postRepository = FirestorePostRepositoryImpl(firestore);
   final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
   final eventRepository = FirestoreEventRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
+  final feedBloc = FeedBloc(
+      userBloc: userBloc,
+      postRepository: postRepository
+  );
 
-  runApp(
-    Injector(
+  // runZoned(() {
+    runApp(
+      Injector(
         userRepository: userRepository,
         postRepository: postRepository,
         notificationRepository: notificationRepository,
@@ -43,6 +59,7 @@ Future<void> main() async {
             child: MyApp(),
           ),
         ),
-    ),
-  );
+      ),
+    );
+  // }, onError: crashlytics.recordFlutterError);
 }
