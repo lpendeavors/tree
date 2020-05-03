@@ -146,22 +146,21 @@ class EventDetailsBloc implements BaseBloc {
   ) {
     return EventDetailItem(
       id: entity.documentId,
-      title: entity.eventTitle,
-      image: entity.image,
+      title: entity.title,
+      image: entity.owner.photo,
       attendees: [],
-      isSponsored: entity.isSponsored,
-      isMine: entity.ownerId == (loginState as LoggedInUser).uid,
+      isMine: entity.owner.uid == (loginState as LoggedInUser).uid,
       isRejected: entity.status == 2,
       reason: entity.reason,
       isAttending: false,
-      latitude: entity.eventLatitude,
-      longitude: entity.eventLongitude,
+      latitude: entity.location.lat,
+      longitude: entity.location.long,
       status: entity.status,
-      webAddress: entity.eventWebAddress,
+      webAddress: entity.webAddress,
       type: entity.type,
-      price: entity.eventPrice,
-      location: entity.location,
-      details: entity.eventDetails,
+      price: entity.cost,
+      location: entity.location.address,
+      details: entity.description,
     );
   }
 

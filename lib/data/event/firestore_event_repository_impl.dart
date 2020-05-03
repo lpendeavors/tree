@@ -10,8 +10,8 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   @override
   Stream<List<EventEntity>> get() {
     return _firestore
-        .collection('eventBase')
-        .orderBy('eventStartDate')
+        .collection('(events)')
+        .orderBy('startDate')
         .snapshots()
         .map(_toEntities);
   }
@@ -19,7 +19,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   @override
   Stream<EventEntity> getById(String eventId) {
     return _firestore
-        .collection('eventBase')
+        .collection('(events)')
         .document(eventId)
         .snapshots()
         .map((snapshot) => EventEntity.fromDocumentSnapshot(snapshot));
@@ -28,9 +28,9 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   @override
   Stream<List<EventEntity>> getByOwner(String ownerId) {
     return _firestore
-        .collection('eventBase')
+        .collection('(events)')
         .where('ownerId', isEqualTo: ownerId)
-        .orderBy('eventStateDate')
+        .orderBy('startDate')
         .snapshots()
         .map(_toEntities);
   }

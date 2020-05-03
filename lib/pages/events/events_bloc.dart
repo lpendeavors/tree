@@ -123,14 +123,13 @@ class EventsBloc implements BaseBloc {
     return entities.map((entity) {
       return EventItem(
         id: entity.id,
-        title: entity.eventTitle,
-        details: entity.eventDetails,
-        ownerId: entity.ownerId,
-        image: entity.image,
-        location: entity.location,
-        isSponsored: entity.isSponsored,
+        title: entity.title,
+        details: entity.description,
+        ownerId: entity.owner.uid,
+        image: entity.owner.photo,
+        location: entity.location.address,
         eventType: entity.type,
-        startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
+        startDate: entity.startDate.toDate(),
       );
     }).toList();
   }

@@ -10,8 +10,8 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<List<NotificationEntity>> get() {
     return _firestore
-        .collection('notificationBase')
-        .orderBy('time', descending: true)
+        .collection('(notifications)')
+        .orderBy('date', descending: true)
         .snapshots()
         .map(_toEntities);
   }
@@ -19,7 +19,7 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<NotificationEntity> getById({String notificationId}) {
     return _firestore
-        .collection('notificationBase')
+        .collection('(notifications)')
         .document(notificationId)
         .snapshots()
         .map((snapshot) => NotificationEntity.fromDocumentSnapshot(snapshot));
@@ -40,10 +40,10 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<List<NotificationEntity>> getByOwner(String ownerId) {
     return _firestore
-        .collection('notificationBase')
-        .where('ownerId', isEqualTo: ownerId)
+        .collection('(notifications)')
+        .where('senderId', isEqualTo: ownerId)
         .limit(15)
-        .orderBy('time', descending: true)
+        .orderBy('date', descending: true)
         .snapshots()
         .map(_toEntities);
   }

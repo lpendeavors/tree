@@ -3,8 +3,9 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../util/model_utils.dart';
-import './firebase_model.dart';
-import './post_data.dart';
+import 'firebase_model.dart';
+import 'owner_data.dart';
+import 'asset_data.dart';
 
 part 'post_entity.g.dart';
 
@@ -12,82 +13,35 @@ part 'post_entity.g.dart';
 @JsonSerializable(explicitToJson: true)
 class PostEntity extends Equatable implements FirebaseModel {
   final String documentId;
-  final bool byAdmin;
-  final String churchName;
-  final String country;
-  final String databaseName;
-  final String docId;
-  final String email;
-  final bool fileUploaded;
-  final String fullName;
-  final int gender;
-  final String image;
-  final bool isAdmin;
-  final bool isChurch;
-  final bool isGroup;
-  final bool isHidden;
-  final int isPostPrivate;
-  final bool isReported;
-  final bool isVerified;
-  final String ownerId;
-  final List<String> parties;
-  final String phoneNo;
-  final String postMessage;
-  final String pushNotificationToken;
+  final String body;
+  final bool global;
+  final List<String> likes;
   final List<String> tags;
-  final String tokenID;
-  final List<PostData> postData;
-  final int type;
-  final String uid;
-  final String userImage;
-  final String username;
-  final int visibility;
+  final OwnerData owner;
+  final List<AssetData> assets;
 
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp createdAt;
+  final Timestamp date;
+
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp updatedAt;
+  final Timestamp edited;
 
   const PostEntity({
     this.documentId,
-    this.createdAt,
-    this.updatedAt,
-    this.visibility,
-    this.tokenID,
-    this.pushNotificationToken,
-    this.isChurch,
-    this.uid,
-    this.byAdmin,
-    this.churchName,
-    this.country,
-    this.databaseName,
-    this.docId,
-    this.email,
-    this.fileUploaded,
-    this.fullName,
-    this.gender,
-    this.image,
-    this.isAdmin,
-    this.isGroup,
-    this.isHidden,
-    this.isPostPrivate,
-    this.isReported,
-    this.isVerified,
-    this.ownerId,
-    this.parties,
-    this.phoneNo,
-    this.postData,
-    this.postMessage,
+    this.date,
+    this.edited,
+    this.body,
+    this.global,
+    this.likes,
     this.tags,
-    this.type,
-    this.userImage,
-    this.username,
+    this.owner,
+    this.assets
   });
 
   String get id => this.documentId;
@@ -101,38 +55,14 @@ class PostEntity extends Equatable implements FirebaseModel {
   List get props {
     return [
       documentId,
-      byAdmin,
-      churchName,
-      country,
-      createdAt,
-      databaseName,
-      docId,
-      email,
-      fileUploaded,
-      fullName,
-      gender,
-      image,
-      isAdmin,
-      isChurch,
-      isGroup,
-      isHidden,
-      isPostPrivate,
-      isReported,
-      isVerified,
-      ownerId,
-      parties,
-      phoneNo,
-      postData,
-      postMessage,
-      pushNotificationToken,
+      date,
+      edited,
+      body,
+      global,
+      likes,
       tags,
-      tokenID,
-      type,
-      uid,
-      updatedAt,
-      userImage,
-      username,
-      visibility,
+      owner,
+      assets
     ];
   }
 

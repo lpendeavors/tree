@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/phone_verification/phone_verification_state.dart';
 import '../../models/country.dart';
-import '../../pages/login/login_state.dart';
-import '../../pages/login/phone_login_bloc.dart';
 import '../../pages/register/register_state.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/curved_scaffold.dart';
@@ -13,7 +12,7 @@ import '../../widgets/modals/country_code_modal.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../generated/l10n.dart';
-import './register_bloc.dart';
+import './phone_register_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
   final FirestoreUserRepository userRepository;
@@ -30,8 +29,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  RegisterBloc _registerBloc;
-  PhoneLoginBloc _phoneLoginBloc;
+  PhoneRegisterBloc _registerBloc;
   List<StreamSubscription> _subscriptions;
 
   final _emailFocusNode = FocusNode();
@@ -43,10 +41,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void initState() {
     super.initState();
 
-    _registerBloc = RegisterBloc(widget.userRepository);
-    _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
+    _registerBloc = PhoneRegisterBloc(widget.userRepository);
     _subscriptions = [
-      _phoneLoginBloc.message$.listen(_showRegisterMessage)
+      _registerBloc.message$.listen(_showRegisterMessage)
     ];
   }
 
@@ -91,7 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ).then((country) {
                         if (country != null) {
                           var selectedCountry = country as Country;
-                          _phoneLoginBloc.countryCodeChanged(selectedCountry.phoneCode);
+                          _registerBloc.countryCodeChanged(selectedCountry.phoneCode);
                         }
                       });
                     },
@@ -124,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         inputType: TextInputType.phone,
                         inputAction: TextInputAction.done,
                         hintText: s.phone_number_hint,
-                        onChange: _phoneLoginBloc.phoneNumberChanged,
+                        onChange: _registerBloc.phoneNumberChanged,
                         hasMask: true,
                         mask: s.phone_number_mask,
                       ),
@@ -153,7 +150,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 child: RaisedButton(
                   color: Theme.of(context).primaryColor,
-                  onPressed: _phoneLoginBloc.submitLogin,
+                  onPressed: _registerBloc.submitRegister,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -224,7 +221,46 @@ class _RegisterPageState extends State<RegisterPage> {
 
   }
 
-  _showRegisterMessage(LoginMessage message) async {
+  void _showSnackBar(message) {
+    Scaffold.of(context, nullOk: true)?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
+  void _returnedFromVerification(Object message){
+    print('_returnedFromVerification');
+    if(message is PhoneVerificationSuccess){
+      _registerBloc.verificationResultChanged(message.result);
+      _registerBloc.submitUser();
+      Navigator.of(context).pushNamed('/');
+    }
+  }
+
+  _showRegisterMessage(RegisterMessage message) async {
+    final s = S.of(context);
+    if (message is RegisterMessageSuccess) {
+      _showSnackBar(s.register_success);
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.popUntil(context, ModalRoute.withName('/'));
+    }
+    if (message is RegisterPhoneSuccess) {
+      _showSnackBar(s.phone_register_success);
+
+      await Future.delayed(const Duration(seconds: 2));
+      Navigator.of(context).pushNamed(
+        '/phone_verification',
+        arguments: message.verificationId,
+      ).then(_returnedFromVerification);
+    }
+    if (message is RegisterMessageError) {
+      final error = message.error;
+      print('[DEBUG] error=$error');
+
+      //TODO
+      _showSnackBar("error");
+    }
   }
 }

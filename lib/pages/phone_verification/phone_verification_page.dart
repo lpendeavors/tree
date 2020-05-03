@@ -174,9 +174,6 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
   }
 
   void _showMessageResult(VerificationMessage message) {
-    var s = S.of(context);
-    if (message is PhoneVerificationSuccess) {
-      Navigator.of(context).pushNamed('/');
-    }
+    Navigator.of(context).pop(message);
   }
 }

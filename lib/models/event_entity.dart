@@ -3,8 +3,10 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../util/model_utils.dart';
-import './firebase_model.dart';
-import './event_data.dart';
+import 'firebase_model.dart';
+import 'owner_data.dart';
+import 'location_data.dart';
+import 'asset_data.dart';
 
 part 'event_entity.g.dart';
 
@@ -12,104 +14,47 @@ part 'event_entity.g.dart';
 @JsonSerializable(explicitToJson: true)
 class EventEntity extends Equatable implements FirebaseModel {
   final String documentId;
-  final bool isAdmin;
-  final String churchName;
-  final String databaseName;
-  final String docId;
-  final String email;
-  final List<EventData> eventData;
-  final String eventDetails;
-  final int eventEndDate;
-  final int eventEndTime;
-  final int eventIndex;
-  final double eventLatitude;
-  final double eventLongitude;
-  final double eventPrice;
-  final int eventStartDate;
-  final int eventStartTime;
-  final String eventTitle;
-  final String eventWebAddress;
-  final String fullName;
-  final int gender;
-  final String image;
-  final bool isChurch;
-  final bool isHidden;
-  final bool isReported;
-  final bool isSponsored;
-  final bool isVerified;
-  final String location;
-  final String ownerId;
-  final String phoneNo;
-  final String pushNotificationToken;
-  final String reason;
-  final List<String> searchData;
-  final double sponsorFee;
-  final int time;
-  final int status;
-  final int timeUpdated;
-  final String tokenID;
+  final List<AssetData> assets;
+  final String description;
+  final bool global;
+  final bool sponsored;
+  final LocationData location;
+  final OwnerData owner;
+  final String title;
   final int type;
-  final String uid;
-  final String userImage;
-  final String username;
-  final int visibility;
+  final int status;
+  final double cost;
+  final String reason;
+  final String webAddress;
 
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp createAt;
+  final Timestamp startDate;
+
   @JsonKey(
     fromJson: timestampFromJson,
     toJson: timestampToJson,
   )
-  final Timestamp updateAt;
+  final Timestamp endDate;
 
   const EventEntity({
-    this.docId,
-    this.type,
-    this.searchData,
-    this.gender,
-    this.tokenID,
-    this.visibility,
-    this.userImage,
-    this.pushNotificationToken,
-    this.phoneNo,
-    this.isVerified,
-    this.isChurch,
-    this.fullName,
-    this.databaseName,
-    this.churchName,
-    this.timeUpdated,
     this.documentId,
-    this.uid,
-    this.isAdmin,
-    this.username,
-    this.ownerId,
-    this.image,
-    this.email,
-    this.time,
-    this.updateAt,
-    this.isReported,
-    this.isHidden,
-    this.createAt,
-    this.eventData,
-    this.eventDetails,
-    this.eventEndDate,
-    this.eventEndTime,
-    this.eventIndex,
-    this.eventLatitude,
-    this.eventLongitude,
-    this.eventPrice,
-    this.eventStartDate,
-    this.eventStartTime,
-    this.eventTitle,
-    this.eventWebAddress,
-    this.isSponsored,
+    this.assets,
+    this.description,
+    this.global,
+    this.sponsored,
     this.location,
-    this.reason,
-    this.sponsorFee,
+    this.owner,
+    this.title,
+    this.type,
+    this.cost,
+    this.startDate,
+    this.endDate,
     this.status,
+    this.reason,
+    this.webAddress
   });
 
   String get id => this.documentId;
@@ -122,50 +67,21 @@ class EventEntity extends Equatable implements FirebaseModel {
   @override
   List get props {
     return [
-      docId,
-      type,
-      searchData,
-      gender,
-      tokenID,
-      visibility,
-      userImage,
-      pushNotificationToken,
-      phoneNo,
-      isVerified,
-      isChurch,
-      fullName,
-      databaseName,
-      churchName,
-      timeUpdated,
       documentId,
-      uid,
-      isAdmin,
-      username,
-      ownerId,
-      image,
-      email,
-      time,
-      updateAt,
-      isReported,
-      isHidden,
-      createAt,
-      eventData,
-      eventDetails,
-      eventEndTime,
-      eventEndDate,
-      eventIndex,
-      eventLatitude,
-      eventLongitude,
-      eventPrice,
-      eventStartTime,
-      eventStartDate,
-      eventTitle,
-      eventWebAddress,
-      isSponsored,
+      assets,
+      description,
+      global,
+      sponsored,
       location,
-      reason,
-      sponsorFee,
+      owner,
+      title,
+      type,
+      cost,
+      startDate,
+      endDate,
       status,
+      reason,
+      webAddress
     ];
   }
 

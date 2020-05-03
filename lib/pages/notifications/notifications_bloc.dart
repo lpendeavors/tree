@@ -123,8 +123,8 @@ class NotificationsBloc implements BaseBloc {
       return NotificationItem(
         id: entity.id,
         body: entity.body,
-        time: timeago.format(entity.createdAt.toDate()),
-        sharedBy: entity.fullName,
+        time: timeago.format(entity.date.toDate()),
+        sharedBy: entity.sender,
         isNew: entity.readBy.contains(entity.id),
         image: entity.image,
       );

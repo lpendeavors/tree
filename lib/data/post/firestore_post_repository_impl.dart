@@ -15,7 +15,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   @override
   Stream<PostEntity> postById({String postId}) {
     return _firestore
-      .collection('postBase')
+      .collection('(posts)')
       .document(postId)
       .snapshots()
       .map((snapshot) => PostEntity.fromDocumentSnapshot(snapshot));
@@ -26,9 +26,9 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     String uid,
   }) {
     return _firestore
-      .collection('postBase')
+      .collection('(posts)')
+       //.orderBy('date', descending: true)
       .limit(15)
-      .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
   }
@@ -36,9 +36,9 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   @override
   Stream<List<PostEntity>> get() {
     return _firestore
-      .collection('postBase')
-      .limit(15)
-      .orderBy('time', descending: true)
+      .collection('(posts)')
+      .limit(10)
+       //.orderBy('date', descending: true)
       .snapshots()
       .map(_toEntities);
   }

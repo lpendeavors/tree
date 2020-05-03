@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../util/validation_utils.dart';
 import '../../bloc/bloc_provider.dart';
@@ -127,11 +129,11 @@ class PhoneVerificationBloc implements BaseBloc {
     print('[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
     try {
       isLoadingController.add(true);
-      await userRepository.verifyPhoneCode(
+      AuthResult result = await userRepository.verifyPhoneCode(
         code,
         id,
       );
-      yield const PhoneVerificationSuccess();
+      yield PhoneVerificationSuccess(result);
     } catch (e) {
       yield _getVerificationError(e);
     } finally {
@@ -146,6 +148,6 @@ class PhoneVerificationBloc implements BaseBloc {
 
       }
     }
-    return PhoneVerificationError(UnknownError(error));
+    return PhoneVerificationError(UnknownVerificationError(error));
   }
 }

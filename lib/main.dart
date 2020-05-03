@@ -6,11 +6,11 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import './app/app_locale_bloc.dart';
 import './user_bloc/user_bloc.dart';
-import './pages/feed/feed_bloc.dart';
 import './app/app.dart';
 import './bloc/bloc_provider.dart';
 import './data/user/firestore_user_repository_imp.dart';
 import './data/post/firestore_post_repository_impl.dart';
+import './data/room/firestore_room_repository_impl.dart';
 import './data/notification/firestore_notification_repository_impl.dart';
 import './data/event/firestore_event_repository_impl.dart';
 import './dependency_injection.dart';
@@ -37,13 +37,10 @@ Future<void> main() async {
 
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
   final postRepository = FirestorePostRepositoryImpl(firestore);
+  final roomRepository = FirestoreRoomRepositoryImpl(firestore);
   final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
   final eventRepository = FirestoreEventRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
-  final feedBloc = FeedBloc(
-      userBloc: userBloc,
-      postRepository: postRepository
-  );
 
   // runZoned(() {
     runApp(
@@ -52,6 +49,7 @@ Future<void> main() async {
         postRepository: postRepository,
         notificationRepository: notificationRepository,
         eventRepository: eventRepository,
+        roomRepository: roomRepository,
         child: BlocProvider<UserBloc>(
           bloc: userBloc,
           child: BlocProvider<LocaleBloc>(

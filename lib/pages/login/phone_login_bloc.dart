@@ -130,7 +130,6 @@ class PhoneLoginBloc implements BaseBloc {
       isLoadingController.add(true);
       Tuple2<String,bool> verification = await userRepository
           .phoneSignIn("$countryCode$phone");
-      print(verification);
       if (verification.item2) {
         yield const LoginMessageSuccess();
       } else {
@@ -149,6 +148,6 @@ class PhoneLoginBloc implements BaseBloc {
 
       }
     }
-    return LoginMessageError(UnknownError(error));
+    return LoginMessageError(UnknownLoginError(error));
   }
 }

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import '../util/model_utils.dart';
+import '../../util/model_utils.dart';
 import './reply_chat.dart';
 import './reply_search.dart';
 import './church_info.dart';

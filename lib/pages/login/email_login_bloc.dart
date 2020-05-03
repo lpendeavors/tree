@@ -174,6 +174,6 @@ class EmailLoginBloc implements BaseBloc {
 //          return const LoginMessageError(OperationNotAllowedError());
       }
     }
-    return LoginMessageError(UnknownError(error));
+    return LoginMessageError(UnknownLoginError(error));
   }
 }
