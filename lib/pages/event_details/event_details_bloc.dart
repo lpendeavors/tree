@@ -5,7 +5,6 @@ import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
 import '../../models/event_entity.dart';
-import '../../models/user_entity.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './event_details_state.dart';
@@ -161,6 +160,7 @@ class EventDetailsBloc implements BaseBloc {
       price: entity.cost,
       location: entity.location.address,
       details: entity.description,
+      isSponsored: entity.sponsored,
     );
   }
 
