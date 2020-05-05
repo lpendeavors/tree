@@ -304,7 +304,6 @@ class _LoginPageState extends State<LoginPage> {
     }
     if (message is LoginPhoneSuccess) {
       _showSnackBar(s.phone_login_success);
-      await Future.delayed(const Duration(seconds: 2));
       Navigator.of(context).pushNamed(
         '/phone_verification',
         arguments: message.verificationId,
