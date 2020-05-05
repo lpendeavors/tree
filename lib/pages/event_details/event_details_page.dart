@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
-import 'package:intl/intl.dart';
 import 'package:smart_text_view/smart_text_view.dart';
-import 'package:treeapp/util/asset_utils.dart';
-import 'package:treeapp/util/event_utils.dart';
+import '../../util/asset_utils.dart';
+import '../../util/event_utils.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
-import '../../pages/event_details/event_details_bloc.dart';
-import '../../pages/event_details/event_details_state.dart';
+import './event_details_bloc.dart';
+import './event_details_state.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -49,6 +48,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   @override
   void dispose() {
+    print('[DEBUG] EventDetailsState#dispose');
     _subscriptions.forEach((s) => s.cancel());
     _eventDetailsBloc.dispose();
     super.dispose();
