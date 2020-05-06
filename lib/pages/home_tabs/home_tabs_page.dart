@@ -11,6 +11,8 @@ import '../feed/feed_page.dart';
 import '../chat/chat_page.dart';
 import '../explore/explore_bloc.dart';
 import '../explore/explore_tabs_page.dart';
+import '../profile/profile_bloc.dart';
+import '../profile/profile_page.dart';
 
 class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -76,10 +78,14 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               roomRepository: widget.roomRepository,
             ),
           ),
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.red,
+          ProfilePage(
+            isTab: true,
+            userBloc: widget.userBloc,
+            initProfileBloc: () => ProfileBloc(
+              userBloc: widget.userBloc,
+              userRepository: widget.userRepository,
+              userId: '123',
+            ),
           ),
         ],
       ),
