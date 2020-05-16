@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
-import '../../models/event_entity.dart';
+import '../../models/old/event_entity.dart';
 import '../../pages/event_edit/event_edit_state.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -301,6 +301,7 @@ class EventEditBloc implements BaseBloc {
 
     return EventEditBloc._(
       titleChanged: titleSubject.add,
+      descriptionChanged: descriptionSubject.add,
       startDateChanged: startDateSubject.add,
       startTimeChanged: startTimeSubject.add,
       endDateChanged: endDateSubject.add,
@@ -388,14 +389,14 @@ class EventEditBloc implements BaseBloc {
   ) {
     return EventEditItem(
       id: entity.documentId,
-      title: entity.title,
-      startDate: entity.startDate.toDate(),
-      startTime: entity.startDate.toDate(),
-      endDate: entity.endDate.toDate(),
-      endTime: entity.endDate.toDate(),
-      image: entity.owner.photo,
-      eventCost: entity.cost,
-      venue: entity.location.address,
+      title: entity.eventTitle,
+      startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
+      startTime: DateTime.fromMillisecondsSinceEpoch(entity.eventStartTime),
+      endDate: DateTime.fromMillisecondsSinceEpoch(entity.eventEndDate),
+      endTime: DateTime.fromMillisecondsSinceEpoch(entity.eventEndTime),
+      image: entity.image,
+      eventCost: entity.eventPrice,
+      venue: entity.location,
     );
   }
 

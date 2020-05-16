@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../bloc/bloc_provider.dart';
 import '../data/user/firestore_user_repository.dart';
-import '../models/user_entity.dart';
+import '../models/old/user_entity.dart';
 import '../user_bloc/user_login_state.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -73,7 +73,8 @@ class UserBloc implements BaseBloc {
     return LoggedInUser(
       fullName: "${userEntity.firstName} ${userEntity.lastName}",
       email: userEntity.email,
-      uid: userEntity.id
+      uid: userEntity.id,
+      chatList: userEntity.myChatList13 ?? [],
     );
   }
 }

@@ -4,7 +4,7 @@ import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/post_entity.dart';
+import '../../models/old/post_entity.dart';
 import './feed_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -126,9 +126,12 @@ class FeedBloc implements BaseBloc {
       return FeedItem(
         id: entity.documentId,
         tags: entity.tags,
-        timePosted: entity.date.toDate(),
-        message: entity.body,
-        name: entity.owner.name,
+        timePosted: "",
+        message: entity.postMessage,
+        name: entity.isChurch ? entity.churchName : entity.fullName,
+        userImage: entity.image,
+        isPoll: entity.type == PostType.poll.index,
+        postImages: entity.postData.map((data) => data.imageUrl).toList(),
       );
     }).toList();
   }

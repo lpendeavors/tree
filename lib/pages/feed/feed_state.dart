@@ -2,6 +2,11 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 ///
+/// Enums
+/// 
+enum PostType { feed, quiz, poll, group, ad, user }
+
+///
 /// Message
 ///
 @immutable
@@ -65,9 +70,12 @@ class FeedListState extends Equatable {
 class FeedItem extends Equatable {
   final String id;
   final List<String> tags;
-  final DateTime timePosted;
+  final String timePosted;
   final String message;
   final String name;
+  final String userImage;
+  final bool isPoll;
+  final List<String> postImages;
 
   const FeedItem({
     @required this.id,
@@ -75,10 +83,22 @@ class FeedItem extends Equatable {
     @required this.timePosted,
     @required this.message,
     @required this.name,
+    @required this.userImage,
+    @required this.isPoll,
+    @required this.postImages,
   });
 
   @override
-  List get props => [id, tags, timePosted, message, name];
+  List get props => [
+    id, 
+    tags, 
+    timePosted, 
+    message, 
+    name, 
+    userImage, 
+    isPoll,
+    postImages,
+  ];
 
   @override
   bool get stringify => true;

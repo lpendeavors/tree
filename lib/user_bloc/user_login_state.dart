@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
+import '../models/old/user_chat_data.dart';
 
 @immutable
 abstract class LoginState {
@@ -10,16 +11,18 @@ class LoggedInUser extends Equatable implements LoginState {
   final String uid;
   final String email;
   final String fullName;
+  final List<ChatData> chatList;
 
   const LoggedInUser({
     @required this.uid,
     @required this.email,
     @required this.fullName,
+    @required this.chatList,
   });
 
   @override
   List get props {
-    return [uid, email, fullName];
+    return [uid, email, fullName, chatList];
   }
 
   @override

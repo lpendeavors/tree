@@ -36,6 +36,10 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
     visibility: json['visibility'] as int,
+    myChatList13: (json['myChatList13'] as List)
+        ?.map((e) =>
+            e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
   );
 }
 
@@ -64,6 +68,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'time': instance.time,
       'timeOnline': instance.timeOnline,
       'timeUpdated': instance.timeUpdated,
+      'myChatList13': instance.myChatList13?.map((e) => e?.toJson())?.toList(),
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

@@ -13,6 +13,8 @@ import './data/post/firestore_post_repository_impl.dart';
 import './data/room/firestore_room_repository_impl.dart';
 import './data/notification/firestore_notification_repository_impl.dart';
 import './data/event/firestore_event_repository_impl.dart';
+import './data/group/firestore_group_repository_impl.dart';
+import './data/chat/firestore_chat_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -32,7 +34,6 @@ Future<void> main() async {
   ///
   /// Setup crashlytics
   ///
-  crashlytics.enableInDevMode = true;
   FlutterError.onError = crashlytics.recordFlutterError;
 
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
@@ -40,6 +41,8 @@ Future<void> main() async {
   final roomRepository = FirestoreRoomRepositoryImpl(firestore);
   final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
   final eventRepository = FirestoreEventRepositoryImpl(firestore);
+  final chatRepository = FirestoreChatRepositoryImpl(firestore);
+  final groupRepository = FirestoreGroupRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   // runZoned(() {
@@ -50,6 +53,8 @@ Future<void> main() async {
         notificationRepository: notificationRepository,
         eventRepository: eventRepository,
         roomRepository: roomRepository,
+        chatRepository: chatRepository,
+        groupRepository: groupRepository,
         child: BlocProvider<UserBloc>(
           bloc: userBloc,
           child: BlocProvider<LocaleBloc>(

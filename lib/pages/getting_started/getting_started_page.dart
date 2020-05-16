@@ -1,37 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../generated/l10n.dart';
-import '../../user_bloc/user_bloc.dart';
-import '../../user_bloc/user_login_state.dart';
 
-class GettingStartedPage extends StatefulWidget {
-  final UserBloc userBloc;
-
-  const GettingStartedPage({
-    Key key,
-    @required this.userBloc,
-  }) : super(key: key);
-
-  @override
-  _GettingStartedState createState() => _GettingStartedState();
-}
-
-class _GettingStartedState extends State<GettingStartedPage> {
-  List<StreamSubscription> _subscriptions;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _subscriptions = [
-      widget.userBloc.loginState$
-        .where((state) => state is LoggedInUser)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/'))),
-    ];
-  }
-
+class GettingStartedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

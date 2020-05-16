@@ -5,8 +5,8 @@ import '../../data/post/firestore_post_repository.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/post_entity.dart';
-import '../../models/user_entity.dart';
+import '../../models/old/post_entity.dart';
+import '../../models/old/user_entity.dart';
 import './explore_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -96,8 +96,8 @@ class ExploreBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        userRepository.get(),
-        postRepository.get(),
+        userRepository.getSuggestions(),
+        postRepository.postsForCollage(),
         (users, posts) {
           return _kInitialExploreState.copyWith(
             connectionItems: _userEntitiesToItems(users),
@@ -129,8 +129,9 @@ class ExploreBloc implements BaseBloc {
       return ConnectionItem(
         id: entity.id,
         fullName: '${entity.firstName} ${entity.lastName}',
-        location: entity.location,
-        isChurch: entity.church,
+        location: "",
+        church: "",
+        isChurch: entity.isChurch,
       );
     }).toList();
   }
@@ -140,8 +141,8 @@ class ExploreBloc implements BaseBloc {
   ) {
     return entities.map((entity) {
       return PostItem(
-        id: entity.owner.uid,
-        image: entity.owner.photo,
+        id: entity.documentId,
+        image: entity.image,
       );
     }).toList();
   }

@@ -290,9 +290,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _returnedFromVerification(Object message){
-    print('_returnedFromVerification');
+    final s = S.of(context);
     if(message is PhoneVerificationSuccess){
-      Navigator.of(context).pushNamed('/');
+      _showSnackBar(s.login_success);
+      Navigator.popUntil(context, ModalRoute.withName('/'));
     }
   }
 

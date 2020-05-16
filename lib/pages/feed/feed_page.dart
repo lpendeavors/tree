@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../widgets/curved_scaffold.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -9,7 +10,6 @@ import '../../generated/l10n.dart';
 import './widgets/feed_list_item.dart';
 import './feed_bloc.dart';
 import './feed_state.dart';
-import 'package:flutter/material.dart';
 
 class FeedPage extends StatefulWidget {
   final UserBloc userBloc;

@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
+import './user_chat_data.dart';
 import './trophy.dart';
 
 part 'user_entity.g.dart';
@@ -34,6 +35,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final int time;
   final int timeOnline;
   final int timeUpdated;
+  final List<ChatData> myChatList13;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -76,6 +78,7 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.trophyCreated,
     this.uid,
     this.visibility,
+    this.myChatList13,
   });
 
   String get id => this.documentId;
@@ -113,6 +116,7 @@ class UserEntity extends Equatable implements FirebaseModel {
       trophyCreated,
       uid,
       visibility,
+      myChatList13,
     ];
   }
 

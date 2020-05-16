@@ -1,4 +1,4 @@
-import '../../models/post_entity.dart';
+import '../../models/old/post_entity.dart';
 import 'package:meta/meta.dart';
 
 abstract class FirestorePostRepository {
@@ -10,7 +10,9 @@ abstract class FirestorePostRepository {
     @required String uid,
   });
 
-  Stream<List<PostEntity>> get();
+  Stream<List<PostEntity>> postsForCollage();
+
+  Stream<List<PostEntity>> getByAdmin();
 
   Future<Map<String, String>> savePost(PostEntity post);
 }

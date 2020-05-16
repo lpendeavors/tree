@@ -28,10 +28,10 @@ class EventsListState extends Equatable {
   final Object error;
 
   const EventsListState({
-    this.eventItems,
-    this.myEvents,
-    this.isLoading,
-    this.error,
+    @required this.eventItems,
+    @required this.myEvents,
+    @required this.isLoading,
+    @required this.error,
   });
 
   EventsListState copyWith({eventItems, myEvents, isLoading, error}) {
@@ -61,17 +61,19 @@ class EventItem extends Equatable {
   final bool isSponsored;
   final int eventType;
   final DateTime startDate;
+  final List<String> isAttending;
 
   const EventItem({
-    this.id,
-    this.title,
-    this.details,
-    this.ownerId,
-    this.image,
-    this.location,
-    this.isSponsored,
-    this.eventType,
-    this.startDate,
+    @required this.id,
+    @required this.title,
+    @required this.details,
+    @required this.ownerId,
+    @required this.image,
+    @required this.location,
+    @required this.isSponsored,
+    @required this.eventType,
+    @required this.startDate,
+    @required this.isAttending,
   });
 
   @override
@@ -85,6 +87,7 @@ class EventItem extends Equatable {
     isSponsored,
     eventType,
     startDate,
+    isAttending,
   ];
 
   @override

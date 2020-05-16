@@ -4,7 +4,7 @@ import '../../bloc/bloc_provider.dart';
 import '../../data/notification/firestore_notification_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/notification_entity.dart';
+import '../../models/old/notification_entity.dart';
 import './notifications_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -123,8 +123,8 @@ class NotificationsBloc implements BaseBloc {
       return NotificationItem(
         id: entity.id,
         body: entity.body,
-        time: timeago.format(entity.date.toDate()),
-        sharedBy: entity.sender,
+        time: timeago.format(entity.createdAt.toDate()),
+        sharedBy: entity.fullName,
         isNew: entity.readBy.contains(entity.id),
         image: entity.image,
       );
