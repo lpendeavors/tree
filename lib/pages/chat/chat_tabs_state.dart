@@ -60,7 +60,7 @@ class GroupItem extends Equatable {
   final bool isRoom;
   final bool isGroup;
   final String image;
-  final String fullName;
+  final String name;
   final bool isConversation;
   final bool byAdmin;
   final List<GroupMember> members;
@@ -72,7 +72,7 @@ class GroupItem extends Equatable {
     @required this.isRoom,
     @required this.isGroup,
     @required this.image,
-    @required this.fullName,
+    @required this.name,
     @required this.isConversation,
     @required this.byAdmin,
     @required this.members,
@@ -83,7 +83,7 @@ class GroupItem extends Equatable {
   @override
   List get props => [
     id,
-    fullName,
+    name,
     isConversation,
     isRoom,
     isGroup,

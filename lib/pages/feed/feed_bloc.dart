@@ -8,6 +8,7 @@ import '../../models/old/post_entity.dart';
 import './feed_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 const _kInitialFeedListState = FeedListState(
   error: null,
@@ -88,19 +89,22 @@ class FeedBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return postRepository.posts(uid: loginState.uid)
-        .map((entities) {
-          return _entitiesToFeedItems(
-            entities,
-            loginState.uid,
-          );
-        })
-        .map((feedItems) {
-          return _kInitialFeedListState.copyWith(
-            feedItems: feedItems,
-            isLoading: false,
-          );
-        })
+      return Rx.zip2(
+          postRepository.getByAdmin(),
+          postRepository.postsByUser(uid: loginState.uid),
+          (byAdmin, userFeed) {
+            var feed = _entitiesToFeedItems(byAdmin);
+            var userPosts = _entitiesToFeedItems(userFeed);
+
+            feed.addAll(userPosts);
+            feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
+
+            return _kInitialFeedListState.copyWith(
+              isLoading: false,
+              feedItems: feed,
+            );
+          }
+        )
         .startWith(_kInitialFeedListState)
         .onErrorReturnWith((e) {
           return _kInitialFeedListState.copyWith(
@@ -120,18 +124,18 @@ class FeedBloc implements BaseBloc {
 
   static List<FeedItem> _entitiesToFeedItems(
     List<PostEntity> entities,
-    String uid,
   ) {
     return entities.map((entity) {
       return FeedItem(
         id: entity.documentId,
         tags: entity.tags,
-        timePosted: "",
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
         message: entity.postMessage,
-        name: entity.isChurch ? entity.churchName : entity.fullName,
+        name: entity.fullName != null ? entity.fullName : entity.churchName,
         userImage: entity.image,
         isPoll: entity.type == PostType.poll.index,
-        postImages: entity.postData.map((data) => data.imageUrl).toList(),
+        postImages: _getPostImages(entity),
       );
     }).toList();
   }
@@ -146,5 +150,17 @@ class FeedBloc implements BaseBloc {
         postRepository,
       );
     });
+  }
+
+  static List<String> _getPostImages(PostEntity entity) {
+    List<String> images = List<String>();
+
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        images = entity.postData.map((data) => data.imageUrl).toList();
+      }
+    }
+    
+    return images;
   }
 }

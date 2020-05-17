@@ -70,7 +70,8 @@ class FeedListState extends Equatable {
 class FeedItem extends Equatable {
   final String id;
   final List<String> tags;
-  final String timePosted;
+  final DateTime timePosted;
+  final String timePostedString;
   final String message;
   final String name;
   final String userImage;
@@ -81,6 +82,7 @@ class FeedItem extends Equatable {
     @required this.id,
     @required this.tags,
     @required this.timePosted,
+    @required this.timePostedString,
     @required this.message,
     @required this.name,
     @required this.userImage,
@@ -92,7 +94,8 @@ class FeedItem extends Equatable {
   List get props => [
     id, 
     tags, 
-    timePosted, 
+    timePosted,
+    timePostedString,
     message, 
     name, 
     userImage, 

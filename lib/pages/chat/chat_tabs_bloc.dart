@@ -132,7 +132,7 @@ class ChatTabsBloc implements BaseBloc {
         isGroup: entity.isGroup,
         isRoom: entity.isRoom,
         members: entity.groupMembers,
-        fullName: entity.fullName,
+        name: entity.groupName,
         image: entity.groupImage,
         ownerId: entity.uid,
         byAdmin: entity.byAdmin,

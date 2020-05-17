@@ -29,7 +29,7 @@ class S {
 
   String get app_title {
     return Intl.message(
-      'Tree',
+      'TREE',
       name: 'app_title',
       desc: '',
       args: [],

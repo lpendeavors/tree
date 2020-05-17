@@ -22,14 +22,12 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   }
 
   @override
-  Stream<List<PostEntity>> posts({
+  Stream<List<PostEntity>> postsByUser({
     String uid,
   }) {
     return _firestore
       .collection('postBase')
       .where('parties', arrayContains: uid)
-      .where('byAdmin', isEqualTo: true)
-      .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
   }
@@ -39,7 +37,6 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     return _firestore
       .collection('postBase')
       .where('byAdmin', isEqualTo: true)
-      .limit(15)
       .snapshots()
       .map(_toEntities);
   }
@@ -48,8 +45,16 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   Stream<List<PostEntity>> postsForCollage() {
     return _firestore
       .collection('postBase')
-      .orderBy('time', descending: true)
       .limit(50)
+      .snapshots()
+      .map(_toEntities);
+  }
+
+  @override
+  Stream<List<PostEntity>> getByGroup(String postId) {
+    return _firestore
+      .collection('postBase')
+      .where('postId', isEqualTo: postId)
       .snapshots()
       .map(_toEntities);
   }

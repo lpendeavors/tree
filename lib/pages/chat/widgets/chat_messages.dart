@@ -122,7 +122,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                         children: <Widget>[
                           Flexible(
                             child: Text(
-                              message.fullName,
+                              message.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

@@ -1,6 +1,11 @@
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_text_view/smart_text_view.dart';
+import '../../comments/comments_panel.dart';
+import '../../comments/comments_bloc.dart';
+import '../../../dependency_injection.dart';
+import '../../../user_bloc/user_bloc.dart';
+import '../../../bloc/bloc_provider.dart';
 import '../feed_state.dart';
 
 class FeedListItem extends StatefulWidget {
@@ -133,7 +138,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                         ),
                                       ),
                                       Text(
-                                        widget.feedItem.timePosted,
+                                        widget.feedItem.timePostedString,
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey,
@@ -349,7 +354,24 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                           icon: Icons.comment,
                           textAlign: null, 
                           alignment: MainAxisAlignment.center,
-                          onTap: null, 
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                opaque: false,
+                                pageBuilder: (context, _, __) {
+                                  return CommentsPanel(
+                                    userBloc: BlocProvider.of<UserBloc>(context),
+                                    commentsBloc: CommentsBloc(
+                                      userBloc: BlocProvider.of<UserBloc>(context),
+                                      commentRepository: Injector.of(context).commentRepository,
+                                      postId: widget.feedItem.id,
+                                    ),
+                                  );
+                                }
+                              ),
+                            );
+                          }, 
                         ),
                         _feedButton(
                           title: 'Share', 

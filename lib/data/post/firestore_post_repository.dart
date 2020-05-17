@@ -6,9 +6,11 @@ abstract class FirestorePostRepository {
     @required String postId,
   });
 
-  Stream<List<PostEntity>> posts({
+  Stream<List<PostEntity>> postsByUser({
     @required String uid,
   });
+
+  Stream<List<PostEntity>> getByGroup(String postId);
 
   Stream<List<PostEntity>> postsForCollage();
 
