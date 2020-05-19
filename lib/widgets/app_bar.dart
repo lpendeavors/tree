@@ -1,23 +1,29 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../util/asset_utils.dart';
 
 class TreeAppBar extends StatelessWidget {
   final String title;
+  final int step;
+  final int steps;
   final bool backButton;
 
   const TreeAppBar({
     @required this.title,
+    this.step = 0,
+    this.steps = 0,
     this.backButton = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(25),
+      padding: EdgeInsets.only(top: 15, bottom: 15),
       child: Stack(
         alignment: Alignment.centerLeft,
         children: <Widget>[
           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
                 title,
@@ -30,8 +36,18 @@ class TreeAppBar extends StatelessWidget {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                ],
+                children: List.generate(this.steps, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 5.0, left: 5.0, top: 10.0),
+                    child: index == this.step ? new CircleAvatar(
+                      backgroundColor: Colors.white,
+                      maxRadius: 6.0,
+                    ) : new CircleAvatar(
+                      backgroundColor: Colors.white.withAlpha(150),
+                      maxRadius: 4.0,
+                    ),
+                  );
+                })
               ),
             ],
           ),

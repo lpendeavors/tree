@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
-import '../../models/room_entity.dart';
+import '../../models/new/room_entity.dart';
 
 abstract class FirestoreRoomRepository {
   Stream<List<RoomEntity>> rooms({

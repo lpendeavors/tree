@@ -22,6 +22,11 @@ class PhoneRegisterBloc implements BaseBloc {
   final void Function() submitRegister;
   final void Function(String) countryCodeChanged;
   final void Function(String) phoneNumberChanged;
+  final void Function(String) emailAddressChanged;
+  final void Function(String) firstNameChanged;
+  final void Function(String) lastNameChanged;
+  final void Function(String) passwordChanged;
+  final void Function(String) confirmPasswordChanged;
   final void Function(AuthResult) verificationResultChanged;
   final void Function() submitUser;
 
@@ -30,6 +35,7 @@ class PhoneRegisterBloc implements BaseBloc {
   ///
   final ValueStream<bool> isLoading$;
   final Stream<RegisterMessage> message$;
+  final Stream<RegisterMessage> saveResult$;
   final Stream<PhoneError> phoneError;
 
   ///
@@ -40,11 +46,17 @@ class PhoneRegisterBloc implements BaseBloc {
   PhoneRegisterBloc._({
     @required this.phoneNumberChanged,
     @required this.countryCodeChanged,
+    @required this.emailAddressChanged,
+    @required this.firstNameChanged,
+    @required this.lastNameChanged,
+    @required this.passwordChanged,
+    @required this.confirmPasswordChanged,
     @required this.verificationResultChanged,
     @required this.isLoading$,
     @required this.submitRegister,
     @required this.submitUser,
     @required this.message$,
+    @required this.saveResult$,
     @required this.phoneError,
     @required void Function() dispose,
   }) : _dispose = dispose;
@@ -63,6 +75,11 @@ class PhoneRegisterBloc implements BaseBloc {
     ///
     final countryCodeController = BehaviorSubject<String>.seeded('+1');
     final phoneController = BehaviorSubject<String>.seeded('');
+    final emailController = BehaviorSubject<String>.seeded('');
+    final firstNameController = BehaviorSubject<String>.seeded('');
+    final lastNameController = BehaviorSubject<String>.seeded('');
+    final passwordController = BehaviorSubject<String>.seeded('');
+    final confirmPasswordController = BehaviorSubject<String>.seeded('');
     final verificationResultController = BehaviorSubject<AuthResult>.seeded(null);
     final submitRegisterController = PublishSubject<void>();
     final submitUserController = PublishSubject<void>();
@@ -76,9 +93,51 @@ class PhoneRegisterBloc implements BaseBloc {
       return const PhoneNumberTenDigits();
     });
 
+    final emailError$ = emailController.map((email) {
+      if (isValidEmail(email)) return null;
+      return const InvalidEmailAddress();
+    });
+
+    final firstNameError$ = firstNameController.map((name) {
+      if (isValidName(name)) return null;
+      return const FirstNameMustBeAtLeast2Characters();
+    });
+
+    final lastNameError$ = lastNameController.map((name) {
+      if (isValidName(name)) return null;
+      return const LastNameMustBeAtLeast2Characters();
+    });
+
+    final passwordError$ = passwordController.map((password) {
+      if (isValidPassword(password)) return null;
+      return const PasswordMustBeAtLeast6Characters();
+    });
+
+    final confirmPasswordError$ = Rx.combineLatest([
+      passwordController,
+      confirmPasswordController
+    ], (values) {
+      print(values);
+      if(values[0] == values[1]){return null;}
+      return const PasswordsMustMatch();
+    });
+
     final allFieldsAreValid$ = Rx.combineLatest(
     [
       phoneError$,
+    ],
+    (allErrors) => allErrors.every((error) {
+      print(error);
+      return error == null;
+    }));
+
+    final allInfoIsValid$ = Rx.combineLatest(
+    [
+      emailError$,
+      firstNameError$,
+      lastNameError$,
+      passwordError$,
+      confirmPasswordError$
     ],
     (allErrors) => allErrors.every((error) {
       print(error);
@@ -97,13 +156,32 @@ class PhoneRegisterBloc implements BaseBloc {
         ),
       ).publish();
 
+    final saveResult$ = submitUserController
+      .withLatestFrom(allInfoIsValid$, (_, bool isValid) => isValid)
+      .exhaustMap(
+        (_) => saveUserToDatabase(
+          userRepository,
+          verificationResultController.value,
+          emailController.value,
+          firstNameController.value,
+          lastNameController.value,
+          passwordController.value
+        ),
+      ).publish();
+
     final subscriptions = <StreamSubscription>[
       message$.connect(),
+      saveResult$.connect(),
     ];
 
     final controllers = <StreamController>[
       isLoadingController,
       phoneController,
+      emailController,
+      firstNameController,
+      lastNameController,
+      passwordController,
+      confirmPasswordController,
       submitRegisterController,
       submitUserController,
       verificationResultController
@@ -112,13 +190,17 @@ class PhoneRegisterBloc implements BaseBloc {
     return PhoneRegisterBloc._(
       phoneNumberChanged: phoneController.add,
       verificationResultChanged: verificationResultController.add,
+      emailAddressChanged: emailController.add,
+      firstNameChanged: firstNameController.add,
+      lastNameChanged: lastNameController.add,
+      passwordChanged: passwordController.add,
+      confirmPasswordChanged: confirmPasswordController.add,
       countryCodeChanged: countryCodeController.add,
       submitRegister: () => submitRegisterController.add(null),
-      submitUser: (){
-        saveUserToDatabase(userRepository, verificationResultController.value);
-      },
+      submitUser: () => submitUserController.add(null),
       isLoading$: isLoadingController.stream,
       message$: message$,
+      saveResult$: saveResult$,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
         await Future.wait(controllers.map((c) => c.close()));
@@ -127,12 +209,27 @@ class PhoneRegisterBloc implements BaseBloc {
     );
   }
 
-  static void saveUserToDatabase(
+  static Stream<RegisterMessage> saveUserToDatabase(
       FirestoreUserRepository userRepository,
-      AuthResult authResult
-  ){
-    if(authResult != null){
-      userRepository.registerWithPhone(uid: authResult.user.uid, phone: authResult.user.phoneNumber);
+      AuthResult authResult,
+      String email,
+      String firstName,
+      String lastName,
+      String password
+  ) async* {
+    try{
+      if(authResult != null) {
+        await userRepository.registerWithPhone(
+          user: authResult.user,
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          password: password,
+        );
+        yield const RegisterMessageComplete();
+      }
+    } catch (e) {
+      yield _getRegisterError(e);
     }
   }
 
