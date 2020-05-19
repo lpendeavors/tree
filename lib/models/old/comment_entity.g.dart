@@ -34,6 +34,8 @@ CommentEntity _$CommentEntityFromJson(Map<String, dynamic> json) {
     likes: (json['likes'] as List)?.map((e) => e as String)?.toList(),
     postId: json['postId'] as String,
     updatedAt: timestampFromJson(json['updatedAt'] as Timestamp),
+    isGIF: json['isGIF'] as bool,
+    imagePath: json['imagePath'] as String,
   );
 }
 
@@ -63,6 +65,8 @@ Map<String, dynamic> _$CommentEntityToJson(CommentEntity instance) =>
       'userImage': instance.userImage,
       'username': instance.username,
       'visibility': instance.visibility,
+      'isGIF': instance.isGIF,
+      'imagePath': instance.imagePath,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

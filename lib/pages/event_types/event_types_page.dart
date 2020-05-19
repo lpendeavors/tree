@@ -92,7 +92,6 @@ class _EventTypesPageState extends State<EventTypesPage> {
                     style: TextStyle(
                       fontSize: 20,
                       color: Colors.green[600],
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 10),

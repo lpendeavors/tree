@@ -20,8 +20,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   AnimationController _animationController;
   Animation _animation;
 
-  List<StreamSubscription> _subscriptions;
-
   @override
   void initState() {
     super.initState();
@@ -33,7 +31,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationController.dispose();
-    _subscriptions.forEach((s) => s.cancel());
     super.dispose();
   }
 
@@ -110,9 +107,9 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       Duration(milliseconds: 1500), 
       () async {
         if (loginState != null) {
-          Navigator.pushNamed(context, '/');
+          Navigator.pushReplacementNamed(context, '/');
         } else {
-          Navigator.pushNamed(context, '/getting_started');
+          Navigator.pushReplacementNamed(context, '/getting_started');
         }
       }
     );

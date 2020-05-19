@@ -19,7 +19,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
   // final String databaseName;
   // final String docId;
   // final String email;
-  final String fullName;
+  final String groupName;
   // final int gender;
   final String groupId;
   final String groupImage;
@@ -42,6 +42,8 @@ class GroupEntity extends Equatable implements FirebaseModel {
   // final String userImage;
   // final String username;
   // final int visibility;
+  final String groupDescription;
+  final bool canPostOnWall;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -63,7 +65,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
     // this.timeUpdated,
     // this.churchName,
     // this.databaseName,
-    this.fullName,
+    this.groupName,
     // this.isChurch,
     // this.isVerified,
     // this.phoneNo,
@@ -86,8 +88,10 @@ class GroupEntity extends Equatable implements FirebaseModel {
     this.groupId,
     this.groupImage,
     this.groupMembers,
+    this.groupDescription,
     this.isConversation,
     this.isGroupPrivate,
+    this.canPostOnWall,
   });
 
   String get id => this.documentId;
@@ -108,7 +112,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
       // timeUpdated,
       // churchName,
       // databaseName,
-      fullName,
+      groupName,
       // isChurch,
       // isVerified,
       // phoneNo,
@@ -133,6 +137,8 @@ class GroupEntity extends Equatable implements FirebaseModel {
       groupMembers,
       isConversation,
       isGroupPrivate,
+      groupDescription,
+      canPostOnWall,
     ];
   }
 

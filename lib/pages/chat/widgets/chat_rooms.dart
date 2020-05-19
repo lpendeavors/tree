@@ -88,7 +88,12 @@ class _ChatRoomsState extends State<ChatRooms> {
       borderRadius: BorderRadius.circular(25),
       child: InkWell(
         onLongPress: () => print('lp'),
-        onTap: () => print('tap'),
+        onTap: () {
+          Navigator.of(context).pushNamed(
+            '/chat_room_details',
+            arguments: room.id,
+          );
+        },
         radius: 10,
         borderRadius: BorderRadius.circular(15),
         child: Card(
@@ -108,10 +113,12 @@ class _ChatRoomsState extends State<ChatRooms> {
                           alignment: Alignment.center,
                           fit: BoxFit.cover,
                         )
-                        : Container(),
+                        : Container(
+                          color: Theme.of(context).primaryColor,
+                        ),
                     ),
                     Container(
-                      color: Color(color),
+                      color: Color(color).withOpacity(0.7),
                       height: 150,
                     ),
                     Container(
@@ -125,6 +132,63 @@ class _ChatRoomsState extends State<ChatRooms> {
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        alignment: Alignment.bottomLeft,
+                        padding: EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              room.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 25,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'active now',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              '${room.members.length} members',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white.withOpacity(0.6),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                        margin: EdgeInsets.all(4),
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                        child: Image.asset(
+                          appIcon,
+                          height: 15,
                         ),
                       ),
                     ),

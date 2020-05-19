@@ -13,7 +13,7 @@ GroupEntity _$GroupEntityFromJson(Map<String, dynamic> json) {
     ownerId: json['ownerId'] as String,
     byAdmin: json['byAdmin'] as bool,
     documentId: json['documentId'] as String,
-    fullName: json['fullName'] as String,
+    groupName: json['groupName'] as String,
     image: json['image'] as String,
     uid: json['uid'] as String,
     isRoom: json['isRoom'] as bool,
@@ -24,8 +24,10 @@ GroupEntity _$GroupEntityFromJson(Map<String, dynamic> json) {
         ?.map((e) =>
             e == null ? null : GroupMember.fromJson(e as Map<String, dynamic>))
         ?.toList(),
+    groupDescription: json['groupDescription'] as String,
     isConversation: json['isConversation'] as bool,
     isGroupPrivate: json['isGroupPrivate'] as bool,
+    canPostOnWall: json['canPostOnWall'] as bool,
   );
 }
 
@@ -33,7 +35,7 @@ Map<String, dynamic> _$GroupEntityToJson(GroupEntity instance) =>
     <String, dynamic>{
       'documentId': instance.documentId,
       'byAdmin': instance.byAdmin,
-      'fullName': instance.fullName,
+      'groupName': instance.groupName,
       'groupId': instance.groupId,
       'groupImage': instance.groupImage,
       'groupMembers': instance.groupMembers?.map((e) => e?.toJson())?.toList(),
@@ -44,6 +46,8 @@ Map<String, dynamic> _$GroupEntityToJson(GroupEntity instance) =>
       'isRoom': instance.isRoom,
       'ownerId': instance.ownerId,
       'uid': instance.uid,
+      'groupDescription': instance.groupDescription,
+      'canPostOnWall': instance.canPostOnWall,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

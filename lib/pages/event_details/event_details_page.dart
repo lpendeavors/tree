@@ -61,7 +61,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       initialData: _eventDetailsBloc.eventDetailsState$.value,
       builder: (context, snapshot) {
         var data = snapshot.data;
-        print(snapshot.data);
 
         return Scaffold(
           backgroundColor: Colors.white,

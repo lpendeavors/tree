@@ -23,6 +23,8 @@ import '../pages/event_details/event_details_page.dart';
 import '../pages/event_details/event_details_bloc.dart';
 import '../pages/event_edit/event_edit_page.dart';
 import '../pages/event_edit/event_edit_bloc.dart';
+import '../pages/chat_room_details/chat_room_details_page.dart';
+import '../pages/chat_room_details/chat_room_details_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -137,6 +139,24 @@ class MyApp extends StatelessWidget {
               );
             },
             eventType: args['eventType'],
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/chat_room_details') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatRoomDetailsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initRoomDetailsBloc: () {
+              return ChatRoomDetailsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                groupRepository: Injector.of(context).groupRepository,
+                postRepository: Injector.of(context).postRepository,
+                roomId: routerSettings.arguments as String,
+              );
+            },
           );
         }
       );

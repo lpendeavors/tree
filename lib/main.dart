@@ -15,6 +15,7 @@ import './data/notification/firestore_notification_repository_impl.dart';
 import './data/event/firestore_event_repository_impl.dart';
 import './data/group/firestore_group_repository_impl.dart';
 import './data/chat/firestore_chat_repository_impl.dart';
+import './data/comment/firestore_comment_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -43,6 +44,7 @@ Future<void> main() async {
   final eventRepository = FirestoreEventRepositoryImpl(firestore);
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
   final groupRepository = FirestoreGroupRepositoryImpl(firestore);
+  final commentRepository = FirestoreCommentRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   // runZoned(() {
@@ -55,6 +57,7 @@ Future<void> main() async {
         roomRepository: roomRepository,
         chatRepository: chatRepository,
         groupRepository: groupRepository,
+        commentRepository: commentRepository,
         child: BlocProvider<UserBloc>(
           bloc: userBloc,
           child: BlocProvider<LocaleBloc>(

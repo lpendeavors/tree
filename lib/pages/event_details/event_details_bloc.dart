@@ -12,7 +12,7 @@ import './event_details_state.dart';
 const _kInitialEventDetailsState = EventDetailsState(
   eventDetails: null,
   isLoading: true,
-  error: false,
+  error: null,
 );
 
 class EventDetailsBloc implements BaseBloc {

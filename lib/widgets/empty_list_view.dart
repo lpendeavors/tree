@@ -97,6 +97,7 @@ class EmptyListView extends StatelessWidget {
               ),
               Text(
                 description,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.black.withOpacity(0.5),
                   fontSize: 16,
