@@ -220,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(
                   fontFamily: 'NirmalaB',
                   fontWeight: FontWeight.bold,
-                  fontSize: 22,
+                  fontSize: 15,
                   color: Colors.white,
                 ),
               ),
