@@ -55,6 +55,7 @@ EventEntity _$EventEntityFromJson(Map<String, dynamic> json) {
     reason: json['reason'] as String,
     sponsorFee: (json['sponsorFee'] as num)?.toDouble(),
     status: json['status'] as int,
+    attending: (json['attending'] as List)?.map((e) => e as String)?.toList(),
   );
 }
 
@@ -102,6 +103,7 @@ Map<String, dynamic> _$EventEntityToJson(EventEntity instance) =>
       'userImage': instance.userImage,
       'username': instance.username,
       'visibility': instance.visibility,
+      'attending': instance.attending,
       'createAt': timestampToJson(instance.createAt),
       'updateAt': timestampToJson(instance.updateAt),
     };

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 const String FavoriteAnimation = "assets/flare/Favorite.flr";
 const String LikeAnimation = "assets/flare/likeAnimation.flr";
 
@@ -75,3 +77,11 @@ const String conference = "assets/images/conference.png";
 const String verified_icon = "assets/images/verified_icon.png";
 const String add_friend = "assets/images/add_friend.png";
 const String remove_friend = "assets/images/remove_friend.png";
+
+List<int> chatRoomColors = [
+  Colors.green.value,
+  Colors.purple.value,
+  Colors.blue.value,
+  Colors.yellow.value,
+  Colors.brown.value,
+];

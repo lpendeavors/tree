@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:rxdart/rxdart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../util/validation_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 ///
 /// BLoC

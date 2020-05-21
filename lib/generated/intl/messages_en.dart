@@ -21,17 +21,18 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m0(method) => "Use your ${method} to login";
 
-  static m1(entity) => "Sign Up as a ${entity}";
+  static m1(entity) => "Sign Up as a ${entity}?";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
     "already_have_an_account" : MessageLookupByLibrary.simpleMessage("Already have an account?"),
-    "app_title" : MessageLookupByLibrary.simpleMessage("Tree"),
+    "app_title" : MessageLookupByLibrary.simpleMessage("TREE"),
     "cancel" : MessageLookupByLibrary.simpleMessage("Cancel"),
     "chat_tab_title" : MessageLookupByLibrary.simpleMessage("Chat"),
-    "church" : MessageLookupByLibrary.simpleMessage("church"),
+    "church" : MessageLookupByLibrary.simpleMessage("Church"),
     "connections_empty_desc" : MessageLookupByLibrary.simpleMessage(""),
     "connections_empty_title" : MessageLookupByLibrary.simpleMessage("No Request Found"),
+    "create_account" : MessageLookupByLibrary.simpleMessage("Create Account"),
     "create_event_title" : MessageLookupByLibrary.simpleMessage("Create Event"),
     "describe_event" : MessageLookupByLibrary.simpleMessage("Briefly describe this event"),
     "email" : MessageLookupByLibrary.simpleMessage("email"),
@@ -76,11 +77,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "explore_posts_empty" : MessageLookupByLibrary.simpleMessage(""),
     "explore_search_hint" : MessageLookupByLibrary.simpleMessage("Search and discover"),
     "explore_tab_title" : MessageLookupByLibrary.simpleMessage("Explore"),
+    "f_name_hint" : MessageLookupByLibrary.simpleMessage("Enter First Name"),
     "forgot_password" : MessageLookupByLibrary.simpleMessage("Forgot your password?"),
     "getting_started_button" : MessageLookupByLibrary.simpleMessage("Get Started"),
     "getting_started_title" : MessageLookupByLibrary.simpleMessage("Life is Better Together"),
     "home_tab_title" : MessageLookupByLibrary.simpleMessage("Home"),
     "invalid_email_error" : MessageLookupByLibrary.simpleMessage("Invalid email address"),
+    "l_name_hint" : MessageLookupByLibrary.simpleMessage("Enter Last Name"),
     "login" : MessageLookupByLibrary.simpleMessage("Sign In"),
     "login_here" : MessageLookupByLibrary.simpleMessage("Login Here"),
     "login_method" : m0,
@@ -95,7 +98,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "or" : MessageLookupByLibrary.simpleMessage("OR"),
     "password" : MessageLookupByLibrary.simpleMessage("PASSWORD"),
     "password_hint" : MessageLookupByLibrary.simpleMessage("Enter Password"),
-    "person" : MessageLookupByLibrary.simpleMessage("person"),
+    "person" : MessageLookupByLibrary.simpleMessage("Person"),
     "phone" : MessageLookupByLibrary.simpleMessage("phone number"),
     "phone_login_success" : MessageLookupByLibrary.simpleMessage("Verification sent"),
     "phone_number_hint" : MessageLookupByLibrary.simpleMessage("(678) 324-4041"),
@@ -103,6 +106,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "phone_register_success" : MessageLookupByLibrary.simpleMessage("Verification sent"),
     "profile_tab_title" : MessageLookupByLibrary.simpleMessage("Profile"),
     "register_success" : MessageLookupByLibrary.simpleMessage("Sign Up Completed"),
+    "retype_hint" : MessageLookupByLibrary.simpleMessage("Retype Password"),
     "sign_up" : MessageLookupByLibrary.simpleMessage("Sign Up"),
     "sign_up_as" : m1,
     "sign_up_continue" : MessageLookupByLibrary.simpleMessage("Continue"),
@@ -112,6 +116,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verification_hint" : MessageLookupByLibrary.simpleMessage("We\'ll send you a text verification code"),
     "verification_message" : MessageLookupByLibrary.simpleMessage("Enter the 6 digit number sent to you"),
     "verification_resend" : MessageLookupByLibrary.simpleMessage("Resend code"),
+    "verification_title" : MessageLookupByLibrary.simpleMessage("Phone Verification"),
     "verify" : MessageLookupByLibrary.simpleMessage("Verify"),
     "view_map" : MessageLookupByLibrary.simpleMessage("View on map"),
     "weak_password_error" : MessageLookupByLibrary.simpleMessage("Password is too weak"),

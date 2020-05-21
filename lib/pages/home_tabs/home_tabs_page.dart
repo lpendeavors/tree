@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:treeapp/pages/chat_room/chat_room_bloc.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../data/room/firestore_room_repository.dart';
 import '../../data/user/firestore_user_repository.dart';
+import '../../data/group/firestore_group_repository.dart';
+import '../../data/chat/firestore_chat_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
-import '../chat/chat_page.dart';
+import '../chat/chat_tabs_page.dart';
+import '../chat/chat_tabs_bloc.dart';
 import '../explore/explore_bloc.dart';
 import '../explore/explore_tabs_page.dart';
 import '../profile/profile_bloc.dart';
@@ -19,6 +21,8 @@ class HomeTabsPage extends StatefulWidget {
   final FirestorePostRepository postRepository;
   final FirestoreUserRepository userRepository;
   final FirestoreRoomRepository roomRepository;
+  final FirestoreGroupRepository groupRepository;
+  final FirestoreChatRepository chatRepository;
 
   const HomeTabsPage({
     Key key,
@@ -26,6 +30,8 @@ class HomeTabsPage extends StatefulWidget {
     @required this.postRepository,
     @required this.roomRepository,
     @required this.userRepository,
+    @required this.groupRepository,
+    @required this.chatRepository,
   }) : super(key: key);
 
   @override
@@ -71,21 +77,26 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               userRepository: widget.userRepository,
             ),
           ),
-          ChatPage(
+          ChatTabsPage(
             userBloc: widget.userBloc,
-            chatRoomBloc: ChatRoomBloc(
+            chatBloc: ChatTabsBloc(
               userBloc: widget.userBloc,
-              roomRepository: widget.roomRepository,
+              groupRepository: widget.groupRepository,
             ),
           ),
-          ProfilePage(
-            isTab: true,
-            userBloc: widget.userBloc,
-            initProfileBloc: () => ProfileBloc(
-              userBloc: widget.userBloc,
-              userRepository: widget.userRepository,
-              userId: '123',
-            ),
+          // ProfilePage(
+          //   isTab: true,
+          //   userBloc: widget.userBloc,
+          //   initProfileBloc: () => ProfileBloc(
+          //     userBloc: widget.userBloc,
+          //     userRepository: widget.userRepository,
+          //     userId: '123',
+          //   ),
+          // ),
+          Container(
+            height: double.infinity,
+            width: double.infinity,
+            color: Colors.red,
           ),
         ],
       ),

@@ -51,6 +51,40 @@ class ExploreState extends Equatable {
 }
 
 @immutable
+class RequestItem extends Equatable {
+  final String id;
+
+  const RequestItem({
+    @required this.id,
+  });
+  
+  @override
+  List get props => [
+    id,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
+class SuggestionItem extends Equatable {
+  final String id;
+
+  const SuggestionItem({
+    @required this.id,
+  });
+
+  @override
+  List get props => [
+    id,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
 class ConnectionItem extends Equatable {
   final String id;
   final String fullName;

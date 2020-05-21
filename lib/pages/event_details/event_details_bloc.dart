@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
-import '../../models/event_entity.dart';
+import '../../models/old/event_entity.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './event_details_state.dart';
@@ -12,7 +12,7 @@ import './event_details_state.dart';
 const _kInitialEventDetailsState = EventDetailsState(
   eventDetails: null,
   isLoading: true,
-  error: false,
+  error: null,
 );
 
 class EventDetailsBloc implements BaseBloc {
@@ -145,22 +145,22 @@ class EventDetailsBloc implements BaseBloc {
   ) {
     return EventDetailItem(
       id: entity.documentId,
-      title: entity.title,
-      image: entity.owner.photo,
+      title: entity.eventTitle,
+      image: entity.image,
       attendees: [],
-      isMine: entity.owner.uid == (loginState as LoggedInUser).uid,
+      isMine: entity.uid == (loginState as LoggedInUser).uid,
       isRejected: entity.status == 2,
       reason: entity.reason,
       isAttending: false,
-      latitude: entity.location.lat,
-      longitude: entity.location.long,
+      latitude: entity.eventLatitude,
+      longitude: entity.eventLongitude,
       status: entity.status,
-      webAddress: entity.webAddress,
+      webAddress: entity.eventWebAddress,
       type: entity.type,
-      price: entity.cost,
-      location: entity.location.address,
-      details: entity.description,
-      isSponsored: entity.sponsored,
+      price: entity.eventPrice,
+      location: entity.location,
+      details: entity.eventDetails,
+      isSponsored: entity.isSponsored,
     );
   }
 

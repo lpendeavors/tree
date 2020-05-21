@@ -42,6 +42,7 @@ class PostEntity extends Equatable implements FirebaseModel {
   final String userImage;
   final String username;
   final int visibility;
+  final int time;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -88,6 +89,7 @@ class PostEntity extends Equatable implements FirebaseModel {
     this.type,
     this.userImage,
     this.username,
+    this.time,
   });
 
   String get id => this.documentId;
@@ -133,6 +135,7 @@ class PostEntity extends Equatable implements FirebaseModel {
       userImage,
       username,
       visibility,
+      time,
     ];
   }
 

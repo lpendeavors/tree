@@ -34,6 +34,8 @@ class CommentEntity extends Equatable implements FirebaseModel {
   final String userImage;
   final String username;
   final int visibility;
+  final bool isGIF;
+  final String imagePath;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -73,6 +75,8 @@ class CommentEntity extends Equatable implements FirebaseModel {
     this.likes,
     this.postId,
     this.updatedAt,
+    this.isGIF,
+    this.imagePath,
   });
 
   String get id => this.documentId;
@@ -111,6 +115,8 @@ class CommentEntity extends Equatable implements FirebaseModel {
       likes,
       postId,
       updatedAt,
+      isGIF,
+      imagePath,
     ];
   }
 }

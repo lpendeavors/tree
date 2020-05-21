@@ -1,5 +1,5 @@
 {
-  "app_title": "Tree",
+  "app_title": "TREE",
   
   "getting_started_title": "Life is Better Together",
   "getting_started_button": "Get Started",
@@ -21,14 +21,19 @@
 
   "sign_up": "Sign Up",
   "sign_up_continue": "Continue",
-  "sign_up_as": "Sign Up as a {entity}",
+  "sign_up_as": "Sign Up as a {entity}?",
   "enter_phone_number": "Enter your mobile number",
   "phone_number_hint": "(678) 324-4041",
   "phone_number_mask": "(000) 000-0000",
   "phone_register_success": "Verification sent",
   "register_success": "Sign Up Completed",
+  "f_name_hint": "Enter First Name",
+  "l_name_hint": "Enter Last Name",
+  "retype_hint": "Retype Password",
+
 
   "verification": "Verification",
+  "verification_title": "Phone Verification",
   "verification_message": "Enter the 6 digit number sent to you",
   "verification_resend": "Resend code",
   "verification_hint": "We'll send you a text verification code",
@@ -91,8 +96,8 @@
   "phone": "phone number",
   "verify": "Verify",
   "or": "OR",
-  "church": "church",
-  "person": "person",
+  "church": "Church",
+  "person": "Person",
   "events": "Events",
   "view_map": "View on map",
   "cancel": "Cancel",
@@ -100,5 +105,6 @@
   "home_tab_title": "Home",
   "explore_tab_title": "Explore",
   "chat_tab_title": "Chat",
-  "profile_tab_title": "Profile"
+  "profile_tab_title": "Profile",
+  "create_account": "Create Account"
 }

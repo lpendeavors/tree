@@ -4,7 +4,7 @@ import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
-import '../../models/event_entity.dart';
+import '../../models/old/event_entity.dart';
 import './events_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -95,9 +95,9 @@ class EventsBloc implements BaseBloc {
         })
         .map((eventItems) {
           return _kInitialEventsListState.copyWith(
-            eventItems: eventItems,
-            myEvents: eventItems.where((event) => event.ownerId == loginState.uid).toList(),
             isLoading: false,
+            eventItems: eventItems,
+            myEvents: _getEventsImAttending(eventItems, loginState.uid),
           );
         })
         .startWith(_kInitialEventsListState)
@@ -123,13 +123,15 @@ class EventsBloc implements BaseBloc {
     return entities.map((entity) {
       return EventItem(
         id: entity.id,
-        title: entity.title,
-        details: entity.description,
-        ownerId: entity.owner.uid,
-        image: entity.owner.photo,
-        location: entity.location.address,
+        title: entity.eventTitle,
+        details: entity.eventDetails,
+        ownerId: entity.uid,
+        image: entity.image,
+        location: entity.location,
         eventType: entity.type,
-        startDate: entity.startDate.toDate(),
+        startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
+        isSponsored: entity.isSponsored,
+        isAttending: entity.attending,
       );
     }).toList();
   }
@@ -144,5 +146,22 @@ class EventsBloc implements BaseBloc {
         eventRepository,
       );
     });
+  }
+
+  static List<EventItem> _getEventsImAttending(
+    List<EventItem> events,
+    String uid,
+  ) {
+    if (events.isNotEmpty) {
+      return events.where((event) {
+        if (event.isAttending != null) {
+          return event.isAttending.contains(uid);
+        } else {
+          return false;
+        }
+      }).toList();
+    } else {
+      return [];
+    }
   }
 }

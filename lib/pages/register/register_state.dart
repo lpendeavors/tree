@@ -15,6 +15,10 @@ class RegisterPhoneSuccess implements RegisterMessage {
   const RegisterPhoneSuccess(this.verificationId);
 }
 
+class RegisterMessageComplete implements RegisterMessage {
+  const RegisterMessageComplete();
+}
+
 class RegisterMessageError implements RegisterMessage {
   final RegisterError error;
   const RegisterMessageError(this.error);
@@ -82,7 +86,10 @@ abstract class EmailError {}
 abstract class PasswordError {}
 
 @immutable
-abstract class FullNameError {}
+abstract class FirstNameError {}
+
+@immutable
+abstract class LastNameError {}
 
 @immutable
 abstract class PhoneError {}
@@ -102,10 +109,18 @@ class PasswordMustBeAtLeast6Characters implements PasswordError {
   const PasswordMustBeAtLeast6Characters();
 }
 
+class PasswordsMustMatch implements PasswordError {
+  const PasswordsMustMatch();
+}
+
 class InvalidEmailAddress implements EmailError {
   const InvalidEmailAddress();
 }
 
-class FullNameMustBeAtLeast3Characters implements FullNameError {
-  const FullNameMustBeAtLeast3Characters();
+class FirstNameMustBeAtLeast2Characters implements FirstNameError {
+  const FirstNameMustBeAtLeast2Characters();
+}
+
+class LastNameMustBeAtLeast2Characters implements LastNameError {
+  const LastNameMustBeAtLeast2Characters();
 }

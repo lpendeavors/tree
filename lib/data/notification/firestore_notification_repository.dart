@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import '../../models/notification_entity.dart';
+import '../../models/old/notification_entity.dart';
 
 abstract class FirestoreNotificationRepository {
   Stream<NotificationEntity> getById({

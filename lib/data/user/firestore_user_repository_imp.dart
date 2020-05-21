@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../models/user_entity.dart';
+import '../../models/old/user_entity.dart';
 
 class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   final FirebaseAuth _firebaseAuth;
@@ -22,7 +22,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Stream<List<UserEntity>> get() {
     return _firestore
-      .collection('(users)')
+      .collection('userBase')
       .snapshots()
       .map(_toEntities);
   }
@@ -64,18 +64,25 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> registerWithPhone({
-    String phone,
-    String uid
+    FirebaseUser user,
+    String email,
+    String firstName,
+    String lastName,
+    String password
   }) async {
-    print(
-        '[USER_REPO] registerWithPhone phone=${phone}'
-    );
+    print('[USER_REPO] registerWithPhone phone=${user.phoneNumber}');
+    AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
+    user.linkWithCredential(emailCredential);
 
     await _updateUserData(
-      uid,
+      user.uid,
       <String, dynamic>{
         'joined': FieldValue.serverTimestamp(),
-        'phone': phone
+        'phone': user.phoneNumber,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'password': password
       }
     );
 
@@ -83,7 +90,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   Future<void> _updateUserData(String uid, [Map<String, dynamic> addition]) {
-    return _firestore.document('(users)/${uid}').setData(addition, merge: true);
+    return _firestore.document('userBase/${uid}').setData(addition, merge: true);
   }
 
   @override
@@ -108,15 +115,15 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Stream<UserEntity> user() {
     return _firebaseAuth.onAuthStateChanged
-        .switchMap((user) => _getUserByUid$(user?.uid));
+      .switchMap((user) => _getUserByUid$(user?.uid));
   }
 
   Stream<UserEntity> _getUserByUid$(String uid) {
     if (uid == null) {
       return null;
     }
-    return _firestore.collection('(users)').document(uid).snapshots().map(
-        (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
+    return _firestore.collection('userBase').document(uid).snapshots().map(
+      (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
   }
 
   @override
@@ -141,9 +148,19 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     String verificationId
   ) async {
     AuthCredential credential = PhoneAuthProvider
-        .getCredential(verificationId: verificationId, smsCode: smsCode);
+      .getCredential(verificationId: verificationId, smsCode: smsCode);
 
     return _firebaseAuth.signInWithCredential(credential)
-        .catchError((error) => Future.error(error));
+      .catchError((error) => Future.error(error));
+  }
+
+  @override
+  Stream<List<UserEntity>> getSuggestions() {
+    return _firestore
+      .collection('userBase')
+      .limit(15)
+      .orderBy('time', descending: true)
+      .snapshots()
+      .map(_toEntities);
   }
 }

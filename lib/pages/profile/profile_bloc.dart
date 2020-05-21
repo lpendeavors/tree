@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../models/user_entity.dart';
+import '../../models/old/user_entity.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './profile_state.dart';

@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
 import '../bloc/bloc_provider.dart';
 import '../dependency_injection.dart';
+import '../pages/splash/splash_page.dart';
 import '../pages/login/login_page.dart';
 import '../pages/register/register_page.dart';
 import '../pages/getting_started/getting_started_page.dart';
@@ -21,7 +23,8 @@ import '../pages/event_details/event_details_page.dart';
 import '../pages/event_details/event_details_bloc.dart';
 import '../pages/event_edit/event_edit_page.dart';
 import '../pages/event_edit/event_edit_bloc.dart';
-import '../pages/explore/explore_tabs_page.dart';
+import '../pages/chat_room_details/chat_room_details_page.dart';
+import '../pages/chat_room_details/chat_room_details_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -29,7 +32,8 @@ class MyApp extends StatelessWidget {
   final appTheme = ThemeData(
     primarySwatch: Colors.green,
     primaryColor: Color(0xFF6CA748),
-    indicatorColor: Color(0xff5c4eb2)
+    indicatorColor: Color(0xff5c4eb2),
+    fontFamily: poppinBold,
   );
 
   final appRoutes = <String, WidgetBuilder>{
@@ -38,7 +42,14 @@ class MyApp extends StatelessWidget {
         userBloc: BlocProvider.of<UserBloc>(context),
         postRepository: Injector.of(context).postRepository,
         roomRepository: Injector.of(context).roomRepository,
-        userRepository: Injector.of(context).userRepository
+        userRepository: Injector.of(context).userRepository,
+        chatRepository: Injector.of(context).chatRepository,
+        groupRepository: Injector.of(context).groupRepository,
+      );
+    },
+    '/splash': (context) {
+      return SplashPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
       );
     },
     '/login': (context) {
@@ -54,9 +65,7 @@ class MyApp extends StatelessWidget {
       );
     },
     '/getting_started': (context) {
-      return GettingStartedPage(
-        userBloc: BlocProvider.of<UserBloc>(context),
-      );
+      return GettingStartedPage();
     },
     '/notifications': (context) {
       return NotificationsPage(
@@ -134,6 +143,24 @@ class MyApp extends StatelessWidget {
         }
       );
     }
+
+    if (routerSettings.name == '/chat_room_details') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatRoomDetailsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initRoomDetailsBloc: () {
+              return ChatRoomDetailsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                groupRepository: Injector.of(context).groupRepository,
+                postRepository: Injector.of(context).postRepository,
+                roomId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
   };
 
   @override
@@ -172,7 +199,7 @@ class MyApp extends StatelessWidget {
               ),
             );
           },
-          initialRoute: '/getting_started',
+          initialRoute: '/splash',
           routes: appRoutes,
           onGenerateRoute: onGenerateRoute,
         );

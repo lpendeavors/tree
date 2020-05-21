@@ -39,9 +39,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              widget.connectionItem.isChurch
-                                ? widget.connectionItem.church
-                                : widget.connectionItem.fullName
+                              'name'
                             ),
                             
                           ],

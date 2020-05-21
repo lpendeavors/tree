@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestore_notification_repository.dart';
-import '../../models/notification_entity.dart';
+import '../../models/old/notification_entity.dart';
 
 class FirestoreNotificationRepositoryImpl implements FirestoreNotificationRepository {
   final Firestore _firestore;
@@ -10,7 +10,7 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<List<NotificationEntity>> get() {
     return _firestore
-        .collection('(notifications)')
+        .collection('notificationBase')
         .orderBy('date', descending: true)
         .snapshots()
         .map(_toEntities);
@@ -19,7 +19,7 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<NotificationEntity> getById({String notificationId}) {
     return _firestore
-        .collection('(notifications)')
+        .collection('notificationBase')
         .document(notificationId)
         .snapshots()
         .map((snapshot) => NotificationEntity.fromDocumentSnapshot(snapshot));
@@ -40,10 +40,10 @@ class FirestoreNotificationRepositoryImpl implements FirestoreNotificationReposi
   @override
   Stream<List<NotificationEntity>> getByOwner(String ownerId) {
     return _firestore
-        .collection('(notifications)')
-        .where('senderId', isEqualTo: ownerId)
+        .collection('notificationBase')
+        .where('ownerId', isEqualTo: ownerId)
         .limit(15)
-        .orderBy('date', descending: true)
+        .orderBy('time', descending: true)
         .snapshots()
         .map(_toEntities);
   }

@@ -53,6 +53,7 @@ class EventEntity extends Equatable implements FirebaseModel {
   final String userImage;
   final String username;
   final int visibility;
+  final List<String> attending;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -110,6 +111,7 @@ class EventEntity extends Equatable implements FirebaseModel {
     this.reason,
     this.sponsorFee,
     this.status,
+    this.attending,
   });
 
   String get id => this.documentId;
@@ -166,6 +168,7 @@ class EventEntity extends Equatable implements FirebaseModel {
       reason,
       sponsorFee,
       status,
+      attending,
     ];
   }
 

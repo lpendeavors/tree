@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:flutter/material.dart';
 import './phone_verification_state.dart';
 import '../../widgets/app_bar.dart';
 import '../../widgets/curved_scaffold.dart';
 import '../../generated/l10n.dart';
 import './phone_verification_bloc.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
-import 'package:flutter/material.dart';
 
 class PhoneVerificationPage extends StatefulWidget {
   final PhoneVerificationBloc Function() initPhoneVerificationBloc;
@@ -47,7 +47,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
     return CurvedScaffold(
       curveRadius: 25,
       appBar: TreeAppBar(
-        title: s.login,
+        title: s.verification_title,
         backButton: true,
       ),
       body: Container(

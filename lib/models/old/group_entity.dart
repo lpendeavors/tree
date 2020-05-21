@@ -12,35 +12,38 @@ part 'group_entity.g.dart';
 @JsonSerializable(explicitToJson: true)
 class GroupEntity extends Equatable implements FirebaseModel {
   final String documentId;
-  final bool isAdmin;
-  final String churchName;
-  final String country;
-  final String creatorsMessage;
-  final String databaseName;
-  final String docId;
-  final String email;
-  final String fullName;
-  final int gender;
+  final bool byAdmin;
+  // final String churchName;
+  // final String country;
+  // final String creatorsMessage;
+  // final String databaseName;
+  // final String docId;
+  // final String email;
+  final String groupName;
+  // final int gender;
   final String groupId;
+  final String groupImage;
   final List<GroupMember> groupMembers;
   final String image;
-  final bool isChurch;
+  // final bool isChurch;
   final bool isConversation;
   final bool isGroup;
   final bool isGroupPrivate;
   final bool isRoom;
-  final bool isVerified;
+  // final bool isVerified;
   final String ownerId;
-  final String phoneNo;
-  final String pushNotificationToken;
-  final List<String> searchData;
-  final int time;
-  final int timeUpdated;
-  final String tokenID;
+  // final String phoneNo;
+  // final String pushNotificationToken;
+  // final List<String> searchData;
+  // final int time;
+  // final int timeUpdated;
+  // final String tokenID;
   final String uid;
-  final String userImage;
-  final String username;
-  final int visibility;
+  // final String userImage;
+  // final String username;
+  // final int visibility;
+  final String groupDescription;
+  final bool canPostOnWall;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -57,35 +60,38 @@ class GroupEntity extends Equatable implements FirebaseModel {
     this.createdAt,
     this.updatedAt,
     this.ownerId,
-    this.isAdmin,
+    this.byAdmin,
     this.documentId,
-    this.timeUpdated,
-    this.churchName,
-    this.databaseName,
-    this.fullName,
-    this.isChurch,
-    this.isVerified,
-    this.phoneNo,
-    this.pushNotificationToken,
-    this.userImage,
-    this.visibility,
-    this.tokenID,
-    this.searchData,
-    this.time,
-    this.email,
+    // this.timeUpdated,
+    // this.churchName,
+    // this.databaseName,
+    this.groupName,
+    // this.isChurch,
+    // this.isVerified,
+    // this.phoneNo,
+    // this.pushNotificationToken,
+    // this.userImage,
+    // this.visibility,
+    // this.tokenID,
+    // this.searchData,
+    // this.time,
+    // this.email,
     this.image,
-    this.username,
+    // this.username,
     this.uid,
-    this.gender,
-    this.docId,
+    // this.gender,
+    // this.docId,
     this.isRoom,
-    this.country,
+    // this.country,
     this.isGroup,
-    this.creatorsMessage,
+    // this.creatorsMessage,
     this.groupId,
+    this.groupImage,
     this.groupMembers,
+    this.groupDescription,
     this.isConversation,
     this.isGroupPrivate,
+    this.canPostOnWall,
   });
 
   String get id => this.documentId;
@@ -101,35 +107,38 @@ class GroupEntity extends Equatable implements FirebaseModel {
       createdAt,
       updatedAt,
       ownerId,
-      isAdmin,
+      byAdmin,
       documentId,
-      timeUpdated,
-      churchName,
-      databaseName,
-      fullName,
-      isChurch,
-      isVerified,
-      phoneNo,
-      pushNotificationToken,
-      userImage,
-      visibility,
-      tokenID,
-      searchData,
-      time,
-      email,
+      // timeUpdated,
+      // churchName,
+      // databaseName,
+      groupName,
+      // isChurch,
+      // isVerified,
+      // phoneNo,
+      // pushNotificationToken,
+      // userImage,
+      // visibility,
+      // tokenID,
+      // searchData,
+      // time,
+      // email,
       image,
-      username,
+      // username,
       uid,
-      gender,
-      docId,
+      // gender,
+      // docId,
       isRoom,
-      country,
-      isGroup,
-      creatorsMessage,
+      // country,
+      // isGroup,
+      // creatorsMessage,
       groupId,
+      groupImage,
       groupMembers,
       isConversation,
       isGroupPrivate,
+      groupDescription,
+      canPostOnWall,
     ];
   }
 

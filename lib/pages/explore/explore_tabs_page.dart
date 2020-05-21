@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:treeapp/pages/explore/widgets/explore_posts_tab.dart';
-
+import '../../pages/explore/widgets/explore_posts_tab.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';

@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import '../../models/event_entity.dart';
+import '../../models/old/event_entity.dart';
 
 abstract class FirestoreEventRepository {
   Stream<EventEntity> getById(String eventId);
