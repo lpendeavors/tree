@@ -52,14 +52,29 @@ class ProfileState extends Equatable {
 @immutable
 class ProfileItem extends Equatable {
   final String id;
+  final String photo;
+  final bool isVerified;
+  final bool isChurch;
+  final String fullName;
+  final String churchName;
 
   const ProfileItem({
     @required this.id,
+    @required this.photo,
+    @required this.isVerified,
+    @required this.isChurch,
+    @required this.fullName,
+    @required this.churchName,
   });
 
   @override
   List get props => [
     id,
+    photo,
+    isVerified,
+    isChurch,
+    fullName,
+    churchName
   ];
 
   @override

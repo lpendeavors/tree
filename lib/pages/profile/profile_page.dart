@@ -55,200 +55,198 @@ class _ProfilePageState extends State<ProfilePage> {
       initialData: _profileBloc.profileState$.value,
       builder: (context, snapshot) {
         var data = snapshot.data;
-        print(snapshot.data);
-
-
 
         return Scaffold(
-          body: ListView(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  _appBar(),
-                  _profile(),
-                ],
-              ),
-            ],
+          body: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                _appBar(data),
+                //_profile(),
+              ],
+            ),
           ),
         );
       }
     );
   }
 
-  Widget _appBar() {
-    return InkWell(
-      onTap: () {
-        // Add or view image
-      },
-      child: Container(
-        height: 300,
-        child: Stack(
-          children: <Widget>[
-            Align(
-              alignment: Alignment.center,
-              child: Image(
-                image: CacheImage(''),
-                height: 300,
-                width: MediaQuery.of(context).size.width,
-                alignment: Alignment.center,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Container(
-              height: 300,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.1),
-                    Colors.black.withOpacity(0.9),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _appBar(ProfileState data) {
+    print(data.profile.toString());
+    return Column(
+      children: <Widget>[
+        InkWell(
+          onTap: () {
+            // Add or view image
+          },
+          child: Container(
+            height: 300,
+            child: Stack(
               children: <Widget>[
-                if (widget.isTab) ...[
-                  SafeArea(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.more_vert,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/settings');
-                        },
-                      ),
-                    ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Image(
+                    image: CacheImage(data.profile.photo),
+                    height: 300,
+                    width: MediaQuery.of(context).size.width,
+                    alignment: Alignment.center,
+                    fit: BoxFit.cover,
                   ),
-                ],
-                if (!widget.isTab) ...[
-                  SafeArea(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        BackButton(
-                          color: Colors.white,
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.more_vert,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            // Connect, report, block
-                          },
-                        ),
+                ),
+                Container(
+                  height: 300,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.1),
+                        Colors.black.withOpacity(0.9),
                       ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
-                ],
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 15, 
-                    right: 15, 
-                    bottom: 10
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(
-                              child: Text(
-                                'Chuch or name',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    if (widget.isTab) ...[
+                      SafeArea(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
                             ),
-                            SizedBox(width: 5),
-                            // TODO: if verified show verified icon
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/settings');
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (!widget.isTab) ...[
+                      SafeArea(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            BackButton(
+                              color: Colors.white,
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                // Connect, report, block
+                              },
+                            ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ],
+                    Padding(
+                      padding: EdgeInsets.only(left: 15, right: 15, bottom: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
-                          RaisedButton(
-                            color: Colors.white,
-                            onPressed: () {
-
-                            },
-                            padding: EdgeInsets.only(
-                              left: 10,
-                              right: 10,
-                              top: 5,
-                              bottom: 5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              side: BorderSide(
-                                width: 1,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                            child: Text(
-                              '0 Shares',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 11,
-                                color: Theme.of(context).primaryColor,
-                              ),
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: Text(
+                                        data.profile.isChurch ? data.profile.churchName : data.profile.fullName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'NirmalaB'
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 5),
+                                    if(data.profile.isVerified) ...[Image.asset(
+                                      verified_icon,
+                                      height: 25,
+                                      width: 25,
+                                      color: Color(0xFF9CC83F),
+                                    )]
+                                  ],
+                                ),
+                                SizedBox(height: 5),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        RaisedButton(
+                                          color: Colors.white,
+                                          onPressed: () {},
+                                          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5),
+                                            side: BorderSide(
+                                              width: 1,
+                                              color: Theme.of(context).primaryColor,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '0 Shares',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 11,
+                                              color: Theme.of(context).primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        RaisedButton(
+                                          onPressed: () {
+                                            // TODO: view connections
+                                          },
+                                          color: Colors.white,
+                                          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            side: BorderSide(
+                                              width: 1,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '0 Connections',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 11,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    // TODO: show connect button
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(width: 10),
-                          RaisedButton(
-                            color: Colors.white,
-                            padding: EdgeInsets.only(
-                              left: 10,
-                              right: 10,
-                              top: 5,
-                              bottom: 5,
-                            ),
-                            onPressed: () {
-                              // TODO: view connections
-                            },
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(
-                                width: 1,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            child: Text(
-                              '',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 11,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ),
-                          // TODO: show connect button
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -292,3 +290,14 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+
+/*
+* Data needed
+* Number of connections
+* Number of shares
+*
+*
+* Variables
+* myProfile
+* areFriends
+* */

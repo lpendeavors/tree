@@ -35,11 +35,14 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
         ?.toList(),
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
+    image: json['image'] as String,
     visibility: json['visibility'] as int,
     myChatList13: (json['myChatList13'] as List)
         ?.map((e) =>
             e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
         ?.toList(),
+    churchName: json['churchName'] as String,
+    isVerified: json['isVerified'] as bool,
   );
 }
 
@@ -50,7 +53,9 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'firstName': instance.firstName,
       'lastName': instance.lastName,
       'fullName': instance.fullName,
+      'churchName': instance.churchName,
       'isChurch': instance.isChurch,
+      'isVerified': instance.isVerified,
       'isOnline1': instance.isOnline1,
       'isPublic': instance.isPublic,
       'newApp1': instance.newApp1,
@@ -64,6 +69,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'treeTrophies': instance.treeTrophies?.map((e) => e?.toJson())?.toList(),
       'trophyCreated': instance.trophyCreated,
       'uid': instance.uid,
+      'image': instance.image,
       'visibility': instance.visibility,
       'time': instance.time,
       'timeOnline': instance.timeOnline,

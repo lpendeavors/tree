@@ -84,15 +84,15 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               groupRepository: widget.groupRepository,
             ),
           ),
-          // ProfilePage(
-          //   isTab: true,
-          //   userBloc: widget.userBloc,
-          //   initProfileBloc: () => ProfileBloc(
-          //     userBloc: widget.userBloc,
-          //     userRepository: widget.userRepository,
-          //     userId: '123',
-          //   ),
-          // ),
+          ProfilePage(
+            isTab: true,
+            userBloc: widget.userBloc,
+            initProfileBloc: () => ProfileBloc(
+              userBloc: widget.userBloc,
+              userRepository: widget.userRepository,
+              userId: null
+            ),
+          ),
           Container(
             height: double.infinity,
             width: double.infinity,

@@ -17,7 +17,9 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String firstName;
   final String lastName;
   final String fullName;
+  final String churchName;
   final bool isChurch;
+  final bool isVerified;
   final int isOnline1;
   final bool isPublic;
   final bool newApp1;
@@ -31,6 +33,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<Trophy> treeTrophies;
   final bool trophyCreated;
   final String uid;
+  final String image;
   final int visibility;
   final int time;
   final int timeOnline;
@@ -77,8 +80,11 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.treeTrophies,
     this.trophyCreated,
     this.uid,
+    this.image,
     this.visibility,
     this.myChatList13,
+    this.churchName,
+    this.isVerified
   });
 
   String get id => this.documentId;
@@ -117,6 +123,9 @@ class UserEntity extends Equatable implements FirebaseModel {
       uid,
       visibility,
       myChatList13,
+      image,
+      isVerified,
+      churchName
     ];
   }
 

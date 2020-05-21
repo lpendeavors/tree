@@ -73,7 +73,7 @@ class TreeInputField extends StatelessWidget {
                 FocusScope.of(context).requestFocus(nextFocusNode);
               }
             },
-            controller: hasMask ? new MaskedTextController(mask: mask) : null,
+            controller: hasMask ? MaskedTextController(mask: mask) : null,
             focusNode: selfFocusNode != null ? selfFocusNode : null,
           ),
         ),
