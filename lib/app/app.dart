@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:treeapp/pages/forgot_password/forgot_password_page.dart';
+import '../pages/forgot_password/forgot_password_page.dart';
 import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';

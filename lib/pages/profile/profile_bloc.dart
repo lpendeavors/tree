@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/church_info.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
@@ -92,7 +93,7 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getUserById(uid: userId ?? 'uIBYeBlFp9Y1hJAszJ4ccvbeShB3')
+      return userRepository.getUserById(uid: userId ?? 'cYLJqVLN4vWGVVFBSooRHYtggmo2')
         .map((entity) {
           return _entityToProfileItem(
             entity,
@@ -132,7 +133,18 @@ class ProfileBloc implements BaseBloc {
       isChurch: entity.isChurch,
       isVerified: entity.isVerified,
       fullName: entity.fullName,
-      churchName: entity.churchName
+      churchName: entity.churchName,
+      connections: entity.connections,
+      shares: entity.shares,
+      trophies: entity.treeTrophies,
+      type: entity.type,
+      churchDenomination: entity.churchDenomination,
+      churchAddress: entity.churchAddress,
+      aboutMe: entity.aboutMe,
+      title: entity.title,
+      city: entity.city,
+      relationStatus: entity.relationStatus,
+      churchInfo: entity.churchInfo
     );
   }
 

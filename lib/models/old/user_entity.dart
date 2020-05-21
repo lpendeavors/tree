@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/church_info.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './user_chat_data.dart';
@@ -39,6 +40,16 @@ class UserEntity extends Equatable implements FirebaseModel {
   final int timeOnline;
   final int timeUpdated;
   final List<ChatData> myChatList13;
+  final List<String> connections;
+  final List<String> shares;
+  final int type;
+  final String churchDenomination;
+  final String churchAddress;
+  final String aboutMe;
+  final String title;
+  final String city;
+  final String relationStatus;
+  final ChurchInfo churchInfo;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -84,7 +95,17 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.visibility,
     this.myChatList13,
     this.churchName,
-    this.isVerified
+    this.isVerified,
+    this.connections,
+    this.shares,
+    this.type,
+    this.churchDenomination,
+    this.churchAddress,
+    this.aboutMe,
+    this.title,
+    this.city,
+    this.relationStatus,
+    this.churchInfo
   });
 
   String get id => this.documentId;
@@ -125,7 +146,17 @@ class UserEntity extends Equatable implements FirebaseModel {
       myChatList13,
       image,
       isVerified,
-      churchName
+      churchName,
+      connections,
+      shares,
+      type,
+      churchDenomination,
+      churchAddress,
+      aboutMe,
+      title,
+      city,
+      relationStatus,
+      churchInfo
     ];
   }
 
