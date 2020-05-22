@@ -61,10 +61,11 @@ class TreeInputField extends StatelessWidget {
               hintText: hintText,
               hintStyle: TextStyle(
                 fontFamily: 'Nirmala',
-                fontSize: 17,
+                fontSize: 20,
                 color: Colors.black.withOpacity(0.2),
               ),
             ),
+            style: TextStyle(fontSize: 20),
             onChanged: onChange,
             onSubmitted: (_) {
               selfFocusNode.unfocus();

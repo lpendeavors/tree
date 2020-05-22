@@ -8,8 +8,8 @@ bool isValidEmail(String email) {
   return RegExp(_emailRegExpString, caseSensitive: false).hasMatch(email);
 }
 
-bool isValidFullName(String name) {
-  return name.length >= 3;
+bool isValidName(String name) {
+  return name.length >= 2;
 }
 
 bool isPhoneNumberValid(String phone) {

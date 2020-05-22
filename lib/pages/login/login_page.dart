@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:treeapp/pages/phone_verification/phone_verification_state.dart';
 
 import './email_login_bloc.dart';
 import './phone_login_bloc.dart';
@@ -15,6 +14,7 @@ import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../generated/l10n.dart';
 import '../../models/country.dart';
+import '../../pages/phone_verification/phone_verification_state.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -135,7 +135,9 @@ class _LoginPageState extends State<LoginPage> {
                           inputType: TextInputType.phone,
                           inputAction: TextInputAction.done,
                           hintText: s.phone_number_hint,
-                          onChange: _phoneLoginBloc.phoneNumberChanged
+                          onChange: _phoneLoginBloc.phoneNumberChanged,
+                          hasMask: true,
+                          mask: s.phone_number_mask,
                         ),
                       ),
                     ),

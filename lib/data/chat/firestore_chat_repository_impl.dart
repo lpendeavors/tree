@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:treeapp/models/old/chat_entity.dart';
+import '../../models/old/chat_entity.dart';
 import '../../data/chat/firestore_chat_repository.dart';
 
 class FirestoreChatRepositoryImpl implements FirestoreChatRepository{

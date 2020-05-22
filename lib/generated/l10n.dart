@@ -200,7 +200,7 @@ class S {
 
   String sign_up_as(Object entity) {
     return Intl.message(
-      'Sign Up as a $entity',
+      'Sign Up as a $entity?',
       name: 'sign_up_as',
       desc: '',
       args: [entity],
@@ -252,10 +252,46 @@ class S {
     );
   }
 
+  String get f_name_hint {
+    return Intl.message(
+      'Enter First Name',
+      name: 'f_name_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get l_name_hint {
+    return Intl.message(
+      'Enter Last Name',
+      name: 'l_name_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get retype_hint {
+    return Intl.message(
+      'Retype Password',
+      name: 'retype_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get verification {
     return Intl.message(
       'Verification',
       name: 'verification',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get verification_title {
+    return Intl.message(
+      'Phone Verification',
+      name: 'verification_title',
       desc: '',
       args: [],
     );
@@ -767,7 +803,7 @@ class S {
 
   String get church {
     return Intl.message(
-      'church',
+      'Church',
       name: 'church',
       desc: '',
       args: [],
@@ -776,7 +812,7 @@ class S {
 
   String get person {
     return Intl.message(
-      'person',
+      'Person',
       name: 'person',
       desc: '',
       args: [],
@@ -841,6 +877,15 @@ class S {
     return Intl.message(
       'Profile',
       name: 'profile_tab_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get create_account {
+    return Intl.message(
+      'Create Account',
+      name: 'create_account',
       desc: '',
       args: [],
     );

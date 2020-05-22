@@ -64,18 +64,25 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> registerWithPhone({
-    String phone,
-    String uid
+    FirebaseUser user,
+    String email,
+    String firstName,
+    String lastName,
+    String password
   }) async {
-    print(
-      '[USER_REPO] registerWithPhone phone=${phone}'
-    );
+    print('[USER_REPO] registerWithPhone phone=${user.phoneNumber}');
+    AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
+    user.linkWithCredential(emailCredential);
 
     await _updateUserData(
-      uid,
+      user.uid,
       <String, dynamic>{
         'joined': FieldValue.serverTimestamp(),
-        'phone': phone
+        'phone': user.phoneNumber,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'password': password
       }
     );
 

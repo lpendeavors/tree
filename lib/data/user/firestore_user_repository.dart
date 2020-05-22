@@ -35,8 +35,11 @@ abstract class FirestoreUserRepository {
   });
 
   Future<void> registerWithPhone({
-    @required String uid,
-    @required String phone,
+    @required FirebaseUser user,
+    @required String email,
+    @required String firstName,
+    @required String lastName,
+    @required String password
   });
 
   Future<void> sendPasswordResetEmail(String email);

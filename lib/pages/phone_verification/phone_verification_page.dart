@@ -47,7 +47,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
     return CurvedScaffold(
       curveRadius: 25,
       appBar: TreeAppBar(
-        title: s.login,
+        title: s.verification_title,
         backButton: true,
       ),
       body: Container(

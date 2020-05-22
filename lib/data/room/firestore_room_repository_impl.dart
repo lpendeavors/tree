@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../models/room_entity.dart';
+import '../../models/new/room_entity.dart';
 import 'package:tuple/tuple.dart';
 import './firestore_room_repository.dart';
 
