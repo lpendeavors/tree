@@ -25,6 +25,8 @@ import '../pages/event_edit/event_edit_page.dart';
 import '../pages/event_edit/event_edit_bloc.dart';
 import '../pages/chat_room_details/chat_room_details_page.dart';
 import '../pages/chat_room_details/chat_room_details_bloc.dart';
+import '../pages/chat_room/chat_room_page.dart';
+import '../pages/chat_room/chat_room_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -154,6 +156,24 @@ class MyApp extends StatelessWidget {
                 userBloc: BlocProvider.of<UserBloc>(context),
                 groupRepository: Injector.of(context).groupRepository,
                 postRepository: Injector.of(context).postRepository,
+                roomId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/chat_room') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatRoomPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initChatRoomBloc: () {
+              return ChatRoomBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                chatRepository: Injector.of(context).chatRepository,
+                groupRepository: Injector.of(context).groupRepository,
                 roomId: routerSettings.arguments as String,
               );
             },

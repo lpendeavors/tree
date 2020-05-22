@@ -14,4 +14,6 @@ abstract class FirestoreChatRepository {
     String uid,
     List<String> chatIds,
   });
+
+  Stream<List<ChatEntity>> getByGroup(String groupId);
 }
