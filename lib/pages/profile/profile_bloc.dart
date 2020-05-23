@@ -2,19 +2,24 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:treeapp/models/old/church_info.dart';
+import '../../data/post/firestore_post_repository.dart';
+import '../../models/old/post_entity.dart';
+import '../../pages/feed/feed_state.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './profile_state.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
 
 
 const _kInitialProfileState = ProfileState(
   profile: null,
   isLoading: true,
   error: false,
+  feedItems: []
 );
 
 class ProfileBloc implements BaseBloc {
@@ -40,14 +45,16 @@ class ProfileBloc implements BaseBloc {
 
   factory ProfileBloc({
     @required UserBloc userBloc,
-    @required FirestoreUserRepository userRepository,
     @required String userId,
+    @required FirestoreUserRepository userRepository,
+    @required FirestorePostRepository postRepository,
   }) {
     ///
     /// Assert
     /// 
     assert(userBloc != null, 'userBloc cannot be null');
     assert(userRepository != null, 'userRepository cannot be null');
+    assert(postRepository != null, 'postRepository cannot be null');
 
     ///
     /// Stream controllers
@@ -59,8 +66,9 @@ class ProfileBloc implements BaseBloc {
     /// 
     final profileState$ = _getProfile(
       userBloc,
-      userRepository,
       userId,
+      userRepository,
+      postRepository
     ).publishValueSeeded(_kInitialProfileState);
 
     final subscriptions = <StreamSubscription>[
@@ -78,41 +86,73 @@ class ProfileBloc implements BaseBloc {
   @override
   void dispose() => _dispose();
 
+  static List<FeedItem> _entitiesToFeedItems(
+      List<PostEntity> entities,
+      ) {
+    return entities.map((entity) {
+      return FeedItem(
+        id: entity.documentId,
+        tags: entity.tags,
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+        message: entity.postMessage,
+        name: entity.fullName != null ? entity.fullName : entity.churchName,
+        userImage: entity.image,
+        isPoll: entity.type == PostType.poll.index,
+        postImages: _getPostImages(entity),
+      );
+    }).toList();
+  }
+
+  static List<String> _getPostImages(PostEntity entity) {
+    List<String> images = List<String>();
+
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        images = entity.postData.map((data) => data.imageUrl).toList();
+      }
+    }
+
+    return images;
+  }
+
   static Stream<ProfileState> _toState(
     LoginState loginState,
-    FirestoreUserRepository userRepository,
     String userId,
+    FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
         _kInitialProfileState.copyWith(
-          error: NotLoggedInError(),
+          error: ProfileNotLoggedInError(),
           isLoading: false,
         ),
       );
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getUserById(uid: userId ?? 'cYLJqVLN4vWGVVFBSooRHYtggmo2')
-        .map((entity) {
-          return _entityToProfileItem(
-            entity,
-            loginState,
-          );
-        })
-        .map((profileItem) {
+      return Rx.zip2(
+        userRepository.getUserById(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
+        postRepository.postsByOwner(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
+        (user, posts){
+          var profile = _entityToProfileItem(user, loginState);
+          var userPosts = _entitiesToFeedItems(posts);
+
           return _kInitialProfileState.copyWith(
-            profile: profileItem,
+            feedItems: userPosts,
+            profile: profile,
             isLoading: false,
           );
-        })
-        .startWith(_kInitialProfileState)
-        .onErrorReturnWith((e) {
-          return _kInitialProfileState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+        }
+      )
+      .startWith(_kInitialProfileState)
+      .onErrorReturnWith((e) {
+        return _kInitialProfileState.copyWith(
+          error: e,
+          isLoading: false,
+        );
+      });
     }
 
     return Stream.value(
@@ -129,13 +169,14 @@ class ProfileBloc implements BaseBloc {
   ) {
     return ProfileItem(
       id: entity.documentId,
-      photo: entity.image,
-      isChurch: entity.isChurch,
-      isVerified: entity.isVerified,
+      uid: entity.uid,
+      photo: entity.image ?? "",
+      isChurch: entity.isChurch ?? false,
+      isVerified: entity.isVerified ?? false,
       fullName: entity.fullName,
       churchName: entity.churchName,
-      connections: entity.connections,
-      shares: entity.shares,
+      connections: entity.connections ?? [],
+      shares: entity.shares ?? [],
       trophies: entity.treeTrophies,
       type: entity.type,
       churchDenomination: entity.churchDenomination,
@@ -144,20 +185,28 @@ class ProfileBloc implements BaseBloc {
       title: entity.title,
       city: entity.city,
       relationStatus: entity.relationStatus,
-      churchInfo: entity.churchInfo
+      churchInfo: entity.churchInfo,
+
+      //Variables
+      myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
+      isFriend: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.connections ?? []).contains(loginState.uid),
+      sent: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.receivedRequests ?? []).contains(loginState.uid),
+      received: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.sentRequests ?? []).contains(loginState.uid)
     );
   }
 
   static Stream<ProfileState> _getProfile(
     UserBloc userBloc,
-    FirestoreUserRepository userRepository,
     String userId,
+    FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
         loginState,
-        userRepository,
         userId,
+        userRepository,
+        postRepository
       );
     });
   }

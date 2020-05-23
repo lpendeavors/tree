@@ -56,6 +56,10 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     churchInfo: json['churchInfo'] == null
         ? null
         : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
+    sentRequests:
+        (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
+    receivedRequests:
+        (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
   );
 }
 
@@ -98,6 +102,8 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'city': instance.city,
       'relationStatus': instance.relationStatus,
       'churchInfo': instance.churchInfo?.toJson(),
+      'receivedRequests': instance.receivedRequests,
+      'sentRequests': instance.sentRequests,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

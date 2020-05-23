@@ -2,6 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/trophies/trophies_bloc.dart';
+import 'package:treeapp/pages/trophies/trophies_page.dart';
+import 'package:treeapp/pages/trophy_info/trophy_info_bloc.dart';
+import 'package:treeapp/pages/trophy_info/trophy_info_page.dart';
+import '../pages/connections/connections_bloc.dart';
+import '../pages/connections/connections_page.dart';
 import '../pages/forgot_password/forgot_password_page.dart';
 import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
@@ -166,6 +172,54 @@ class MyApp extends StatelessWidget {
             },
           );
         }
+      );
+    }
+
+    if (routerSettings.name == '/connections') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return ConnectionsPage(
+              initConnectionsBloc: () {
+                return ConnectionsBloc(
+                  userBloc: BlocProvider.of<UserBloc>(context),
+                  userId: routerSettings.arguments as String,
+                  userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
+      );
+    }
+
+    if (routerSettings.name == '/trophies') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return TrophiesPage(
+              initTrophiesBloc: () {
+                return TrophiesBloc(
+                  userBloc: BlocProvider.of<UserBloc>(context),
+                  userId: routerSettings.arguments as String,
+                  userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
+      );
+    }
+
+    if (routerSettings.name == '/trophy_info') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return TrophyInfoPage(
+              initTrophyInfoBloc: () {
+                return TrophyInfoBloc(
+                    userBloc: BlocProvider.of<UserBloc>(context),
+                    trophyKey: routerSettings.arguments as String,
+                    userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
       );
     }
   };

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
+import 'package:flutter/services.dart';
+import '../../pages/feed/widgets/feed_list_item.dart';
 import '../../models/old/trophy.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -57,16 +59,24 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, snapshot) {
         var data = snapshot.data;
 
-        return Scaffold(
-          body: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                _appBar(data),
-                _profile(data),
-              ],
+        if(!data.isLoading){
+          return Scaffold(
+            body: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Column(
+                children: <Widget>[
+                  _appBar(data),
+                  _profile(data),
+                  _recentPostList(data)
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
       }
     );
   }
@@ -76,12 +86,23 @@ class _ProfilePageState extends State<ProfilePage> {
       children: <Widget>[
         InkWell(
           onTap: () {
-            // Add or view image
+            // TODO: action
           },
           child: Container(
             height: 300,
             child: Stack(
               children: <Widget>[
+                Container(
+                  height: 300,
+                  color: Theme.of(context).primaryColor,
+                  child: Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 100,
+                      color: Colors.white70,
+                    )
+                  ),
+                ),
                 Align(
                   alignment: Alignment.center,
                   child: Image(
@@ -110,7 +131,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    if (widget.isTab) ...[
+                    if (data.profile.myProfile) ...[
                       SafeArea(
                         child: Align(
                           alignment: Alignment.centerRight,
@@ -126,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ],
-                    if (!widget.isTab) ...[
+                    if (!data.profile.myProfile) ...[
                       SafeArea(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,7 +230,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         SizedBox(width: 10),
                                         RaisedButton(
                                           onPressed: () {
-                                            // TODO: view connections
+                                            Navigator.of(context).pushNamed(
+                                              '/connections',
+                                              arguments: data.profile.uid,
+                                            );
                                           },
                                           color: Colors.white,
                                           padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
@@ -230,8 +254,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ),
                                         ),
                                       ],
-                                    )
-                                    // TODO: show connect button
+                                    ),
+                                    _connectButton(data.profile)
                                   ],
                                 ),
                               ],
@@ -246,6 +270,38 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
+        if(!data.profile.myProfile && data.profile.isFriend)
+          RaisedButton(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Icon(
+                      Icons.chat_bubble,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Send Direct Message",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+                Icon(
+                  Icons.navigate_next,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 15,
+                ),
+              ],
+            ),
+            color: Theme.of(context).primaryColor,
+            onPressed: () {
+              //TODO: action
+            }
+          ),
         Container(
           child: Column(
             children: <Widget>[
@@ -273,15 +329,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    GestureDetector(
+                    InkWell(
                       onTap: () {
-                        //TODO: Open Trophy Page
+                        Navigator.of(context).pushNamed(
+                          '/trophies',
+                          arguments: data.profile.uid,
+                        );
                       },
-                      child: Text(
-                        "View Trophies",
-                        style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 4.0, right: 4.0),
+                        child: Text(
+                          "View Trophies",
+                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor),
+                        ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -303,7 +365,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       onTap: () {
-                        //TODO: Trophy Details
+                        Navigator.of(context).pushNamed(
+                            '/trophy_info',
+                            arguments: trophy.trophyKey
+                        );
                       },
                       radius: 10,
                       borderRadius: BorderRadius.circular(10),
@@ -365,6 +430,112 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _connectButton(ProfileItem profileItem) {
+    bool connected = profileItem.isFriend;
+    bool received = profileItem.received;
+    bool sent = profileItem.sent;
+
+    if (received) {
+      return RaisedButton(
+        onPressed: () {
+          //TODO: action
+        },
+        color: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.check, color: Colors.white, size: 15),
+            SizedBox(width: 5),
+            Text(
+              "Respond",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (connected) {
+      return RaisedButton(
+        onPressed: () {
+          //TODO: action
+        },
+        color: Colors.red,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.remove_circle, color: Colors.white, size: 15),
+            SizedBox(width: 5),
+            Text(
+              "UnConnect",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (sent) {
+      return RaisedButton(
+        onPressed: () {
+          //TODO: action
+        },
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.pause_circle_filled, color: Theme.of(context).primaryColor, size: 15),
+            SizedBox(width: 5),
+            Text(
+              "Pending",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Theme.of(context).primaryColor
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RaisedButton(
+      onPressed: () {
+        //TODO: action
+      },
+      color: Theme.of(context).primaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.add_circle, color: Colors.white, size: 15),
+          SizedBox(width: 5),
+          Text(
+            "Connect",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.white
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _profile(ProfileState data) {
     return Column(
       children: <Widget>[
@@ -380,7 +551,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             child: Column(
               children: <Widget>[
-                SizedBox(height: 10),
                 Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -394,6 +564,49 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      if (data.profile.myProfile) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text.rich(TextSpan(children: [
+                              TextSpan(
+                                text: "Church ID:  ",
+                                style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(.5))
+                              ),
+                              TextSpan(
+                                text: data.profile.uid.substring(0, 7).toUpperCase(),
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                              ),
+                            ])),
+                            //Flexible(child: Text(userModel.getString(TIME_UPDATED))),
+                            RaisedButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: data.profile.uid.substring(0, 7).toUpperCase()));
+                              },
+                              color: Colors.blue,
+                              padding:
+                              EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(width: 1, color: Colors.blue),
+                              ),
+                              child: Text(
+                                "Copy",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 11,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black12,
+                          margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        ),
+                      ],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
@@ -561,6 +774,35 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _recentPostList(ProfileState data) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        if(data.feedItems.length > 0) ...[
+          Container(
+              padding: EdgeInsets.all(15),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Posts",
+                style: TextStyle(
+                    color: Colors.black.withOpacity(0.4),
+                    fontWeight: FontWeight.bold
+                ),
+              )
+          ),
+          ...List.generate(
+            data.feedItems.length,
+            (index) {
+              return FeedListItem(
+                feedItem: data.feedItems[index],
+              );
+            }
+          )
+        ]
       ],
     );
   }

@@ -10,6 +10,10 @@ abstract class FirestorePostRepository {
     @required String uid,
   });
 
+  Stream<List<PostEntity>> postsByOwner({
+    @required String uid,
+  });
+
   Stream<List<PostEntity>> getByGroup(String postId);
 
   Stream<List<PostEntity>> postsForCollage();
