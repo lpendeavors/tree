@@ -61,11 +61,11 @@ class TreeInputField extends StatelessWidget {
               hintText: hintText,
               hintStyle: TextStyle(
                 fontFamily: 'Nirmala',
-                fontSize: 20,
+                fontSize: 18,
                 color: Colors.black.withOpacity(0.2),
               ),
             ),
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(fontSize: 18),
             onChanged: onChange,
             onSubmitted: (_) {
               selfFocusNode.unfocus();
@@ -73,7 +73,7 @@ class TreeInputField extends StatelessWidget {
                 FocusScope.of(context).requestFocus(nextFocusNode);
               }
             },
-            controller: hasMask ? new MaskedTextController(mask: mask) : null,
+            controller: hasMask ? MaskedTextController(mask: mask) : null,
             focusNode: selfFocusNode != null ? selfFocusNode : null,
           ),
         ),

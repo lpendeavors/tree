@@ -18,7 +18,9 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String firstName;
   final String lastName;
   final String fullName;
+  final String churchName;
   final bool isChurch;
+  final bool isVerified;
   final int isOnline1;
   final bool isPublic;
   final bool newApp1;
@@ -32,6 +34,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<Trophy> treeTrophies;
   final bool trophyCreated;
   final String uid;
+  final String image;
   final int visibility;
   final int time;
   final int timeOnline;
@@ -40,7 +43,16 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<String> receivedRequests;
   final List<String> sentRequests;
   final ChurchInfo churchInfo;
-  final String image;
+  final List<ChatData> myChatList13;
+  final List<String> connections;
+  final List<String> shares;
+  final int type;
+  final String churchDenomination;
+  final String churchAddress;
+  final String aboutMe;
+  final String title;
+  final String city;
+  final String relationStatus;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -82,12 +94,24 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.treeTrophies,
     this.trophyCreated,
     this.uid,
+    this.image,
     this.visibility,
     this.myChatsList13,
     this.receivedRequests,
     this.sentRequests,
     this.churchInfo,
-    this.image,
+    this.myChatList13,
+    this.churchName,
+    this.isVerified,
+    this.connections,
+    this.shares,
+    this.type,
+    this.churchDenomination,
+    this.churchAddress,
+    this.aboutMe,
+    this.title,
+    this.city,
+    this.relationStatus,
   });
 
   String get id => this.documentId;
@@ -129,7 +153,19 @@ class UserEntity extends Equatable implements FirebaseModel {
       receivedRequests,
       sentRequests,
       churchInfo,
+      myChatList13,
       image,
+      isVerified,
+      churchName,
+      connections,
+      shares,
+      type,
+      churchDenomination,
+      churchAddress,
+      aboutMe,
+      title,
+      city,
+      relationStatus,
     ];
   }
 

@@ -35,6 +35,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
         ?.toList(),
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
+    image: json['image'] as String,
     visibility: json['visibility'] as int,
     myChatsList13: (json['myChatsList13'] as List)
         ?.map((e) =>
@@ -47,7 +48,22 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     churchInfo: json['churchInfo'] == null
         ? null
         : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
-    image: json['image'] as String,
+    myChatList13: (json['myChatList13'] as List)
+        ?.map((e) =>
+            e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
+    churchName: json['churchName'] as String,
+    isVerified: json['isVerified'] as bool,
+    connections:
+        (json['connections'] as List)?.map((e) => e as String)?.toList(),
+    shares: (json['shares'] as List)?.map((e) => e as String)?.toList(),
+    type: json['type'] as int,
+    churchDenomination: json['churchDenomination'] as String,
+    churchAddress: json['churchAddress'] as String,
+    aboutMe: json['aboutMe'] as String,
+    title: json['title'] as String,
+    city: json['city'] as String,
+    relationStatus: json['relationStatus'] as String,
   );
 }
 
@@ -58,7 +74,9 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'firstName': instance.firstName,
       'lastName': instance.lastName,
       'fullName': instance.fullName,
+      'churchName': instance.churchName,
       'isChurch': instance.isChurch,
+      'isVerified': instance.isVerified,
       'isOnline1': instance.isOnline1,
       'isPublic': instance.isPublic,
       'newApp1': instance.newApp1,
@@ -72,6 +90,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'treeTrophies': instance.treeTrophies?.map((e) => e?.toJson())?.toList(),
       'trophyCreated': instance.trophyCreated,
       'uid': instance.uid,
+      'image': instance.image,
       'visibility': instance.visibility,
       'time': instance.time,
       'timeOnline': instance.timeOnline,
@@ -81,7 +100,16 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'receivedRequests': instance.receivedRequests,
       'sentRequests': instance.sentRequests,
       'churchInfo': instance.churchInfo?.toJson(),
-      'image': instance.image,
+      'myChatList13': instance.myChatList13?.map((e) => e?.toJson())?.toList(),
+      'connections': instance.connections,
+      'shares': instance.shares,
+      'type': instance.type,
+      'churchDenomination': instance.churchDenomination,
+      'churchAddress': instance.churchAddress,
+      'aboutMe': instance.aboutMe,
+      'title': instance.title,
+      'city': instance.city,
+      'relationStatus': instance.relationStatus,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

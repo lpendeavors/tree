@@ -1,6 +1,6 @@
 {
   "app_title": "TREE",
-  
+
   "getting_started_title": "Life is Better Together",
   "getting_started_button": "Get Started",
   "already_have_an_account": "Already have an account?",
@@ -38,6 +38,9 @@
   "verification_resend": "Resend code",
   "verification_hint": "We'll send you a text verification code",
   "forgot_password": "Forgot your password?",
+  "password_reset_tip": "We'll email you instructions to reset your password",
+  "password_reset_success": "Password reset email sent!",
+  "password_reset_confirm": "Send Email",
 
   "network_error": "A network error occurred",
   "too_many_requests_error": "An error occurred. Too many requests",
