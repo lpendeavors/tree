@@ -36,10 +36,18 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
     visibility: json['visibility'] as int,
-    myChatList13: (json['myChatList13'] as List)
+    myChatsList13: (json['myChatsList13'] as List)
         ?.map((e) =>
             e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
         ?.toList(),
+    receivedRequests:
+        (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
+    sentRequests:
+        (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
+    churchInfo: json['churchInfo'] == null
+        ? null
+        : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
+    image: json['image'] as String,
   );
 }
 
@@ -68,7 +76,12 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'time': instance.time,
       'timeOnline': instance.timeOnline,
       'timeUpdated': instance.timeUpdated,
-      'myChatList13': instance.myChatList13?.map((e) => e?.toJson())?.toList(),
+      'myChatsList13':
+          instance.myChatsList13?.map((e) => e?.toJson())?.toList(),
+      'receivedRequests': instance.receivedRequests,
+      'sentRequests': instance.sentRequests,
+      'churchInfo': instance.churchInfo?.toJson(),
+      'image': instance.image,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

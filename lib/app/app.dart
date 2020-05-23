@@ -130,6 +130,7 @@ class MyApp extends StatelessWidget {
       return MaterialPageRoute(
         builder: (context) {
           Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+
           return EventEditPage(
             userBloc: BlocProvider.of<UserBloc>(context),
             initEventEditBloc: () {
@@ -167,6 +168,11 @@ class MyApp extends StatelessWidget {
     if (routerSettings.name == '/chat_room') {
       return MaterialPageRoute(
         builder: (context) {
+          Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+
+          print(args['roomId']);
+          print(args['isGroup']);
+
           return ChatRoomPage(
             userBloc: BlocProvider.of<UserBloc>(context),
             initChatRoomBloc: () {
@@ -174,7 +180,8 @@ class MyApp extends StatelessWidget {
                 userBloc: BlocProvider.of<UserBloc>(context),
                 chatRepository: Injector.of(context).chatRepository,
                 groupRepository: Injector.of(context).groupRepository,
-                roomId: routerSettings.arguments as String,
+                roomId: args['roomId'],
+                isGroup: args['isGroup'],
               );
             },
           );

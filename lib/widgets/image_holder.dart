@@ -31,7 +31,7 @@ class ImageHolder extends StatelessWidget {
                     child: Icon(
                       Icons.person,
                       color: Colors.white,
-                      size: size,
+                      size: size / 3,
                     ),
                   ),
                 ),

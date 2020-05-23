@@ -64,4 +64,10 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository{
       .snapshots()
       .map(_toEntities);
   }
+
+  @override
+  Stream<List<ChatEntity>> getByChat(String roomId) {
+    // TODO: implement getByChat
+    throw UnimplementedError();
+  }
 }

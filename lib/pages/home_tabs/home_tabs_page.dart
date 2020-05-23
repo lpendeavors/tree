@@ -82,6 +82,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             chatBloc: ChatTabsBloc(
               userBloc: widget.userBloc,
               groupRepository: widget.groupRepository,
+              chatRepository: widget.chatRepository,
             ),
           ),
           // ProfilePage(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cache_image/cache_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../widgets/empty_list_view.dart';
@@ -332,21 +333,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () {
+                        // Container(
+                        //   height: 50,
+                        //   width: 50,
+                        //   child: FlatButton(
+                        //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        //     onPressed: () {
 
-                            },
-                            child: Icon(
-                              Icons.keyboard,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
+                        //     },
+                        //     child: Icon(
+                        //       Icons.keyboard,
+                        //       size: 20,
+                        //       color: Colors.black.withOpacity(0.5),
+                        //     ),
+                        //   ),
+                        // ),
+                        SizedBox(width: 15),
                         Flexible(
                           flex: 1,
                           child: ConstrainedBox(
@@ -355,7 +357,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             ),
                             child: TextField(
                               onChanged: (text) {
-                                // TODO: set message
+                                // TODO: set message in BLoC
+
                                 print(text);
                               },
                               cursorWidth: 1,
@@ -370,6 +373,63 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   color: Colors.black,
                                 ),
                               ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () async {
+                              var path = await FilePicker.getFilePath();
+                              
+                              print(path);
+                            },
+                            child: Icon(
+                              Icons.attach_file,
+                              size: 20,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () async {
+                              // var media = await ImagePickers.pickerPaths(
+                              //   galleryMode: GalleryMode.image,
+                              //   selectCount: 1,
+                              //   showCamera: true,
+                              //   compressSize: 300,
+                              //   uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
+                              //   cropConfig: CropConfig(enableCrop: true, width: 10, height: 10),
+                              // );
+
+                              // print(media);
+                            },
+                            child: Icon(
+                              Icons.photo,
+                              size: 20,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () async {
+                              // var files = await PhotoPicker.pickAsset();
+                              
+                            },
+                            child: Icon(
+                              Icons.video_library,
+                              size: 20,
+                              color: Colors.black.withOpacity(0.5),
                             ),
                           ),
                         ),
@@ -448,9 +508,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       case MessageType.video:
         messageWidget = Container();
         break;
-      case MessageType.doc:
-        messageWidget = Container();
-        break;
       case MessageType.gif:
         messageWidget = Container();
         break;
@@ -522,9 +579,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         messageWidget = Container();
         break;
       case MessageType.video:
-        messageWidget = Container();
-        break;
-      case MessageType.doc:
         messageWidget = Container();
         break;
       case MessageType.gif:

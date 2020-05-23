@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../generated/l10n.dart';
 import '../../../widgets/empty_list_view.dart';
 import '../explore_state.dart';
@@ -53,23 +54,37 @@ class ExplorePostsTab extends StatelessWidget {
             );
           }
 
-          return ListView.separated(
-            itemCount: data.postItems.length,
-            physics: BouncingScrollPhysics(),
+          // return ListView.separated(
+          //   itemCount: data.postItems.length,
+          //   physics: BouncingScrollPhysics(),
+          //   shrinkWrap: true,
+          //   itemBuilder: (context, index) {
+          //     return PostListItem(
+          //       postItem: data.postItems[index],
+          //     );
+          //   },
+          //   separatorBuilder: (context, index) {
+          //     return Align(
+          //       alignment: Alignment.centerRight,
+          //       child: Container(
+          //         height: 0.5,
+          //         width: MediaQuery.of(context).size.width,
+          //         child: Divider(),
+          //       ),
+          //     );
+          //   },
+          // );
+
+          return StaggeredGridView.countBuilder(
             shrinkWrap: true,
+            crossAxisCount: 3,
+            itemCount: data.postItems.length,
+            staggeredTileBuilder: (index) {
+              return StaggeredTile.count(1, 2);
+            },
             itemBuilder: (context, index) {
               return PostListItem(
                 postItem: data.postItems[index],
-              );
-            },
-            separatorBuilder: (context, index) {
-              return Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  height: 0.5,
-                  width: MediaQuery.of(context).size.width,
-                  child: Divider(),
-                ),
               );
             },
           );

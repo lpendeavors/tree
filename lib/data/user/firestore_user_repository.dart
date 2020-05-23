@@ -10,7 +10,7 @@ abstract class FirestoreUserRepository {
 
   Stream<List<UserEntity>> get();
 
-  Stream<List<UserEntity>> getSuggestions();
+  Stream<List<UserEntity>> getConnections();
 
   Future<void> signOut();
 

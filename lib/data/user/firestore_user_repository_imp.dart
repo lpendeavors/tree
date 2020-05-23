@@ -155,10 +155,11 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Stream<List<UserEntity>> getSuggestions() {
+  Stream<List<UserEntity>> getConnections() {
     return _firestore
       .collection('userBase')
-      .limit(15)
+      .where('isChurch', isEqualTo: false)
+      .limit(50)
       .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
