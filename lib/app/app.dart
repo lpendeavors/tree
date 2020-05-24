@@ -30,6 +30,7 @@ import '../pages/chat_room/chat_room_page.dart';
 import '../pages/chat_room/chat_room_bloc.dart';
 import '../pages/chat_settings/chat_settings_page.dart';
 import '../pages/chat_settings/chat_settings_bloc.dart';
+import '../pages/settings/settings_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -99,6 +100,9 @@ class MyApp extends StatelessWidget {
     '/event_types': (context) {
       return EventTypesPage();
     },
+    '/settings': (context) {
+      return SettingsPage();
+    }
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
