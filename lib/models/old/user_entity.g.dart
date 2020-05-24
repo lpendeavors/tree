@@ -64,6 +64,10 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     title: json['title'] as String,
     city: json['city'] as String,
     relationStatus: json['relationStatus'] as String,
+    chatNotification: json['chatNotification'] as bool,
+    chatOnlineStatus: json['chatOnlineStatus'] as bool,
+    groupNotification: json['groupNotification'] as bool,
+    messageNotification: json['messageNotification'] as bool,
   );
 }
 
@@ -110,6 +114,10 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'title': instance.title,
       'city': instance.city,
       'relationStatus': instance.relationStatus,
+      'chatNotification': instance.chatNotification,
+      'chatOnlineStatus': instance.chatOnlineStatus,
+      'groupNotification': instance.groupNotification,
+      'messageNotification': instance.messageNotification,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

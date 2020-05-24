@@ -120,13 +120,14 @@ class EventsBloc implements BaseBloc {
   static List<EventItem> _entitiesToEventItems(
     List<EventEntity> entities,
   ) {
+    entities.sort((a, b) => a.eventStartDate.compareTo(b.eventStartDate));
     return entities.map((entity) {
       return EventItem(
         id: entity.id,
         title: entity.eventTitle,
         details: entity.eventDetails,
         ownerId: entity.uid,
-        image: entity.image,
+        image: entity.eventData[0].imageUrl,
         location: entity.location,
         eventType: entity.type,
         startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),

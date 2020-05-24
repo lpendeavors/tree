@@ -20,6 +20,8 @@ const String maugostImage = "https://bit.ly/2BgMD85";
 
 const String notification_icon = "assets/images/notification_icon.png";
 const String post_icon = "assets/images/post_icon.png";
+const String poll_icon = "assets/images/poll_icon.png";
+const String event_icon = "assets/images/event_icon.png";
 const String thankyou = "assets/images/thankyou.png";
 const String gifIcon = "assets/images/gifIcon.png";
 const String world = "assets/images/world.png";

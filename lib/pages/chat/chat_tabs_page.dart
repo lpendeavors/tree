@@ -103,7 +103,9 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
                       Icons.more_vert,
                     ),
                     onPressed: () {
-                      // TODO: show chat settings
+                      Navigator.of(context).pushNamed(
+                        '/chat_settings',
+                      );
                     },
                   ),
                 ],

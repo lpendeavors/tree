@@ -57,6 +57,12 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, snapshot) {
         var data = snapshot.data;
 
+        if (data.isLoading) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
         return Scaffold(
           body: SingleChildScrollView(
             child: Column(
@@ -82,29 +88,35 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 300,
             child: Stack(
               children: <Widget>[
-                Align(
-                  alignment: Alignment.center,
-                  child: Image(
-                    image: CacheImage(data.profile.photo),
-                    height: 300,
-                    width: MediaQuery.of(context).size.width,
-                    alignment: Alignment.center,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Container(
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.1),
-                        Colors.black.withOpacity(0.9),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                Stack(
+                  children: <Widget>[
+                    Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(0.1),
+                            Colors.black.withOpacity(0.9),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (data.profile.photo != null) ...[
+                      Align(
+                        alignment: Alignment.center,
+                        child: Image(
+                          image: CacheImage(data.profile.photo),
+                          height: 300,
+                          width: MediaQuery.of(context).size.width,
+                          alignment: Alignment.center,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,28 +426,28 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                       SizedBox(height: 8),
-                      _bioRow(church_icon, data.profile.churchName ?? "", isAsset: true, color: Theme.of(context).primaryColor),
+                      _bioRow(church_icon, data.profile.churchName, isAsset: true, color: Theme.of(context).primaryColor),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.add_circle, data.profile.churchDenomination ?? "", color: Colors.purple),
+                      _bioRow(Icons.add_circle, data.profile.churchDenomination, color: Colors.purple),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.location_on, data.profile.churchAddress ?? "", color: Colors.blue),
+                      _bioRow(Icons.location_on, data.profile.churchAddress, color: Colors.blue),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.info, data.profile.aboutMe ?? "", color: Colors.orange)
+                      _bioRow(Icons.info, data.profile.aboutMe, color: Colors.orange)
                     ],
                   ),
                 ),
@@ -553,7 +565,7 @@ class _ProfilePageState extends State<ProfilePage> {
         SizedBox(width: 5),
         Flexible(
           child: Text(
-            title ?? 'error',
+            title,
             style: TextStyle(
               color: Colors.black.withOpacity(0.7),
               fontSize: 13,

@@ -45,4 +45,12 @@ abstract class FirestoreUserRepository {
   Future<void> sendPasswordResetEmail(String email);
 
   Stream<UserEntity> getUserById({@required String uid});
+
+  Future<void> saveNotifications({
+    @required String user,
+    @required bool messages,
+    @required bool chat,
+    @required bool group,
+    @required bool online,
+  });
 }

@@ -28,6 +28,8 @@ import '../pages/chat_room_details/chat_room_details_page.dart';
 import '../pages/chat_room_details/chat_room_details_bloc.dart';
 import '../pages/chat_room/chat_room_page.dart';
 import '../pages/chat_room/chat_room_bloc.dart';
+import '../pages/chat_settings/chat_settings_page.dart';
+import '../pages/chat_settings/chat_settings_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -177,9 +179,6 @@ class MyApp extends StatelessWidget {
         builder: (context) {
           Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
 
-          print(args['roomId']);
-          print(args['isGroup']);
-
           return ChatRoomPage(
             userBloc: BlocProvider.of<UserBloc>(context),
             initChatRoomBloc: () {
@@ -189,6 +188,22 @@ class MyApp extends StatelessWidget {
                 groupRepository: Injector.of(context).groupRepository,
                 roomId: args['roomId'],
                 isGroup: args['isGroup'],
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/chat_settings') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatSettingsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initChatSettingsBloc: () {
+              return ChatSettingsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userRepository: Injector.of(context).userRepository,
               );
             },
           );

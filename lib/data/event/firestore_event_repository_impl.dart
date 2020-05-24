@@ -14,9 +14,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
 
     return _firestore
       .collection('eventBase')
-      .where('eventStartDate', isGreaterThanOrEqualTo: yesterday)
-      .limit(15)
-      .orderBy('eventStartDate')
+      // .where('eventStartDate', isGreaterThanOrEqualTo: yesterday)
       .snapshots()
       .map(_toEntities);
   }
@@ -35,7 +33,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     return _firestore
       .collection('eventBase')
       .where('ownerId', isEqualTo: ownerId)
-      .orderBy('eventStartDate')
+      // .orderBy('eventStartDate')
       .snapshots()
       .map(_toEntities);
   }

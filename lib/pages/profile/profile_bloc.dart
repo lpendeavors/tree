@@ -93,7 +93,7 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getUserById(uid: userId ?? 'cYLJqVLN4vWGVVFBSooRHYtggmo2')
+      return userRepository.getUserById(uid: userId)
         .map((entity) {
           return _entityToProfileItem(
             entity,
@@ -131,19 +131,19 @@ class ProfileBloc implements BaseBloc {
       id: entity.documentId,
       photo: entity.image,
       isChurch: entity.isChurch,
-      isVerified: entity.isVerified,
+      isVerified: entity.isVerified ?? false,
       fullName: entity.fullName,
-      churchName: entity.churchName,
+      churchName: entity.churchName ?? "NONE",
       connections: entity.connections,
-      shares: entity.shares,
+      shares: entity.shares ?? [],
       trophies: entity.treeTrophies,
       type: entity.type,
-      churchDenomination: entity.churchDenomination,
-      churchAddress: entity.churchAddress,
-      aboutMe: entity.aboutMe,
-      title: entity.title,
-      city: entity.city,
-      relationStatus: entity.relationStatus,
+      churchDenomination: entity.churchDenomination ?? 'NONE',
+      churchAddress: entity.churchAddress ?? 'NONE',
+      aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
+      title: entity.title ?? 'NONE',
+      city: entity.city ?? 'NONE',
+      relationStatus: entity.relationStatus ?? 'NONE',
       churchInfo: entity.churchInfo
     );
   }
