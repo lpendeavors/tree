@@ -160,7 +160,7 @@ class ChatRoomBloc implements BaseBloc {
         sentDate: DateTime.fromMillisecondsSinceEpoch(entity.time),
         message: entity.message,
         image: entity.image,
-        name: entity.isChurch ? entity.churchName : entity.fullName,
+        name: entity.fullName,
       );
     }).toList();
   }
