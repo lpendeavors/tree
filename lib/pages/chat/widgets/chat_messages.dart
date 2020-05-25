@@ -90,7 +90,7 @@ class _ChatMessagesState extends State<ChatMessages> {
       onTap: () {
         Map<String, dynamic> chatRoomArgs = {
           'roomId': message.roomId,
-          'isGroup': message.isGroup,
+          'isRoom': message.isRoom,
         };
 
         Navigator.of(context).pushNamed(

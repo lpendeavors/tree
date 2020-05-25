@@ -45,7 +45,7 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _exploreBloc.dispose();
-    print('_ExploreTabsPageState#dispose');
+    print('[DEBUG] _ExploreTabsPageState#dispose');
 
     super.dispose();
   }

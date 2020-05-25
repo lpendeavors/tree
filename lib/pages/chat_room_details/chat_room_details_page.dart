@@ -46,7 +46,7 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
 
   @override
   void dispose() {
-    print('[DEBUG] ChatRoomDetailsState#dispose');
+    print('[DEBUG] _ChatRoomDetailsState#dispose');
     _subscriptions.forEach((s) => s.cancel());
     _roomDetailsBloc.dispose();
     super.dispose();
@@ -341,7 +341,7 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                     '/chat_room',
                     arguments: <String, dynamic>{
                       'roomId': data.chatRoomDetails.id,
-                      'isGroup': false,
+                      'isRoom': true,
                     },
                   );
                 }

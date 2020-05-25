@@ -44,7 +44,7 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
 
   @override
   void dispose() {
-    print('[DEBUG] ChatSettingsState#dispose');
+    print('[DEBUG] _ChatSettingsState#dispose');
     _subscriptions.forEach((s) => s.cancel());
     _chatSettingsBloc.dispose();
     super.dispose();

@@ -134,6 +134,7 @@ class FeedBloc implements BaseBloc {
         message: entity.postMessage,
         name: entity.fullName != null ? entity.fullName : entity.churchName,
         userImage: entity.image,
+        userId: entity.ownerId,
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
       );

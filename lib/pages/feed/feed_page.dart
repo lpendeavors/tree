@@ -45,7 +45,7 @@ class _FeedPageState extends State<FeedPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _feedBloc.dispose();
-    print('_FeedPageState#dispose');
+    print('[DEBUG] _FeedPageState#dispose');
 
     super.dispose();
   }

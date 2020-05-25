@@ -44,7 +44,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   void dispose() {
-    print('[DEBUG] ChatRoomPageState#dispose');
+    print('[DEBUG] _ChatRoomPageState#dispose');
     _subscriptions.forEach(((s) => s.cancel()));
     _chatRoomBloc.dispose();
     super.dispose();
@@ -106,135 +106,139 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       fit: FlexFit.tight,
                       child: GestureDetector(
                         onTap: () {
-                          if (data.details.isGroup && !data.details.isConversation) {
-                            Navigator.of(context).pushNamed(
-                              '/chat_room_details', 
-                              arguments: data.details.id,
-                            );
-                          } else if (data.details.members.length > 2) {
-                            // TODO: view members
-                          } else {
-                            Navigator.of(context).pushNamed(
-                              '/profile',
-                              arguments: data.details.members[1].uid,
-                            );
+                          if (data.details != null) {
+                            if (data.details.isGroup && !data.details.isConversation) {
+                              Navigator.of(context).pushNamed(
+                                '/chat_room_details', 
+                                arguments: data.details.id,
+                              );
+                            } else if (data.details.members.length > 2) {
+                              // TODO: view members
+                            } else {
+                              Navigator.of(context).pushNamed(
+                                '/profile',
+                                arguments: data.details.members[1].uid,
+                              );
+                            }
                           }
                         },
                         child: Row(
                           children: <Widget>[
-                            if (!data.details.isGroup && !data.details.isConversation)
-                              Card(
-                                shape: CircleBorder(),
-                                margin: EdgeInsets.all(0),
-                                clipBehavior: Clip.antiAlias,
-                                color: Colors.transparent,
-                                elevation: 0.5,
-                                child: Stack(
-                                  children: <Widget>[
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      color: Color(0xffe46514),
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Colors.white,
-                                          size: 12,
+                            if (data.details != null)
+                              if (!data.details.isGroup && !data.details.isConversation)
+                                Card(
+                                  shape: CircleBorder(),
+                                  margin: EdgeInsets.all(0),
+                                  clipBehavior: Clip.antiAlias,
+                                  color: Colors.transparent,
+                                  elevation: 0.5,
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: Color(0xffe46514),
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                            size: 12,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Image(
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      image: CacheImage(data.details.image),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else if (data.details.members.length > 1 && data.details.isConversation)
-                              // TODO: Stacked images
-                              Container()
-                            else 
-                              Card(
-                                shape: CircleBorder(),
-                                margin: EdgeInsets.all(0),
-                                clipBehavior: Clip.antiAlias,
-                                color: Colors.transparent,
-                                elevation: 0.5,
-                                child: Stack(
-                                  children: <Widget>[
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      color: Color(0xffe46514),
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Colors.white,
-                                          size: 12,
+                                      Image(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(data.details.image),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else if (data.details.members.length > 1 && data.details.isConversation)
+                                // TODO: Stacked images
+                                Container()
+                              else 
+                                Card(
+                                  shape: CircleBorder(),
+                                  margin: EdgeInsets.all(0),
+                                  clipBehavior: Clip.antiAlias,
+                                  color: Colors.transparent,
+                                  elevation: 0.5,
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: Color(0xffe46514),
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                            size: 12,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Image(
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      image: CacheImage(data.details.groupImage),
-                                    ),
-                                  ],
+                                      Image(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(data.details.groupImage),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
                             SizedBox(width: 5),
                             Flexible(
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  if (!data.details.isGroup || !data.details.isConversation)
-                                    Text(
-                                      data.details.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  else if (data.details.members.length > 2 && data.details.isConversation)
-                                    Text.rich(
-                                      TextSpan(
-                                        children: List.generate(
-                                          data.details.members
-                                            .where((m) => m.uid != (widget.userBloc.loginState$ as LoggedInUser).uid)
-                                            .length, 
-                                          (index) {
-                                            return TextSpan(
-                                              text: '${data.details.members[0].fullName} and ${data.details.members.length} more',
-                                            );
-                                          }
+                                  if (data.details != null)
+                                    if (!data.details.isGroup || !data.details.isConversation)
+                                      Text(
+                                        data.details.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    else if (data.details.members.length > 2 && data.details.isConversation)
+                                      Text.rich(
+                                        TextSpan(
+                                          children: List.generate(
+                                            data.details.members
+                                              .where((m) => m.uid != (widget.userBloc.loginState$ as LoggedInUser).uid)
+                                              .length, 
+                                            (index) {
+                                              return TextSpan(
+                                                text: '${data.details.members[0].fullName} and ${data.details.members.length} more',
+                                              );
+                                            }
+                                          ),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    else
+                                      Text(
+                                        data.details.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  else
-                                    Text(
-                                      data.details.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
                                   SizedBox(height: 5),
                                 ],
                               ),
@@ -323,135 +327,136 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 color: Colors.black.withOpacity(0.1),
                 margin: EdgeInsets.only(top: 5),
               ),
-              if (data.details.isGroup) ...[
-                Container(
-                  width: double.infinity,
-                  color: Color(0xff0f534949),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        // Container(
-                        //   height: 50,
-                        //   width: 50,
-                        //   child: FlatButton(
-                        //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        //     onPressed: () {
+              if(data.details != null)
+                if (data.details.isGroup) ...[
+                  Container(
+                    width: double.infinity,
+                    color: Color(0xff0f534949),
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          // Container(
+                          //   height: 50,
+                          //   width: 50,
+                          //   child: FlatButton(
+                          //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          //     onPressed: () {
 
-                        //     },
-                        //     child: Icon(
-                        //       Icons.keyboard,
-                        //       size: 20,
-                        //       color: Colors.black.withOpacity(0.5),
-                        //     ),
-                        //   ),
-                        // ),
-                        SizedBox(width: 15),
-                        Flexible(
-                          flex: 1,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight: 120,
-                            ),
-                            child: TextField(
-                              onChanged: (text) {
-                                // TODO: set message in BLoC
+                          //     },
+                          //     child: Icon(
+                          //       Icons.keyboard,
+                          //       size: 20,
+                          //       color: Colors.black.withOpacity(0.5),
+                          //     ),
+                          //   ),
+                          // ),
+                          SizedBox(width: 15),
+                          Flexible(
+                            flex: 1,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: 120,
+                              ),
+                              child: TextField(
+                                onChanged: (text) {
+                                  // TODO: set message in BLoC
 
-                                print(text);
-                              },
-                              cursorWidth: 1,
-                              cursorColor: Colors.black,
-                              keyboardType: TextInputType.multiline,
-                              scrollPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: InputDecoration(
-                                hintText: 'Type a message',
-                                hintStyle: TextStyle(
-                                  fontSize: 17,
-                                  color: Colors.black,
+                                  print(text);
+                                },
+                                cursorWidth: 1,
+                                cursorColor: Colors.black,
+                                keyboardType: TextInputType.multiline,
+                                scrollPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                textCapitalization: TextCapitalization.sentences,
+                                decoration: InputDecoration(
+                                  hintText: 'Type a message',
+                                  hintStyle: TextStyle(
+                                    fontSize: 17,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () async {
-                              var path = await FilePicker.getFilePath();
-                              
-                              print(path);
-                            },
-                            child: Icon(
-                              Icons.attach_file,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
+                          Container(
+                            height: 50,
+                            width: 50,
+                            child: FlatButton(
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () async {
+                                var path = await FilePicker.getFilePath();
+                                
+                                print(path);
+                              },
+                              child: Icon(
+                                Icons.attach_file,
+                                size: 20,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () async {
-                              // var media = await ImagePickers.pickerPaths(
-                              //   galleryMode: GalleryMode.image,
-                              //   selectCount: 1,
-                              //   showCamera: true,
-                              //   compressSize: 300,
-                              //   uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
-                              //   cropConfig: CropConfig(enableCrop: true, width: 10, height: 10),
-                              // );
+                          Container(
+                            height: 50,
+                            width: 50,
+                            child: FlatButton(
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () async {
+                                // var media = await ImagePickers.pickerPaths(
+                                //   galleryMode: GalleryMode.image,
+                                //   selectCount: 1,
+                                //   showCamera: true,
+                                //   compressSize: 300,
+                                //   uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
+                                //   cropConfig: CropConfig(enableCrop: true, width: 10, height: 10),
+                                // );
 
-                              // print(media);
-                            },
-                            child: Icon(
-                              Icons.photo,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
+                                // print(media);
+                              },
+                              child: Icon(
+                                Icons.photo,
+                                size: 20,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () async {
-                              // var files = await PhotoPicker.pickAsset();
-                              
-                            },
-                            child: Icon(
-                              Icons.video_library,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
+                          Container(
+                            height: 50,
+                            width: 50,
+                            child: FlatButton(
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () async {
+                                // var files = await PhotoPicker.pickAsset();
+                                
+                              },
+                              child: Icon(
+                                Icons.video_library,
+                                size: 20,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () {
-                              // TODO: send message
-                            },
-                            child: Icon(
-                              Icons.send,
-                              size: 20,
-                              color: Colors.black,
+                          Container(
+                            height: 50,
+                            width: 50,
+                            child: FlatButton(
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () {
+                                // TODO: send message
+                              },
+                              child: Icon(
+                                Icons.send,
+                                size: 20,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ],
           );

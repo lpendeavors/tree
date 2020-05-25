@@ -57,17 +57,11 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository{
   }
 
   @override
-  Stream<List<ChatEntity>> getByGroup(String groupId) {
+  Stream<List<ChatEntity>> getByGroup(String roomId) {
     return _firestore
       .collection('chatBase')
-      .where('chatId', isEqualTo: groupId)
+      .where('chatId', isEqualTo: roomId)
       .snapshots()
       .map(_toEntities);
-  }
-
-  @override
-  Stream<List<ChatEntity>> getByChat(String roomId) {
-    // TODO: implement getByChat
-    throw UnimplementedError();
   }
 }

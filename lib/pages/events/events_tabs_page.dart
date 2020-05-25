@@ -45,7 +45,7 @@ class _EventsTabsPageState extends State<EventsTabsPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _eventsBloc.dispose();
-    print('_EventsTabsPageState#dispose');
+    print('[DEBUG] _EventsTabsPageState#dispose');
 
     super.dispose();
   }
