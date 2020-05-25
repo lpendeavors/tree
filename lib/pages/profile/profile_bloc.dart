@@ -100,6 +100,7 @@ class ProfileBloc implements BaseBloc {
         userImage: entity.image,
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
+        userId: entity.ownerId,
       );
     }).toList();
   }
@@ -133,16 +134,20 @@ class ProfileBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        userRepository.getUserById(uid: userId),
-        postRepository.postsByOwner(uid: userId),
-        (user, posts) {
-          var profile = _entityToProfileItem(user, loginState);
-          var userPosts = _entitiesToFeedItems(posts);
-
+        userRepository.getUserById(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
+        postRepository.postsByOwner(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
+        (user, posts){
           return _kInitialProfileState.copyWith(
-              feedItems: userPosts,
-              profile: profile,
-              isLoading: false
+            isLoading: false,
+            feedItems: _entitiesToFeedItems(posts),
+            profile: _entityToProfileItem(user, loginState),
+          );
+        })
+        .startWith(_kInitialProfileState)
+        .onErrorReturnWith((e) {
+          return _kInitialProfileState.copyWith(
+            error: e,
+            isLoading: false,
           );
         }
       )
@@ -168,30 +173,30 @@ class ProfileBloc implements BaseBloc {
     LoginState loginState,
   ) {
     return ProfileItem(
-        id: entity.documentId,
-        uid: entity.uid,
-        photo: entity.image ?? "",
-        isChurch: entity.isChurch ?? false,
-        isVerified: entity.isVerified ?? false,
-        fullName: entity.fullName,
-        churchName: entity.churchName ?? "NONE",
-        connections: entity.connections ?? [],
-        shares: entity.shares ?? [],
-        trophies: entity.treeTrophies,
-        type: entity.type,
-        churchDenomination: entity.churchDenomination ?? 'NONE',
-        churchAddress: entity.churchAddress ?? 'NONE',
-        aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
-        title: entity.title ?? 'NONE',
-        city: entity.city ?? 'NONE',
-        relationStatus: entity.relationStatus ?? 'NONE',
-        churchInfo: entity.churchInfo,
+      id: entity.documentId,
+      uid: entity.uid,
+      photo: entity.image ?? "",
+      isChurch: entity.isChurch ?? false,
+      isVerified: entity.isVerified ?? false,
+      fullName: entity.fullName,
+      churchName: entity.churchName ?? "NONE",
+      connections: entity.connections ?? [],
+      shares: entity.shares ?? [],
+      trophies: entity.treeTrophies,
+      type: entity.type,
+      churchDenomination: entity.churchDenomination ?? 'NONE',
+      churchAddress: entity.churchAddress ?? 'NONE',
+      aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
+      title: entity.title ?? 'NONE',
+      city: entity.city ?? 'NONE',
+      relationStatus: entity.relationStatus ?? 'NONE',
+      churchInfo: entity.churchInfo,
 
-        //Variables
-        myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
-        isFriend: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.connections ?? []).contains(loginState.uid),
-        sent: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.receivedRequests ?? []).contains(loginState.uid),
-        received: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.sentRequests ?? []).contains(loginState.uid)
+      //Variables
+      myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
+      isFriend: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.connections ?? []).contains(loginState.uid),
+      sent: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.receivedRequests ?? []).contains(loginState.uid),
+      received: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.sentRequests ?? []).contains(loginState.uid)
     );
   }
 

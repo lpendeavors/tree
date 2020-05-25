@@ -39,6 +39,12 @@ import '../pages/chat_settings/chat_settings_bloc.dart';
 import '../pages/settings/settings_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/profile_bloc.dart';
+import '../pages/connections/connections_page.dart';
+import '../pages/connections/connections_bloc.dart';
+import '../pages/trophies/trophies_page.dart';
+import '../pages/trophies/trophies_bloc.dart';
+import '../pages/trophy_info/trophy_info_page.dart';
+import '../pages/trophy_info/trophy_info_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -283,6 +289,7 @@ class MyApp extends StatelessWidget {
               return ProfileBloc(
                 userBloc: BlocProvider.of<UserBloc>(context),
                 userRepository: Injector.of(context).userRepository,
+                postRepository: Injector.of(context).postRepository,
                 userId: routerSettings.arguments as String,
               );
             },
