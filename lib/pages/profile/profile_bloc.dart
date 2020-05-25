@@ -100,6 +100,7 @@ class ProfileBloc implements BaseBloc {
         userImage: entity.image,
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
+        userId: entity.ownerId,
       );
     }).toList();
   }
@@ -136,27 +137,16 @@ class ProfileBloc implements BaseBloc {
         userRepository.getUserById(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
         postRepository.postsByOwner(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
         (user, posts){
-          var profile = _entityToProfileItem(user, loginState);
-          var userPosts = _entitiesToFeedItems(posts);
-
-      return userRepository.getUserById(uid: userId)
-        .map((entity) {
-          return _entityToProfileItem(
-            entity,
-            loginState,
-          );
-        })
-        .map((profileItem) {
           return _kInitialProfileState.copyWith(
-            profile: profileItem,
             isLoading: false,
+            feedItems: _entitiesToFeedItems(posts),
+            profile: _entityToProfileItem(user, loginState),
           );
         })
         .startWith(_kInitialProfileState)
         .onErrorReturnWith((e) {
           return _kInitialProfileState.copyWith(
-            feedItems: userPosts,
-            profile: profile,
+            error: e,
             isLoading: false,
           );
         }
@@ -196,7 +186,7 @@ class ProfileBloc implements BaseBloc {
       type: entity.type,
       churchDenomination: entity.churchDenomination ?? 'NONE',
       churchAddress: entity.churchAddress ?? 'NONE',
-      aboutMe: entity.aboutMe 'Hey I am new to Tree',
+      aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
       title: entity.title ?? 'NONE',
       city: entity.city ?? 'NONE',
       relationStatus: entity.relationStatus ?? 'NONE',
