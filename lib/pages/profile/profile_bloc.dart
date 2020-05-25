@@ -139,6 +139,21 @@ class ProfileBloc implements BaseBloc {
           var profile = _entityToProfileItem(user, loginState);
           var userPosts = _entitiesToFeedItems(posts);
 
+      return userRepository.getUserById(uid: userId)
+        .map((entity) {
+          return _entityToProfileItem(
+            entity,
+            loginState,
+          );
+        })
+        .map((profileItem) {
+          return _kInitialProfileState.copyWith(
+            profile: profileItem,
+            isLoading: false,
+          );
+        })
+        .startWith(_kInitialProfileState)
+        .onErrorReturnWith((e) {
           return _kInitialProfileState.copyWith(
             feedItems: userPosts,
             profile: profile,
@@ -174,17 +189,17 @@ class ProfileBloc implements BaseBloc {
       isChurch: entity.isChurch ?? false,
       isVerified: entity.isVerified ?? false,
       fullName: entity.fullName,
-      churchName: entity.churchName,
+      churchName: entity.churchName ?? "NONE",
       connections: entity.connections ?? [],
       shares: entity.shares ?? [],
       trophies: entity.treeTrophies,
       type: entity.type,
-      churchDenomination: entity.churchDenomination,
-      churchAddress: entity.churchAddress,
-      aboutMe: entity.aboutMe,
-      title: entity.title,
-      city: entity.city,
-      relationStatus: entity.relationStatus,
+      churchDenomination: entity.churchDenomination ?? 'NONE',
+      churchAddress: entity.churchAddress ?? 'NONE',
+      aboutMe: entity.aboutMe 'Hey I am new to Tree',
+      title: entity.title ?? 'NONE',
+      city: entity.city ?? 'NONE',
+      relationStatus: entity.relationStatus ?? 'NONE',
       churchInfo: entity.churchInfo,
 
       //Variables

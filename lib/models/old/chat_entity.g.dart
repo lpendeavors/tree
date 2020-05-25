@@ -14,14 +14,17 @@ ChatEntity _$ChatEntityFromJson(Map<String, dynamic> json) {
     fullName: json['fullName'] as String,
     isChurch: json['isChurch'] as bool,
     documentId: json['documentId'] as String,
+    time: json['time'] as int,
     image: json['image'] as String,
     ownerId: json['ownerId'] as String,
     byAdmin: json['byAdmin'] as bool,
     message: json['message'] as String,
+    type: json['type'] as int,
     parties: (json['parties'] as List)?.map((e) => e as String)?.toList(),
     chatId: json['chatId'] as String,
     isRoom: json['isRoom'] as bool,
     readBy: (json['readBy'] as List)?.map((e) => e as String)?.toList(),
+    showDate: json['showDate'] as bool,
   );
 }
 
@@ -39,6 +42,9 @@ Map<String, dynamic> _$ChatEntityToJson(ChatEntity instance) =>
       'ownerId': instance.ownerId,
       'parties': instance.parties,
       'readBy': instance.readBy,
+      'showDate': instance.showDate,
+      'time': instance.time,
+      'type': instance.type,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

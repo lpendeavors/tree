@@ -37,6 +37,17 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     uid: json['uid'] as String,
     image: json['image'] as String,
     visibility: json['visibility'] as int,
+    myChatsList13: (json['myChatsList13'] as List)
+        ?.map((e) =>
+            e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
+    receivedRequests:
+        (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
+    sentRequests:
+        (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
+    churchInfo: json['churchInfo'] == null
+        ? null
+        : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
     myChatList13: (json['myChatList13'] as List)
         ?.map((e) =>
             e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
@@ -60,6 +71,10 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
         (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
     receivedRequests:
         (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
+    chatNotification: json['chatNotification'] as bool,
+    chatOnlineStatus: json['chatOnlineStatus'] as bool,
+    groupNotification: json['groupNotification'] as bool,
+    messageNotification: json['messageNotification'] as bool,
   );
 }
 
@@ -91,6 +106,11 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'time': instance.time,
       'timeOnline': instance.timeOnline,
       'timeUpdated': instance.timeUpdated,
+      'myChatsList13':
+          instance.myChatsList13?.map((e) => e?.toJson())?.toList(),
+      'receivedRequests': instance.receivedRequests,
+      'sentRequests': instance.sentRequests,
+      'churchInfo': instance.churchInfo?.toJson(),
       'myChatList13': instance.myChatList13?.map((e) => e?.toJson())?.toList(),
       'connections': instance.connections,
       'shares': instance.shares,
@@ -104,6 +124,10 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'churchInfo': instance.churchInfo?.toJson(),
       'receivedRequests': instance.receivedRequests,
       'sentRequests': instance.sentRequests,
+      'chatNotification': instance.chatNotification,
+      'chatOnlineStatus': instance.chatOnlineStatus,
+      'groupNotification': instance.groupNotification,
+      'messageNotification': instance.messageNotification,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

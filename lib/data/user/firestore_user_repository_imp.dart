@@ -94,7 +94,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   Future<void> _updateUserData(String uid, [Map<String, dynamic> addition]) {
-    return _firestore.document('userBase/${uid}').setData(addition, merge: true);
+    return _firestore.document('userBase/$uid').setData(addition, merge: true);
   }
 
   @override
@@ -173,12 +173,33 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Stream<List<UserEntity>> getSuggestions() {
+  Stream<List<UserEntity>> getConnections() {
     return _firestore
       .collection('userBase')
-      .limit(15)
+      .where('isChurch', isEqualTo: false)
+      .limit(50)
       .orderBy('time', descending: true)
       .snapshots()
       .map(_toEntities);
+  }
+
+  @override
+  Future<void> saveNotifications({
+    String user, 
+    bool messages,
+    bool chat,
+    bool group, 
+    bool online
+  }) {
+    var addition = <String, dynamic>{
+      'messageNotification': messages,
+      'chatNotification': chat,
+      'groupNotification': group,
+      'chatOnlineStatus': online,
+    };
+
+    return _firestore
+      .document('userBase/$user')
+      .setData(addition, merge: true);
   }
 }

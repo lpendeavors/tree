@@ -87,21 +87,30 @@ class SuggestionItem extends Equatable {
 @immutable
 class ConnectionItem extends Equatable {
   final String id;
-  final String fullName;
+  final String name;
   final String church;
   final String location;
   final bool isChurch;
+  final String image;
 
   const ConnectionItem({
     @required this.id,
-    @required this.fullName,
+    @required this.name,
     @required this.church,
     @required this.location,
     @required this.isChurch,
+    @required this.image,
   });
 
   @override
-  List get props => [id, fullName, church, location];
+  List get props => [
+    id, 
+    name, 
+    church, 
+    location,
+    isChurch,
+    image,
+  ];
 
   @override
   bool get stringify => true;
@@ -111,14 +120,20 @@ class ConnectionItem extends Equatable {
 class PostItem extends Equatable {
   final String id;
   final String image;
+  final int type;
 
   const PostItem({
     @required this.id,
     @required this.image,
+    @required this.type,
   });
 
   @override
-  List get props => [id, image];
+  List get props => [
+    id, 
+    image,
+    type,
+  ];
 
   @override
   bool get stringify => true;

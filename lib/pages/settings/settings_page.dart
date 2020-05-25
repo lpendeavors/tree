@@ -13,7 +13,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: SingleChildScrollView(
+      body: Scrollbar(
         child: ListView(
           physics: ClampingScrollPhysics(),
           padding: EdgeInsets.only(bottom: 60),

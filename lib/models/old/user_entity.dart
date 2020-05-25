@@ -39,6 +39,10 @@ class UserEntity extends Equatable implements FirebaseModel {
   final int time;
   final int timeOnline;
   final int timeUpdated;
+  final List<ChatData> myChatsList13;
+  final List<String> receivedRequests;
+  final List<String> sentRequests;
+  final ChurchInfo churchInfo;
   final List<ChatData> myChatList13;
   final List<String> connections;
   final List<String> shares;
@@ -52,6 +56,10 @@ class UserEntity extends Equatable implements FirebaseModel {
   final ChurchInfo churchInfo;
   final List<String> receivedRequests;
   final List<String> sentRequests;
+  final bool chatNotification;
+  final bool chatOnlineStatus;
+  final bool groupNotification;
+  final bool messageNotification;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -95,6 +103,10 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.uid,
     this.image,
     this.visibility,
+    this.myChatsList13,
+    this.receivedRequests,
+    this.sentRequests,
+    this.churchInfo,
     this.myChatList13,
     this.churchName,
     this.isVerified,
@@ -110,6 +122,10 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.churchInfo,
     this.sentRequests,
     this.receivedRequests
+    this.chatNotification,
+    this.chatOnlineStatus,
+    this.groupNotification,
+    this.messageNotification,
   });
 
   String get id => this.documentId;
@@ -147,6 +163,10 @@ class UserEntity extends Equatable implements FirebaseModel {
       trophyCreated,
       uid,
       visibility,
+      myChatsList13,
+      receivedRequests,
+      sentRequests,
+      churchInfo,
       myChatList13,
       image,
       isVerified,
@@ -163,6 +183,10 @@ class UserEntity extends Equatable implements FirebaseModel {
       churchInfo,
       sentRequests,
       receivedRequests
+      chatNotification,
+      chatOnlineStatus,
+      groupNotification,
+      messageNotification,
     ];
   }
 

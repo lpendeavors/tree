@@ -339,7 +339,10 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                 onPressed: () {
                   Navigator.of(context).pushNamed(
                     '/chat_room',
-                    arguments: data.chatRoomDetails.id,
+                    arguments: <String, dynamic>{
+                      'roomId': data.chatRoomDetails.id,
+                      'isGroup': false,
+                    },
                   );
                 }
               ),

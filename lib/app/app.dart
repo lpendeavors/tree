@@ -32,6 +32,11 @@ import '../pages/event_edit/event_edit_page.dart';
 import '../pages/event_edit/event_edit_bloc.dart';
 import '../pages/chat_room_details/chat_room_details_page.dart';
 import '../pages/chat_room_details/chat_room_details_bloc.dart';
+import '../pages/chat_room/chat_room_page.dart';
+import '../pages/chat_room/chat_room_bloc.dart';
+import '../pages/chat_settings/chat_settings_page.dart';
+import '../pages/chat_settings/chat_settings_bloc.dart';
+import '../pages/settings/settings_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -101,6 +106,9 @@ class MyApp extends StatelessWidget {
     '/event_types': (context) {
       return EventTypesPage();
     },
+    '/settings': (context) {
+      return SettingsPage();
+    }
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
@@ -141,6 +149,7 @@ class MyApp extends StatelessWidget {
       return MaterialPageRoute(
         builder: (context) {
           Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+
           return EventEditPage(
             userBloc: BlocProvider.of<UserBloc>(context),
             initEventEditBloc: () {
@@ -220,6 +229,40 @@ class MyApp extends StatelessWidget {
               },
             );
           }
+    if (routerSettings.name == '/chat_room') {
+      return MaterialPageRoute(
+        builder: (context) {
+          Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+
+          return ChatRoomPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initChatRoomBloc: () {
+              return ChatRoomBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                chatRepository: Injector.of(context).chatRepository,
+                groupRepository: Injector.of(context).groupRepository,
+                roomId: args['roomId'],
+                isGroup: args['isGroup'],
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/chat_settings') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatSettingsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initChatSettingsBloc: () {
+              return ChatSettingsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userRepository: Injector.of(context).userRepository,
+              );
+            },
+          );
+        }
       );
     }
   };

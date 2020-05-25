@@ -1,15 +1,17 @@
 import 'dart:async';
 
-import 'package:tuple/tuple.dart';
-
 import '../../bloc/bloc_provider.dart';
 import '../../data/group/firestore_group_repository.dart';
+import '../../data/chat/firestore_chat_repository.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../models/old/group_entity.dart';
+import '../../models/old/chat_entity.dart';
 import './chat_tabs_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
+import 'package:collection/collection.dart';
 
 const _kInitialChatState = ChatTabsState(
   error: null,
@@ -42,12 +44,14 @@ class ChatTabsBloc implements BaseBloc {
   factory ChatTabsBloc({
     @required UserBloc userBloc,
     @required FirestoreGroupRepository groupRepository,
+    @required FirestoreChatRepository chatRepository,
   }) {
     ///
     /// Assert
     /// 
     assert(userBloc != null, 'userBloc cannot be null');
     assert(groupRepository != null, 'groupRepository cannot be null');
+    assert(chatRepository != null, 'chatRepository cannot be null');
 
     /// 
     /// Stream controllers
@@ -60,6 +64,7 @@ class ChatTabsBloc implements BaseBloc {
     final chatTabsState$ = _getChatLists(
       userBloc,
       groupRepository,
+      chatRepository,
     ).publishValueSeeded(_kInitialChatState);
 
     final subscriptions = <StreamSubscription>[
@@ -80,6 +85,7 @@ class ChatTabsBloc implements BaseBloc {
   static Stream<ChatTabsState> _toState(
     LoginState loginState,
     FirestoreGroupRepository groupRepository,
+    FirestoreChatRepository chatRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -91,20 +97,28 @@ class ChatTabsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return groupRepository.get()
-        .map((entities) {
-          return _entitiesToGroupItems(entities);
-        })
-        .map((groupItems) {
-          Tuple3 sorted = _sortGroups(groupItems, loginState.uid);
+      return Rx.zip2(
+          chatRepository.getByUser(
+            uid: loginState.uid, 
+            chatIds: loginState.chatList.length > 0 
+              ? loginState.chatList.map((e) => e.chatId).toList()
+              : []
+          ),
+          groupRepository.get(),
+          (chats, groups) {
+            Tuple2 sortedGroups = _sortGroups(
+              _entitiesToGroupItems(groups), 
+              loginState.uid
+            );
 
-          return _kInitialChatState.copyWith(
-            messages: sorted.item1,
-            chatRooms: sorted.item2,
-            groups: sorted.item3,
-            isLoading: false,
-          );
-        })
+            return _kInitialChatState.copyWith(
+              isLoading: false,
+              messages: _entitiesToMessageItems(chats),
+              chatRooms: sortedGroups.item1,
+              groups: sortedGroups.item2,
+            );
+          }
+        )
         .startWith(_kInitialChatState)
         .onErrorReturnWith((e) {
           return _kInitialChatState.copyWith(
@@ -132,7 +146,7 @@ class ChatTabsBloc implements BaseBloc {
         isGroup: entity.isGroup,
         isRoom: entity.isRoom,
         members: entity.groupMembers,
-        name: entity.groupName,
+        name: entity.groupName ?? "",
         image: entity.groupImage,
         ownerId: entity.uid,
         byAdmin: entity.byAdmin,
@@ -141,26 +155,59 @@ class ChatTabsBloc implements BaseBloc {
     }).toList();
   }
 
+  static List<MessageItem> _entitiesToMessageItems(
+    List<ChatEntity> entities,
+  ) {
+    var grouped = groupBy(entities, (e) {
+      var entity = e as ChatEntity;
+      return entity.chatId;
+    });
+
+    var lastMessages = List<ChatEntity>();
+    grouped.forEach((key, messageList) {
+      messageList.sort((a, b) => a.time.compareTo(b.time));
+      lastMessages.add(messageList.last);
+    });
+
+    lastMessages.sort((a, b) => b.time.compareTo(a.time));
+
+    return lastMessages.map((entity) {
+      return MessageItem(
+        id: entity.documentId,
+        name: entity.fullName,
+        message: entity.message,
+        image: entity.image,
+        isConversation: false,
+        members: entity.parties,
+        isRoom: entity.isRoom,
+        isGroup: false,
+        sentDate: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        roomId: entity.chatId,
+      );
+    }).toList();
+  }
+
   static Stream<ChatTabsState> _getChatLists(
     UserBloc userBloc,
     FirestoreGroupRepository groupRepository,
+    FirestoreChatRepository chatRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
         loginState,
         groupRepository,
+        chatRepository,
       );
     });
   }
 
-  static Tuple3 _sortGroups(
+  static Tuple2 _sortGroups(
     List<GroupItem> groups,
     String uid,
   ) {
-    return Tuple3(
-      groups.where((group) => group.members.contains(uid)).toList(),
-      groups.where((group) => group.byAdmin).where((group) => !group.isPrivate).toList(),
-      groups.where((group) => group.ownerId == uid).toList(),
+    return Tuple2(
+      groups.where((group) => group.byAdmin).where((group) => group.isPrivate != true).toList(),
+      groups.where((group) => group.ownerId != null).toList(),
     );
   }
 }

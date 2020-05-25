@@ -74,7 +74,7 @@ class UserBloc implements BaseBloc {
       fullName: "${userEntity.firstName} ${userEntity.lastName}",
       email: userEntity.email,
       uid: userEntity.id,
-      chatList: userEntity.myChatList13 ?? [],
+      chatList: userEntity.myChatsList13 ?? [],
     );
   }
 }
