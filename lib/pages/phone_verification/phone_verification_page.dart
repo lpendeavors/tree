@@ -72,7 +72,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
               child: TextField(
                 textInputAction: TextInputAction.done,
                 autofocus: true,
-                controller: new MaskedTextController(mask: '000000'),
+                controller: MaskedTextController(mask: '000000'),
                 textAlign: TextAlign.center,
                 cursorColor: Colors.black.withOpacity(0.5),
                 cursorWidth: 2,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
+import '../../../widgets/image_holder.dart';
 import '../explore_state.dart';
 
 class PostListItem extends StatefulWidget {
@@ -16,6 +17,17 @@ class PostListItem extends StatefulWidget {
 class _PostListItemState extends State<PostListItem> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    if (widget.postItem.image.isNotEmpty) {
+      return InkWell(
+        onTap: () {
+          // TODO: show post
+        },
+        child: Image(
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          image: CacheImage(widget.postItem.image),
+        ),
+      );
+    }
   }
 }

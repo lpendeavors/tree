@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:popup_menu/popup_menu.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../data/room/firestore_room_repository.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../data/group/firestore_group_repository.dart';
 import '../../data/chat/firestore_chat_repository.dart';
 import '../../user_bloc/user_bloc.dart';
+import '../../user_bloc/user_login_state.dart';
 import '../../widgets/tab_item.dart';
 import '../../generated/l10n.dart';
+import '../../util/asset_utils.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
 import '../chat/chat_tabs_page.dart';
@@ -41,6 +44,8 @@ class HomeTabsPage extends StatefulWidget {
 class _HomeTabsPageState extends State<HomeTabsPage> {
   PageController _controller = PageController();
   int _currentPage = 0;
+
+  GlobalKey _popupMenuKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -82,21 +87,17 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             chatBloc: ChatTabsBloc(
               userBloc: widget.userBloc,
               groupRepository: widget.groupRepository,
+              chatRepository: widget.chatRepository,
             ),
           ),
-          // ProfilePage(
-          //   isTab: true,
-          //   userBloc: widget.userBloc,
-          //   initProfileBloc: () => ProfileBloc(
-          //     userBloc: widget.userBloc,
-          //     userRepository: widget.userRepository,
-          //     userId: '123',
-          //   ),
-          // ),
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.red,
+          ProfilePage(
+            isTab: true,
+            userBloc: widget.userBloc,
+            initProfileBloc: () => ProfileBloc(
+              userBloc: widget.userBloc,
+              userRepository: widget.userRepository,
+              userId: (widget.userBloc.loginState$.value as LoggedInUser).uid,
+            ),
           ),
         ],
       ),
@@ -154,10 +155,11 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               ),
             ),
             Align(
+              key: _popupMenuKey,
               alignment: Alignment.topCenter,
               child: GestureDetector(
                 onTap: () {
-                  _showAddPopupMenu();
+                  _showAddPopupMenu(context);
                 },
                 child: Container(
                   margin: EdgeInsets.only(top: 5),
@@ -182,8 +184,64 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
     );
   }
 
-  void _showAddPopupMenu() {
+  void _showAddPopupMenu(BuildContext context) {
+    var menu = PopupMenu(
+      context: context,
+      backgroundColor: Theme.of(context).primaryColor,
+      lineColor: Colors.white.withOpacity(0.5),
+      items: [
+        MenuItem(
+          title: 'Post',
+          textStyle: _menuItemTextStyle(),
+          image: _menuItemIconImage(post_icon)
+        ),
+        MenuItem(
+          title: 'Poll',
+          textStyle: _menuItemTextStyle(),
+          image: _menuItemIconImage(poll_icon),
+        ),
+        MenuItem(
+          title: 'Event',
+          textStyle: _menuItemTextStyle(),
+          image: _menuItemIconImage(event_icon),
+        ),
+      ],
+      onClickMenu: (item) {
+        switch (item.menuTitle) {
+          case 'Post':
+            print('new post');
+          break;
+          case 'Poll':
+            print('new poll');
+          break;
+          case 'Event':
+            Navigator.of(context).pushNamed(
+              '/event_types',
+            );
+          break;
+        }
+      }
+    );
 
+    menu.show(widgetKey: _popupMenuKey);
+  }
+
+  TextStyle _menuItemTextStyle() {
+    return TextStyle(
+      fontSize: 12,
+      color: Colors.white,
+    );
+  }
+
+  Image _menuItemIconImage(
+    String path,
+  ) {
+    return Image.asset(
+      path,
+      height: 20,
+      width: 20,
+      color: Colors.white,
+    );
   }
 
   void _changePage(int page) {

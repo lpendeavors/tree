@@ -333,6 +333,33 @@ class S {
     );
   }
 
+  String get password_reset_tip {
+    return Intl.message(
+      'We\'ll email you instructions to reset your password',
+      name: 'password_reset_tip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get password_reset_success {
+    return Intl.message(
+      'Password reset email sent!',
+      name: 'password_reset_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get password_reset_confirm {
+    return Intl.message(
+      'Send Email',
+      name: 'password_reset_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
   String get network_error {
     return Intl.message(
       'A network error occurred',

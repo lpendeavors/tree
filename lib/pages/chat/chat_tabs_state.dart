@@ -17,7 +17,7 @@ class NotLoggedInError {
 ///
 @immutable
 class ChatTabsState extends Equatable {
-  final List<GroupItem> messages;
+  final List<MessageItem> messages;
   final List<GroupItem> chatRooms;
   final List<GroupItem> groups;
   final bool isLoading;
@@ -92,6 +92,50 @@ class GroupItem extends Equatable {
     byAdmin,
     ownerId,
     isPrivate,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
+class MessageItem extends Equatable {
+  final String id;
+  final String name;
+  final String image;
+  final String message;
+  final bool isRoom;
+  final bool isGroup;
+  final bool isConversation;
+  final List<String> members;
+  final DateTime sentDate;
+  final String roomId;
+
+  const MessageItem({
+    @required this.id,
+    @required this.name,
+    @required this.image,
+    @required this.message,
+    @required this.isRoom,
+    @required this.isGroup,
+    @required this.isConversation,
+    @required this.members,
+    @required this.sentDate,
+    @required this.roomId,
+  });
+
+  @override
+  List get props => [
+    id,
+    name,
+    image,
+    message,
+    isRoom,
+    isGroup,
+    isConversation,
+    members,
+    sentDate,
+    roomId,
   ];
 
   @override

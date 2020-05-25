@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/church_info.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './user_chat_data.dart';
@@ -17,7 +18,9 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String firstName;
   final String lastName;
   final String fullName;
+  final String churchName;
   final bool isChurch;
+  final bool isVerified;
   final int isOnline1;
   final bool isPublic;
   final bool newApp1;
@@ -31,11 +34,29 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<Trophy> treeTrophies;
   final bool trophyCreated;
   final String uid;
+  final String image;
   final int visibility;
   final int time;
   final int timeOnline;
   final int timeUpdated;
+  final List<ChatData> myChatsList13;
+  final List<String> receivedRequests;
+  final List<String> sentRequests;
+  final ChurchInfo churchInfo;
   final List<ChatData> myChatList13;
+  final List<String> connections;
+  final List<String> shares;
+  final int type;
+  final String churchDenomination;
+  final String churchAddress;
+  final String aboutMe;
+  final String title;
+  final String city;
+  final String relationStatus;
+  final bool chatNotification;
+  final bool chatOnlineStatus;
+  final bool groupNotification;
+  final bool messageNotification;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -77,8 +98,28 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.treeTrophies,
     this.trophyCreated,
     this.uid,
+    this.image,
     this.visibility,
+    this.myChatsList13,
+    this.receivedRequests,
+    this.sentRequests,
+    this.churchInfo,
     this.myChatList13,
+    this.churchName,
+    this.isVerified,
+    this.connections,
+    this.shares,
+    this.type,
+    this.churchDenomination,
+    this.churchAddress,
+    this.aboutMe,
+    this.title,
+    this.city,
+    this.relationStatus,
+    this.chatNotification,
+    this.chatOnlineStatus,
+    this.groupNotification,
+    this.messageNotification,
   });
 
   String get id => this.documentId;
@@ -116,7 +157,27 @@ class UserEntity extends Equatable implements FirebaseModel {
       trophyCreated,
       uid,
       visibility,
+      myChatsList13,
+      receivedRequests,
+      sentRequests,
+      churchInfo,
       myChatList13,
+      image,
+      isVerified,
+      churchName,
+      connections,
+      shares,
+      type,
+      churchDenomination,
+      churchAddress,
+      aboutMe,
+      title,
+      city,
+      relationStatus,
+      chatNotification,
+      chatOnlineStatus,
+      groupNotification,
+      messageNotification,
     ];
   }
 

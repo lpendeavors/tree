@@ -90,28 +90,28 @@ class FeedBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-          postRepository.getByAdmin(),
-          postRepository.postsByUser(uid: loginState.uid),
-          (byAdmin, userFeed) {
-            var feed = _entitiesToFeedItems(byAdmin);
-            var userPosts = _entitiesToFeedItems(userFeed);
+        postRepository.getByAdmin(),
+        postRepository.postsByUser(uid: loginState.uid),
+        (byAdmin, userFeed) {
+          var feed = _entitiesToFeedItems(byAdmin);
+          var userPosts = _entitiesToFeedItems(userFeed);
 
-            feed.addAll(userPosts);
-            feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
+          feed.addAll(userPosts);
+          feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
 
-            return _kInitialFeedListState.copyWith(
-              isLoading: false,
-              feedItems: feed,
-            );
-          }
-        )
-        .startWith(_kInitialFeedListState)
-        .onErrorReturnWith((e) {
           return _kInitialFeedListState.copyWith(
-            error: e,
             isLoading: false,
+            feedItems: feed,
           );
-        });
+        }
+      )
+      .startWith(_kInitialFeedListState)
+      .onErrorReturnWith((e) {
+        return _kInitialFeedListState.copyWith(
+          error: e,
+          isLoading: false,
+        );
+      });
     }
 
     return Stream.value(

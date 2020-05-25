@@ -62,7 +62,11 @@ class SettingsState extends Equatable {
   }
 
   @override
-  List get props => [userInfo, isLoading, error];
+  List get props => [
+    userInfo, 
+    isLoading, 
+    error
+  ];
 
   @override
   bool get stringify => true;
@@ -77,7 +81,9 @@ class UserInfo extends Equatable {
   });
 
   @override 
-  List get props => [id];
+  List get props => [
+    id
+  ];
 
   @override
   bool get stringify => true;
@@ -92,7 +98,9 @@ class NotificationSettings extends Equatable {
   });
 
   @override
-  List get props => [id];
+  List get props => [
+    id
+  ];
 
   @override
   bool get stringify => true;

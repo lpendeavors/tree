@@ -220,7 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(
                   fontFamily: 'NirmalaB',
                   fontWeight: FontWeight.bold,
-                  fontSize: 22,
+                  fontSize: 15,
                   color: Colors.white,
                 ),
               ),
@@ -300,7 +300,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0),
-                        child: new TextField(
+                        child: TextField(
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.none,
                           decoration: InputDecoration(
@@ -350,7 +350,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0),
-                        child: new TextField(
+                        child: TextField(
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           decoration: InputDecoration(
@@ -400,7 +400,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0),
-                        child: new TextField(
+                        child: TextField(
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           decoration: InputDecoration(
@@ -450,7 +450,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0),
-                        child: new TextField(
+                        child: TextField(
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.none,
                           decoration: InputDecoration(
@@ -501,7 +501,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0),
-                        child: new TextField(
+                        child: TextField(
                           textInputAction: TextInputAction.done,
                           textCapitalization: TextCapitalization.none,
                           decoration: InputDecoration(
@@ -537,7 +537,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 textColor: Colors.white,
                 child: Text(
                   s.create_account,
-                  style: TextStyle(fontSize: 22.0, color: Colors.white, fontFamily: 'NormalaB', fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 22.0, color: Colors.white, fontFamily: 'NirmalaB', fontWeight: FontWeight.bold),
                 ),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
               ),

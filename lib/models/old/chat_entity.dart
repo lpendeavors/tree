@@ -31,11 +31,11 @@ class ChatEntity extends Equatable implements FirebaseModel {
   // final String pushNotificationToken;
   final List<String> readBy;
   // final List<String> searchData;
-  // final bool showDate;
-  // final int time;
+  final bool showDate;
+  final int time;
   // final int timeUpdated;
   // final String tokenID;
-  // final int type;
+  final int type;
   // final String uid;
   // final String userImage;
   // final String username;
@@ -68,7 +68,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
     // this.userImage,
     // this.visibility,
     this.documentId,
-    // this.time,
+    this.time,
     // this.email,
     // this.country,
     this.image,
@@ -79,14 +79,14 @@ class ChatEntity extends Equatable implements FirebaseModel {
     // this.uid,
     this.message,
     // this.docId,
-    // this.type,
+    this.type,
     this.parties,
     // this.gender,
     // this.searchData,
     this.chatId,
     this.isRoom,
     this.readBy,
-    // this.showDate,
+    this.showDate,
     // this.deleted,
     // this.hidden,
   });
@@ -125,7 +125,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
       // uid,
       message,
       // docId,
-      // type,
+      type,
       parties,
       // gender,
       // searchData,

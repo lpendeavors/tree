@@ -96,12 +96,17 @@ class ExploreBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        userRepository.getSuggestions(),
+        userRepository.getConnections(),
         postRepository.postsForCollage(),
         (users, posts) {
+          
+          var filiteredPosts = (posts as List<PostEntity>).where((p) {
+            return _getPostImage(p) != null;
+          }).toList();
+
           return _kInitialExploreState.copyWith(
             connectionItems: _userEntitiesToItems(users),
-            postItems: _postEntitiesToItems(posts),
+            postItems: _postEntitiesToItems(filiteredPosts),
             isLoading: false,
           );
         }
@@ -128,10 +133,11 @@ class ExploreBloc implements BaseBloc {
     return entities.map((entity) {
       return ConnectionItem(
         id: entity.id,
-        fullName: '${entity.firstName} ${entity.lastName}',
         location: "",
         church: "",
-        isChurch: entity.isChurch,
+        isChurch: entity.isChurch ?? false,
+        image: entity.image,
+        name: _getName(entity),
       );
     }).toList();
   }
@@ -142,7 +148,8 @@ class ExploreBloc implements BaseBloc {
     return entities.map((entity) {
       return PostItem(
         id: entity.documentId,
-        image: entity.image,
+        image: _getPostImage(entity),
+        type: 0,
       );
     }).toList();
   }
@@ -159,5 +166,33 @@ class ExploreBloc implements BaseBloc {
         postRepository
       );
     });
+  }
+
+  static String _getName(
+    UserEntity entity,
+  ) {
+    if (entity.churchInfo == null) {
+      if (entity.fullName != null) {
+        return entity.fullName;
+      } else {
+        return "No full name";
+      }
+    } else {
+      return entity.churchInfo.churchName ?? "No church name";
+    }
+  }
+
+  static String _getPostImage(
+    PostEntity entity,
+  ) {
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        return entity.postData[0].imageUrl;
+      } else {
+        return "";
+      }
+    } else {
+      return "";
+    }
   }
 }

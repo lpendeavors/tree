@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/church_info.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
@@ -47,7 +48,6 @@ class ProfileBloc implements BaseBloc {
     /// 
     assert(userBloc != null, 'userBloc cannot be null');
     assert(userRepository != null, 'userRepository cannot be null');
-    assert(userId != null, 'userId cannot be null');
 
     ///
     /// Stream controllers
@@ -129,6 +129,22 @@ class ProfileBloc implements BaseBloc {
   ) {
     return ProfileItem(
       id: entity.documentId,
+      photo: entity.image,
+      isChurch: entity.isChurch,
+      isVerified: entity.isVerified ?? false,
+      fullName: entity.fullName,
+      churchName: entity.churchName ?? "NONE",
+      connections: entity.connections,
+      shares: entity.shares ?? [],
+      trophies: entity.treeTrophies,
+      type: entity.type,
+      churchDenomination: entity.churchDenomination ?? 'NONE',
+      churchAddress: entity.churchAddress ?? 'NONE',
+      aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
+      title: entity.title ?? 'NONE',
+      city: entity.city ?? 'NONE',
+      relationStatus: entity.relationStatus ?? 'NONE',
+      churchInfo: entity.churchInfo
     );
   }
 

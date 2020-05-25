@@ -162,6 +162,12 @@ class _LoginPageState extends State<LoginPage> {
                       nextFocusNode: _passwordFocusNode,
                       onChange: _emailLoginBloc.emailChanged,
                     ),
+                    Container(
+                      height: 1.0,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.2),
+                      margin: EdgeInsets.only(bottom: 10),
+                    ),
                     SizedBox(height: 10),
                     TreeInputLabel(text: s.password),
                     TreeInputField(
@@ -177,9 +183,8 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ],
-              SizedBox(height: 10),
               Container(
-                height: 2,
+                height: 1.0,
                 width: double.infinity,
                 color: Colors.black.withOpacity(0.2),
                 margin: EdgeInsets.only(bottom: 10),
@@ -215,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 15,
                       fontFamily: 'NirmalaB',
-                      fontWeight: FontWeight.normal,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
@@ -224,22 +229,24 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              InkWell(
-                onTap: () {
-                  Navigator.of(context).pushNamed('/forgot_password');
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  child: Text(
-                    s.forgot_password,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+              if (!_phoneLogin) ...[
+                SizedBox(height: 20),
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/forgot_password');
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      s.forgot_password,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ]
             ],
           ),
         ),

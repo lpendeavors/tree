@@ -39,10 +39,10 @@ class TreeAppBar extends StatelessWidget {
                 children: List.generate(this.steps, (index) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 5.0, left: 5.0, top: 10.0),
-                    child: index == this.step ? new CircleAvatar(
+                    child: index == this.step ? CircleAvatar(
                       backgroundColor: Colors.white,
                       maxRadius: 6.0,
-                    ) : new CircleAvatar(
+                    ) : CircleAvatar(
                       backgroundColor: Colors.white.withAlpha(150),
                       maxRadius: 4.0,
                     ),

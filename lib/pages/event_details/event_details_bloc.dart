@@ -146,7 +146,7 @@ class EventDetailsBloc implements BaseBloc {
     return EventDetailItem(
       id: entity.documentId,
       title: entity.eventTitle,
-      image: entity.image,
+      image: entity.eventData[0].imageUrl,
       attendees: [],
       isMine: entity.uid == (loginState as LoggedInUser).uid,
       isRejected: entity.status == 2,
