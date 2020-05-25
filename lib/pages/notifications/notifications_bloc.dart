@@ -127,6 +127,7 @@ class NotificationsBloc implements BaseBloc {
         sharedBy: entity.fullName,
         isNew: entity.readBy.contains(entity.id),
         image: entity.image,
+        user: entity.ownerId,
       );
     }).toList();
   }

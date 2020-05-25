@@ -119,7 +119,10 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                               Flexible(
                                 child: GestureDetector(
                                   onTap: () {
-
+                                    Navigator.of(context).pushNamed(
+                                      '/profile',
+                                      arguments: widget.feedItem.userId,
+                                    );
                                   },
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,

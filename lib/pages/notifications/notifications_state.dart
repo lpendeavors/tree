@@ -55,14 +55,16 @@ class NotificationItem extends Equatable {
   final bool isNew;
   final String sharedBy;
   final String body;
+  final String user;
 
   const NotificationItem({
-    this.id,
-    this.time,
-    this.image,
-    this.isNew,
-    this.sharedBy,
-    this.body,
+    @required this.id,
+    @required this.time,
+    @required this.image,
+    @required this.isNew,
+    @required this.sharedBy,
+    @required this.body,
+    @required this.user,
   });
 
   @override
@@ -73,6 +75,7 @@ class NotificationItem extends Equatable {
     image,
     time,
     isNew,
+    user,
   ];
 
   @override

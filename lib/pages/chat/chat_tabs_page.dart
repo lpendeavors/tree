@@ -46,7 +46,7 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _chatBloc.dispose();
-    print('_ChatTabsPageState#dispose');
+    print('[DEBUG] _ChatTabsPageState#dispose');
 
     super.dispose();
   }

@@ -44,7 +44,7 @@ class ChatRoomBloc implements BaseBloc {
     @required FirestoreChatRepository chatRepository,
     @required FirestoreGroupRepository groupRepository,
     @required String roomId,
-    @required bool isGroup,
+    @required bool isRoom,
   }) {
     /// 
     /// Assert 
@@ -53,7 +53,7 @@ class ChatRoomBloc implements BaseBloc {
     assert(chatRepository != null, 'chatRepository cannot be null');
     assert(groupRepository != null, 'groupRepository cannot be null');
     assert(roomId != null, 'roomId cannot be null');
-    assert(isGroup != null, 'isGroup cannot be null');
+    assert(isRoom != null, 'isRoom cannot be null');
 
     /// 
     /// Stream controllers
@@ -68,7 +68,7 @@ class ChatRoomBloc implements BaseBloc {
       groupRepository,
       chatRepository,
       roomId,
-      isGroup,
+      isRoom,
     ).publishValueSeeded(_kInitialChatRoomState);
 
     final subscriptions = <StreamSubscription>[
@@ -104,12 +104,12 @@ class ChatRoomBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        groupRepository.getById(groupId: roomId),
+        isGroup ? groupRepository.getById(groupId: roomId) : Stream.value(null),
         chatRepository.getByGroup(roomId),
         (group, chats) {
           return _kInitialChatRoomState.copyWith(
             isLoading: false,
-            details: _entityToChatRoomItem(group),
+            details: isGroup ? _entityToChatRoomItem(group) : null,
             messages: _entitiesToChatMessageItems(chats, loginState.uid),
           );
         }

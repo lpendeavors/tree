@@ -49,8 +49,8 @@ class LocaleBloc implements BaseBloc {
 
     final changeLocaleResult$ = changeLocaleController.distinct().switchMap((locale) {
       return Stream.fromFuture(sharedPrefUtil.saveSelectedLanguageCode(locale.languageCode))
-          .map((result) => Tuple2(result, null))
-          .onErrorReturnWith((e) => Tuple2(null, e));
+        .map((result) => Tuple2(result, null))
+        .onErrorReturnWith((e) => Tuple2(null, e));
     }).publish();
 
     final selectedLanguageCode$ = sharedPrefUtil.selectedLanguageCode$;

@@ -140,9 +140,9 @@ class CommentsBloc implements BaseBloc {
     return entities.map((entity) {
       return CommentItem(
         id: entity.documentId,
-        fullName: entity.fullName,
+        fullName: (entity.fullName ?? entity.churchName) ?? "",
         message: entity.postMessage,
-        image: entity.image,
+        image: entity.image ?? "",
         datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
         isGif: entity.isGIF ?? false,
         gif: entity.imagePath,

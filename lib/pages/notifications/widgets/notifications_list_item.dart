@@ -35,7 +35,10 @@ class _NotificationsListItemState extends State<NotificationsListItem>{
                   children: <Widget>[
                     GestureDetector(
                       onTap: () {
-
+                        Navigator.of(context).pushNamed(
+                          '/profile',
+                          arguments: widget.notificationItem.user,
+                        );
                       },
                       child: AnimatedContainer(
                         curve: Curves.ease,

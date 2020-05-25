@@ -48,7 +48,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   @override
   void dispose() {
-    print('[DEBUG] EventDetailsState#dispose');
+    print('[DEBUG] _EventDetailsState#dispose');
     _subscriptions.forEach((s) => s.cancel());
     _eventDetailsBloc.dispose();
     super.dispose();

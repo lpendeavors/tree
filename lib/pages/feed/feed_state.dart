@@ -75,6 +75,7 @@ class FeedItem extends Equatable {
   final String message;
   final String name;
   final String userImage;
+  final String userId;
   final bool isPoll;
   final List<String> postImages;
 
@@ -86,6 +87,7 @@ class FeedItem extends Equatable {
     @required this.message,
     @required this.name,
     @required this.userImage,
+    @required this.userId,
     @required this.isPoll,
     @required this.postImages,
   });
@@ -99,6 +101,7 @@ class FeedItem extends Equatable {
     message, 
     name, 
     userImage, 
+    userId,
     isPoll,
     postImages,
   ];

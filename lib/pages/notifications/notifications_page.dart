@@ -46,7 +46,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _notificationsBloc.dispose();
-    print('_NotificationsPageState#dispose');
+    print('[DEBUG] _NotificationsPageState#dispose');
 
     super.dispose();
   }
@@ -66,7 +66,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           initialData: _notificationsBloc.notificationsListState$.value,
           builder: (context, snapshot) {
             var data = snapshot.data;
-            print(snapshot.data);
 
             if (data.error != null) {
               print(data.error);

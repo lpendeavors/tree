@@ -2,13 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:treeapp/pages/trophies/trophies_bloc.dart';
-import 'package:treeapp/pages/trophies/trophies_page.dart';
-import 'package:treeapp/pages/trophy_info/trophy_info_bloc.dart';
-import 'package:treeapp/pages/trophy_info/trophy_info_page.dart';
-import '../pages/connections/connections_bloc.dart';
-import '../pages/connections/connections_page.dart';
-import '../pages/forgot_password/forgot_password_page.dart';
 import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
@@ -17,6 +10,7 @@ import '../dependency_injection.dart';
 import '../pages/splash/splash_page.dart';
 import '../pages/login/login_page.dart';
 import '../pages/register/register_page.dart';
+import '../pages/forgot_password/forgot_password_page.dart';
 import '../pages/getting_started/getting_started_page.dart';
 import '../pages/phone_verification/phone_verification_page.dart';
 import '../pages/phone_verification/phone_verification_bloc.dart';
@@ -37,6 +31,8 @@ import '../pages/chat_room/chat_room_bloc.dart';
 import '../pages/chat_settings/chat_settings_page.dart';
 import '../pages/chat_settings/chat_settings_bloc.dart';
 import '../pages/settings/settings_page.dart';
+import '../pages/profile/profile_page.dart';
+import '../pages/profile/profile_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -242,7 +238,7 @@ class MyApp extends StatelessWidget {
                 chatRepository: Injector.of(context).chatRepository,
                 groupRepository: Injector.of(context).groupRepository,
                 roomId: args['roomId'],
-                isGroup: args['isGroup'],
+                isRoom: args['isRoom'],
               );
             },
           );
@@ -263,6 +259,24 @@ class MyApp extends StatelessWidget {
             },
           );
         }
+      );
+    }
+
+    if (routerSettings.name == '/profile') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return ProfilePage(
+            isTab: false,
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initProfileBloc: () {
+              return ProfileBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userRepository: Injector.of(context).userRepository,
+                userId: routerSettings.arguments as String,
+              );
+            },
+          );
+        },
       );
     }
   };

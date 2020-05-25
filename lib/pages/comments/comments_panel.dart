@@ -49,7 +49,7 @@ class _CommentsPanelState extends State<CommentsPanel> {
 
   @override
   void dispose() {
-    print('[DEBUG] CommentsState#dispose');
+    print('[DEBUG] _CommentsState#dispose');
     _subscriptions.forEach((s) => s.cancel());
     _commentsBloc.dispose();
     super.dispose();
