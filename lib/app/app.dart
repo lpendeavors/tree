@@ -180,6 +180,51 @@ class MyApp extends StatelessWidget {
       );
     }
 
+    if (routerSettings.name == '/connections') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return ConnectionsPage(
+              initConnectionsBloc: () {
+                return ConnectionsBloc(
+                  userBloc: BlocProvider.of<UserBloc>(context),
+                  userId: routerSettings.arguments as String,
+                  userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
+      );
+    }
+
+    if (routerSettings.name == '/trophies') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return TrophiesPage(
+              initTrophiesBloc: () {
+                return TrophiesBloc(
+                  userBloc: BlocProvider.of<UserBloc>(context),
+                  userId: routerSettings.arguments as String,
+                  userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
+      );
+    }
+
+    if (routerSettings.name == '/trophy_info') {
+      return MaterialPageRoute(
+          builder: (context) {
+            return TrophyInfoPage(
+              initTrophyInfoBloc: () {
+                return TrophyInfoBloc(
+                    userBloc: BlocProvider.of<UserBloc>(context),
+                    trophyKey: routerSettings.arguments as String,
+                    userRepository: Injector.of(context).userRepository
+                );
+              },
+            );
+          }
     if (routerSettings.name == '/chat_room') {
       return MaterialPageRoute(
         builder: (context) {

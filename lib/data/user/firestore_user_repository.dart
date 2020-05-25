@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
+import '../../models/old/user_preview_entity.dart';
 import 'package:tuple/tuple.dart';
 import '../../models/old/user_entity.dart';
 
@@ -46,6 +47,8 @@ abstract class FirestoreUserRepository {
 
   Stream<UserEntity> getUserById({@required String uid});
 
+  Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
+  
   Future<void> saveNotifications({
     @required String user,
     @required bool messages,

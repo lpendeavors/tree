@@ -6,6 +6,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
+import '../../models/old/user_preview_entity.dart';
 
 class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   final FirebaseAuth _firebaseAuth;
@@ -18,6 +19,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
+
+  @override
+  Stream<List<UserPreviewEntity>> getUserConnections({String uid}) => _getUserConnections$(uid);
 
   @override
   Stream<List<UserEntity>> get() {
@@ -124,6 +128,20 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     }
     return _firestore.collection('userBase').document(uid).snapshots().map(
       (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
+  }
+
+  Stream<List<UserPreviewEntity>> _getUserConnections$(String uid) {
+    if (uid == null) {
+      return null;
+    }
+    return _firestore.collection('userBase')
+        .document(uid)
+        .snapshots()
+        .asyncMap((snapshot) {
+          return Future.wait((snapshot.data['connections'] as List<dynamic>).map((uid){
+            return _firestore.collection('userBase').document(uid).get().then((snapshot) => snapshot.exists ? UserPreviewEntity.fromDocumentSnapshot(snapshot) : null);
+          }));
+        });
   }
 
   @override

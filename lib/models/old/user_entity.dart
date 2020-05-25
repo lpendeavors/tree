@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/models/old/church_info.dart';
+import '../../models/old/church_info.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './user_chat_data.dart';
@@ -53,6 +53,9 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String title;
   final String city;
   final String relationStatus;
+  final ChurchInfo churchInfo;
+  final List<String> receivedRequests;
+  final List<String> sentRequests;
   final bool chatNotification;
   final bool chatOnlineStatus;
   final bool groupNotification;
@@ -116,6 +119,9 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.title,
     this.city,
     this.relationStatus,
+    this.churchInfo,
+    this.sentRequests,
+    this.receivedRequests
     this.chatNotification,
     this.chatOnlineStatus,
     this.groupNotification,
@@ -174,6 +180,9 @@ class UserEntity extends Equatable implements FirebaseModel {
       title,
       city,
       relationStatus,
+      churchInfo,
+      sentRequests,
+      receivedRequests
       chatNotification,
       chatOnlineStatus,
       groupNotification,

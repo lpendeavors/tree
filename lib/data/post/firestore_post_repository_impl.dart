@@ -33,6 +33,17 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   }
 
   @override
+  Stream<List<PostEntity>> postsByOwner({
+    String uid,
+  }) {
+    return _firestore
+        .collection('postBase')
+        .where('ownerId', isEqualTo: uid)
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
   Stream<List<PostEntity>> getByAdmin() {
     return _firestore
       .collection('postBase')
