@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -34,6 +35,8 @@ class ProfileBloc implements BaseBloc {
   final void Function() cancelConnectRequest;
   final void Function() acceptConnectRequest;
   final void Function() disconnect;
+  final void Function() approveAccount;
+  final void Function(File file) setPhoto;
 
   ///
   /// Output streams
@@ -53,6 +56,8 @@ class ProfileBloc implements BaseBloc {
     @required this.cancelConnectRequest,
     @required this.acceptConnectRequest,
     @required this.disconnect,
+    @required this.approveAccount,
+    @required this.setPhoto,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -76,11 +81,15 @@ class ProfileBloc implements BaseBloc {
     final cancelConnectRequestController = PublishSubject<void>();
     final acceptConnectRequestController = PublishSubject<void>();
     final disconnectController = PublishSubject<void>();
+    final approveController = PublishSubject<void>();
+    final setPhotoController = BehaviorSubject<File>();
 
     final sendConnectRequest$ = sendConnectRequestController.exhaustMap((_) => _sendConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
     final cancelConnectRequest$ = cancelConnectRequestController.exhaustMap((_) => _cancelConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
     final acceptConnectRequest$ = acceptConnectRequestController.exhaustMap((_) => _acceptConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
     final disconnect$ = disconnectController.exhaustMap((_) => _disconnect(userRepository, userId, userBloc.loginState$.value)).publish();
+    final approveAccount$ = approveController.exhaustMap((_) => _approveAccount(userRepository, userId)).publish();
+    final photo$ = setPhotoController.exhaustMap((_) => _upload(userRepository, userId, setPhotoController.value)).publish();
 
     /// 
     /// Streams
@@ -107,13 +116,17 @@ class ProfileBloc implements BaseBloc {
       cancelConnectRequest$.connect(),
       acceptConnectRequest$.connect(),
       disconnect$.connect(),
+      approveAccount$.connect(),
+      photo$.connect(),
     ];
 
     final controllers = <StreamController>[
       sendConnectRequestController,
       cancelConnectRequestController,
       acceptConnectRequestController,
-      disconnectController
+      disconnectController,
+      approveController,
+      setPhotoController,
     ];
 
     return ProfileBloc._(
@@ -123,6 +136,8 @@ class ProfileBloc implements BaseBloc {
       cancelConnectRequest: () => cancelConnectRequestController.add(null),
       acceptConnectRequest: () => acceptConnectRequestController.add(null),
       disconnect: () => disconnectController.add(null),
+      approveAccount: () => approveController.add(null),
+      setPhoto: (file) => setPhotoController.add(file),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
         await Future.wait(controllers.map((c) => c.close()));
@@ -177,6 +192,23 @@ class ProfileBloc implements BaseBloc {
     }
   }
 
+  static _approveAccount(
+      FirestoreUserRepository userRepository,
+      String userID,
+    ) {
+    print('_approveAccount');
+    userRepository.approveAccount(userID);
+  }
+
+  static _upload(
+    FirestoreUserRepository userRepository,
+    String userID,
+    File file
+  ) {
+    print('_upload');
+    userRepository.uploadImage(userID, file);
+  }
+
   static List<FeedItem> _entitiesToFeedItems(
     List<PostEntity> entities,
   ) {
@@ -226,8 +258,9 @@ class ProfileBloc implements BaseBloc {
       .map((user){
         var profile = _entityToProfileItem(user, loginState);
         return _kInitialProfileState.copyWith(
-            profile: profile,
-            isLoading: false
+          profile: profile,
+          isLoading: false,
+          isAdmin: loginState.isAdmin
         );
       })
       .startWith(_kInitialProfileState)
@@ -235,6 +268,7 @@ class ProfileBloc implements BaseBloc {
         return _kInitialProfileState.copyWith(
           error: e,
           isLoading: false,
+          isAdmin: loginState.isAdmin
         );
       });
     }
@@ -262,7 +296,7 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return postRepository.postsByUser(uid: userId)
+      return postRepository.postsByOwner(uid: userId)
       .map((posts){
         var userPosts = _entitiesToFeedItems(posts);
         return _kInitialRecentFeedState.copyWith(

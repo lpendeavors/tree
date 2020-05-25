@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
+import 'package:image_pickers/CropConfig.dart';
+import 'package:image_pickers/UIConfig.dart';
+import 'package:image_pickers/image_pickers.dart';
+import 'package:treeapp/widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
 import '../../widgets/modals/disconnect_modal.dart';
 import '../../pages/feed/widgets/feed_list_item.dart';
@@ -111,6 +116,39 @@ class _ProfilePageState extends State<ProfilePage> {
         InkWell(
           onTap: () {
             // TODO: action
+            showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return ProfileImageModal(
+                  options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
+                );
+              }
+            ).then((result){
+              if (result == "Add Photo" || result == "Update Picture") {
+                ImagePickers.pickerPaths(
+                  galleryMode: GalleryMode.image,
+                  selectCount: 1,
+                  showCamera: true,
+                  compressSize: 300,
+                  uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
+                  cropConfig: CropConfig(enableCrop: true, width: 10, height: 10)
+                ).then((media) => media[0].path).then((path) => File(path)).then((file) => _profileBloc.setPhoto(file));
+                return;
+              }
+
+              if (result == "View Picture") {
+                Navigator.of(context).pushNamed(
+                  '/preview_image',
+                  arguments: data.profile.photo,
+                );
+                return;
+              }
+
+              if (result == "Approve Account") {
+                _profileBloc.approveAccount();
+                return;
+              }
+            });
           },
           child: Container(
             height: 300,
@@ -185,7 +223,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 color: Colors.white,
                               ),
                               onPressed: () {
-                                // Connect, report, block
+                                // TODO: Connect, report, block
                               },
                             ),
                           ],
@@ -209,10 +247,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 23,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'NirmalaB'
+                                          color: Colors.white,
+                                          fontSize: 23,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NirmalaB'
                                         ),
                                       ),
                                     ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/preview_image/preivew_image_page.dart';
 import '../pages/connections/connections_bloc.dart';
 import '../pages/connections/connections_page.dart';
 import '../pages/trophies/trophies_bloc.dart';
@@ -110,7 +111,7 @@ class MyApp extends StatelessWidget {
     },
     '/settings': (context) {
       return SettingsPage();
-    }
+    },
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
@@ -283,9 +284,20 @@ class MyApp extends StatelessWidget {
               return ProfileBloc(
                 userBloc: BlocProvider.of<UserBloc>(context),
                 userRepository: Injector.of(context).userRepository,
+                postRepository: Injector.of(context).postRepository,
                 userId: routerSettings.arguments as String,
               );
             },
+          );
+        },
+      );
+    }
+
+    if (routerSettings.name == '/preview_image') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return PreviewImage(
+            imageURL: routerSettings.arguments as String,
           );
         },
       );

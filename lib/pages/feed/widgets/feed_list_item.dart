@@ -241,7 +241,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                               // TODO: preview image
                             },
                             child: Image(
-                              image: CacheImage(widget.feedItem.postImages[0]),
+                              image: CacheImage(widget.feedItem.postImages[0] ?? ""),
                               alignment: Alignment.center,
                             ),
                           )
@@ -261,7 +261,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                         fit: StackFit.expand,
                                         children: <Widget>[
                                           Image(
-                                            image: CacheImage(widget.feedItem.postImages[index]),
+                                            image: CacheImage(widget.feedItem.postImages[index] ?? ""),
                                             fit: BoxFit.cover,
                                             alignment: Alignment.center,
                                           ),

@@ -68,6 +68,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     chatOnlineStatus: json['chatOnlineStatus'] as bool,
     groupNotification: json['groupNotification'] as bool,
     messageNotification: json['messageNotification'] as bool,
+    isAdmin: json['isAdmin'] as bool,
   );
 }
 
@@ -118,6 +119,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'chatOnlineStatus': instance.chatOnlineStatus,
       'groupNotification': instance.groupNotification,
       'messageNotification': instance.messageNotification,
+      'isAdmin': instance.isAdmin,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

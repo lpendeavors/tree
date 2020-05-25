@@ -57,6 +57,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final bool chatOnlineStatus;
   final bool groupNotification;
   final bool messageNotification;
+  final bool isAdmin;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -120,6 +121,7 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.chatOnlineStatus,
     this.groupNotification,
     this.messageNotification,
+    this.isAdmin
   });
 
   String get id => this.documentId;
@@ -177,6 +179,7 @@ class UserEntity extends Equatable implements FirebaseModel {
       chatOnlineStatus,
       groupNotification,
       messageNotification,
+      isAdmin
     ];
   }
 

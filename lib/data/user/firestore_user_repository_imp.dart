@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../models/old/user_preview_entity.dart';
@@ -246,6 +249,25 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       return _firestore.document('userBase/$to').updateData({
         'connections': FieldValue.arrayRemove([from])
       });
+    });
+  }
+
+  @override
+  Future<void> uploadImage(String uid, File image) {
+    var refId = new Uuid().v1();
+    StorageReference storageReference = FirebaseStorage.instance.ref().child(refId);
+    StorageUploadTask uploadTask = storageReference.putFile(image);
+    return uploadTask.onComplete.then((value) => value.ref.getDownloadURL()).then((url){
+      _firestore.document('userBase/$uid').updateData({
+        'image': url
+      });
+    });
+  }
+
+  @override
+  Future<void> approveAccount(String uid) {
+    return _firestore.document('userBase/$uid').updateData({
+      'isVerified': true
     });
   }
 }

@@ -11,12 +11,14 @@ class LoggedInUser extends Equatable implements LoginState {
   final String uid;
   final String email;
   final String fullName;
+  final bool isAdmin;
   final List<ChatData> chatList;
 
   const LoggedInUser({
     @required this.uid,
     @required this.email,
     @required this.fullName,
+    @required this.isAdmin,
     @required this.chatList,
   });
 

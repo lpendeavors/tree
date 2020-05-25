@@ -26,18 +26,21 @@ class ProfileState extends Equatable {
   final ProfileItem profile;
   final bool isLoading;
   final Object error;
+  final bool isAdmin;
 
   const ProfileState({
     @required this.profile,
     @required this.isLoading,
     @required this.error,
+    @required this.isAdmin,
   });
 
-  ProfileState copyWith({profile, isLoading, error}) {
+  ProfileState copyWith({profile, isLoading, error, isAdmin}) {
     return ProfileState(
       profile: profile ?? this.profile,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -46,6 +49,7 @@ class ProfileState extends Equatable {
     profile,
     isLoading,
     error,
+    isAdmin,
   ];
 
   @override
