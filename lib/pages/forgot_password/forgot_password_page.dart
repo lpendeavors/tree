@@ -76,7 +76,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               color: Colors.black.withOpacity(0.2),
               margin: EdgeInsets.only(bottom: 10),
             ),
-            Text(s.password_reset_tip, style: TextStyle(
+            Text(
+              s.password_reset_tip, 
+              style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: Colors.black45,

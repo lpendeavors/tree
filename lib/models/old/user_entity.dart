@@ -43,7 +43,6 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<String> receivedRequests;
   final List<String> sentRequests;
   final ChurchInfo churchInfo;
-  final List<ChatData> myChatList13;
   final List<String> connections;
   final List<String> shares;
   final int type;
@@ -104,7 +103,6 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.receivedRequests,
     this.sentRequests,
     this.churchInfo,
-    this.myChatList13,
     this.churchName,
     this.isVerified,
     this.connections,
@@ -161,7 +159,6 @@ class UserEntity extends Equatable implements FirebaseModel {
       receivedRequests,
       sentRequests,
       churchInfo,
-      myChatList13,
       image,
       isVerified,
       churchName,
