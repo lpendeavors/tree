@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/models/old/church_info.dart';
+import '../../models/old/church_info.dart';
+import '../../pages/feed/feed_state.dart';
 import '../../models/old/trophy.dart';
 
 ///
@@ -13,8 +14,8 @@ abstract class ProfileMessage {
 ///
 /// Error 
 /// 
-class NotLoggedInError {
-  const NotLoggedInError();
+class ProfileNotLoggedInError {
+  const ProfileNotLoggedInError();
 }
 
 /// 
@@ -25,18 +26,21 @@ class ProfileState extends Equatable {
   final ProfileItem profile;
   final bool isLoading;
   final Object error;
+  final List<FeedItem> feedItems;
 
   const ProfileState({
     @required this.profile,
     @required this.isLoading,
     @required this.error,
+    @required this.feedItems,
   });
 
-  ProfileState copyWith({profile, isLoading, error}) {
+  ProfileState copyWith({profile, isLoading, error, feedItems}) {
     return ProfileState(
       profile: profile ?? this.profile,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      feedItems: feedItems ?? this.feedItems,
     );
   }
 
@@ -45,6 +49,7 @@ class ProfileState extends Equatable {
     profile,
     isLoading,
     error,
+    feedItems
   ];
 
   @override
@@ -54,6 +59,7 @@ class ProfileState extends Equatable {
 @immutable
 class ProfileItem extends Equatable {
   final String id;
+  final String uid;
   final String photo;
   final bool isVerified;
   final bool isChurch;
@@ -70,16 +76,21 @@ class ProfileItem extends Equatable {
   final String city;
   final String relationStatus;
   final ChurchInfo churchInfo;
+  final bool myProfile;
+
+  final bool isFriend;
+  final bool sent;
+  final bool received;
 
   const ProfileItem({
     @required this.id,
+    @required this.uid,
     @required this.photo,
     @required this.isVerified,
     @required this.isChurch,
     @required this.fullName,
     @required this.churchName,
     @required this.connections,
-    @required this.shares,
     @required this.trophies,
     @required this.type,
     @required this.churchDenomination,
@@ -88,12 +99,18 @@ class ProfileItem extends Equatable {
     @required this.title,
     @required this.city,
     @required this.relationStatus,
-    @required this.churchInfo
+    @required this.churchInfo,
+    @required this.shares,
+    @required this.myProfile,
+    @required this.isFriend,
+    @required this.sent,
+    @required this.received,
   });
 
   @override
   List get props => [
     id,
+    uid,
     photo,
     isVerified,
     isChurch,
@@ -109,7 +126,11 @@ class ProfileItem extends Equatable {
     title,
     city,
     relationStatus,
-    churchInfo
+    churchInfo,
+    myProfile,
+    isFriend,
+    sent,
+    received
   ];
 
   @override
