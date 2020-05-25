@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
-import 'package:treeapp/util/asset_utils.dart';
+import '../../util/asset_utils.dart';
 import '../../generated/l10n.dart';
 import './connections_bloc.dart';
 import './connections_state.dart';

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/models/old/trophy.dart';
+import '../../models/old/trophy.dart';
 
 ///
 /// Message

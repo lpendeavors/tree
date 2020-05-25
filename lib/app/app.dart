@@ -2,6 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import '../pages/connections/connections_bloc.dart';
+import '../pages/connections/connections_page.dart';
+import '../pages/trophies/trophies_bloc.dart';
+import '../pages/trophies/trophies_page.dart';
+import '../pages/trophy_info/trophy_info_bloc.dart';
+import '../pages/trophy_info/trophy_info_page.dart';
 import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
@@ -226,14 +232,16 @@ class MyApp extends StatelessWidget {
                 return TrophyInfoBloc(
                     userBloc: BlocProvider.of<UserBloc>(context),
                     trophyKey: routerSettings.arguments as String,
-                    userRepository: Injector.of(context).userRepository
+                    userRepository: Injector
+                        .of(context)
+                        .userRepository
                 );
               },
             );
           }
       );
     }
-    
+
     if (routerSettings.name == '/chat_room') {
       return MaterialPageRoute(
         builder: (context) {
@@ -289,6 +297,8 @@ class MyApp extends StatelessWidget {
         },
       );
     }
+
+    return null;
   };
 
   @override
