@@ -367,7 +367,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       onTap: () {
                         Navigator.of(context).pushNamed(
                             '/trophy_info',
-                            arguments: trophy.trophyKey
+                            arguments: index
                         );
                       },
                       radius: 10,

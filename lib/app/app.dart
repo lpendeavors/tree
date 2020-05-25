@@ -225,7 +225,7 @@ class MyApp extends StatelessWidget {
               initTrophyInfoBloc: () {
                 return TrophyInfoBloc(
                     userBloc: BlocProvider.of<UserBloc>(context),
-                    trophyKey: routerSettings.arguments as String,
+                    trophyIndex: routerSettings.arguments as int,
                     userRepository: Injector
                         .of(context)
                         .userRepository

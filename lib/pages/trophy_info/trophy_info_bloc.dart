@@ -46,7 +46,7 @@ class TrophyInfoBloc implements BaseBloc {
 
   factory TrophyInfoBloc({
     @required UserBloc userBloc,
-    @required String trophyKey,
+    @required int trophyIndex,
     @required FirestoreUserRepository userRepository,
   }) {
     ///
@@ -60,7 +60,7 @@ class TrophyInfoBloc implements BaseBloc {
     ///
     final trophyInfoState$ = _getTrophyInfo(
         userBloc,
-        trophyKey,
+        trophyIndex,
         userRepository
     ).publishValueSeeded(_kInitialTrophyInfoState);
 
@@ -81,7 +81,7 @@ class TrophyInfoBloc implements BaseBloc {
 
   static Stream<TrophyInfoState> _toState(
       LoginState loginState,
-      String trophyKey,
+      int trophyIndex,
       FirestoreUserRepository userRepository
   ) {
     if (loginState is Unauthenticated) {
@@ -95,7 +95,7 @@ class TrophyInfoBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((entity){
-        return _entityToTrophyInfo(entity, trophyKey);
+        return _entityToTrophyInfo(entity, trophyIndex);
       })
       .map((trophy) {
         return _kInitialTrophyInfoState.copyWith(
@@ -122,20 +122,20 @@ class TrophyInfoBloc implements BaseBloc {
 
   static Trophy _entityToTrophyInfo(
     UserEntity entity,
-    String trophyKey
+    int trophyIndex
   ) {
-    return entity.treeTrophies.where((element) => element.trophyKey == trophyKey).toList()[0];
+    return entity.treeTrophies[trophyIndex];
   }
 
   static Stream<TrophyInfoState> _getTrophyInfo(
     UserBloc userBloc,
-    String trophyKey,
+    int trophyIndex,
     FirestoreUserRepository userRepository
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
           loginState,
-          trophyKey,
+          trophyIndex,
           userRepository
       );
     });
