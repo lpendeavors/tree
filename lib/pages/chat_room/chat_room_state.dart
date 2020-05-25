@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/models/old/group_member.dart';
+import '../../models/old/group_member.dart';
 
 /// 
 /// Enums

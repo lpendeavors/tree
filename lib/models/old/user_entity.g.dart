@@ -64,13 +64,6 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     title: json['title'] as String,
     city: json['city'] as String,
     relationStatus: json['relationStatus'] as String,
-    churchInfo: json['churchInfo'] == null
-        ? null
-        : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
-    sentRequests:
-        (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
-    receivedRequests:
-        (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
     chatNotification: json['chatNotification'] as bool,
     chatOnlineStatus: json['chatOnlineStatus'] as bool,
     groupNotification: json['groupNotification'] as bool,
@@ -121,9 +114,6 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'title': instance.title,
       'city': instance.city,
       'relationStatus': instance.relationStatus,
-      'churchInfo': instance.churchInfo?.toJson(),
-      'receivedRequests': instance.receivedRequests,
-      'sentRequests': instance.sentRequests,
       'chatNotification': instance.chatNotification,
       'chatOnlineStatus': instance.chatOnlineStatus,
       'groupNotification': instance.groupNotification,

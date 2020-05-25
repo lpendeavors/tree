@@ -53,9 +53,6 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String title;
   final String city;
   final String relationStatus;
-  final ChurchInfo churchInfo;
-  final List<String> receivedRequests;
-  final List<String> sentRequests;
   final bool chatNotification;
   final bool chatOnlineStatus;
   final bool groupNotification;
@@ -119,9 +116,6 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.title,
     this.city,
     this.relationStatus,
-    this.churchInfo,
-    this.sentRequests,
-    this.receivedRequests
     this.chatNotification,
     this.chatOnlineStatus,
     this.groupNotification,
@@ -180,10 +174,6 @@ class UserEntity extends Equatable implements FirebaseModel {
       title,
       city,
       relationStatus,
-      churchInfo,
-      sentRequests,
-      receivedRequests
-      chatNotification,
       chatOnlineStatus,
       groupNotification,
       messageNotification,

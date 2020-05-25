@@ -125,19 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
-                    if (data.profile.photo != null) ...[
-                      Align(
-                        alignment: Alignment.center,
-                        child: Image(
-                          image: CacheImage(data.profile.photo),
-                          height: 300,
-                          width: MediaQuery.of(context).size.width,
-                          alignment: Alignment.center,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

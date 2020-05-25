@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:treeapp/models/old/trophy.dart';
-import 'package:treeapp/models/old/user_entity.dart';
+import '../../models/old/trophy.dart';
+import '../../models/old/user_entity.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
 import '../../pages/feed/feed_state.dart';
