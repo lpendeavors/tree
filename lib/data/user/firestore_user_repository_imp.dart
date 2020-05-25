@@ -202,4 +202,50 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       .document('userBase/$user')
       .setData(addition, merge: true);
   }
+
+  @override
+  Future<void> sendConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'sentRequests': FieldValue.arrayUnion([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'receivedRequests': FieldValue.arrayUnion([from])
+      });
+    });
+  }
+
+  @override
+  Future<void> cancelConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'sentRequests': FieldValue.arrayRemove([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'receivedRequests': FieldValue.arrayRemove([from])
+      });
+    });
+  }
+
+  @override
+  Future<void> acceptConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$to').updateData({
+      'receivedRequests': FieldValue.arrayRemove([from]),
+      'connections': FieldValue.arrayUnion([from])
+    }).then((value){
+      return _firestore.document('userBase/$from').updateData({
+        'sentRequests': FieldValue.arrayRemove([to]),
+        'connections': FieldValue.arrayUnion([to])
+      });
+    });
+  }
+
+  @override
+  Future<void> disconnect(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'connections': FieldValue.arrayRemove([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'connections': FieldValue.arrayRemove([from])
+      });
+    });
+  }
 }

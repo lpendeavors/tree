@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
+import '../../widgets/modals/cancel_request_modal.dart';
+import '../../widgets/modals/disconnect_modal.dart';
 import '../../pages/feed/widgets/feed_list_item.dart';
 import '../../models/old/trophy.dart';
 import '../../util/asset_utils.dart';
@@ -53,31 +55,53 @@ class _ProfilePageState extends State<ProfilePage> {
   
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<ProfileState>(
-      stream: _profileBloc.profileState$,
-      initialData: _profileBloc.profileState$.value,
-      builder: (context, snapshot) {
-        var data = snapshot.data;
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            StreamBuilder<ProfileState>(
+              stream: _profileBloc.profileState$,
+              initialData: _profileBloc.profileState$.value,
+              builder: (context, snapshot) {
+                var data = snapshot.data;
 
-        if(!data.isLoading){
-          return Scaffold(
-            body: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Column(
-                children: <Widget>[
-                  _appBar(data),
-                  _profile(data),
-                  _recentPostList(data)
-                ],
-              ),
+                if(!data.isLoading){
+                  return Column(
+                    children: <Widget>[
+                      _appBar(data),
+                      _profile(data),
+                    ],
+                  );
+                } else {
+                  return Container(
+                    height: 800,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+              }
             ),
-          );
-        } else {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      }
+            StreamBuilder<RecentFeedState>(
+                stream: _profileBloc.recentFeedState$,
+                initialData: _profileBloc.recentFeedState$.value,
+                builder: (context, snapshot) {
+                  var data = snapshot.data;
+
+                  if(!data.isLoading){
+                    return Column(
+                      children: <Widget>[
+                        _recentPostList(data),
+                      ],
+                    );
+                  } else {
+                    return Container();
+                  }
+                }
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -255,7 +279,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ),
                                       ],
                                     ),
-                                    _connectButton(data.profile)
+                                    if(!data.profile.myProfile)
+                                      _connectButton(data.profile)
                                   ],
                                 ),
                               ],
@@ -438,7 +463,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (received) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          _profileBloc.acceptConnectRequest();
         },
         color: Theme.of(context).primaryColor,
         shape: RoundedRectangleBorder(
@@ -464,7 +489,16 @@ class _ProfilePageState extends State<ProfilePage> {
     if (connected) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return DisconnectModal();
+              }
+          ).then((disconnect) {
+            if (disconnect) {
+              _profileBloc.disconnect();
+            }
+          });
         },
         color: Colors.red,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -488,7 +522,16 @@ class _ProfilePageState extends State<ProfilePage> {
     if (sent) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return CancelRequestModal();
+              }
+          ).then((cancel) {
+            if (cancel) {
+              _profileBloc.cancelConnectRequest();
+            }
+          });
         },
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -513,7 +556,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return RaisedButton(
       onPressed: () {
-        //TODO: action
+        _profileBloc.sendConnectRequest();
       },
       color: Theme.of(context).primaryColor,
       shape: RoundedRectangleBorder(
@@ -778,7 +821,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _recentPostList(ProfileState data) {
+  Widget _recentPostList(RecentFeedState data) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

@@ -48,7 +48,15 @@ abstract class FirestoreUserRepository {
   Stream<UserEntity> getUserById({@required String uid});
 
   Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
-  
+
+  Future<void> sendConnectionRequest(String from, String to);
+
+  Future<void> cancelConnectionRequest(String from, String to);
+
+  Future<void> acceptConnectionRequest(String from, String to);
+
+  Future<void> disconnect(String from, String to);
+
   Future<void> saveNotifications({
     @required String user,
     @required bool messages,

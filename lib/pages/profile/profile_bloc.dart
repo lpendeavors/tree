@@ -13,25 +13,33 @@ import '../../user_bloc/user_login_state.dart';
 import './profile_state.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-
-
 const _kInitialProfileState = ProfileState(
   profile: null,
   isLoading: true,
-  error: false,
-  feedItems: []
+  error: false
 );
+
+const _kInitialRecentFeedState = RecentFeedState(
+    feedItems: [],
+    isLoading: true,
+    error: false
+);
+
 
 class ProfileBloc implements BaseBloc {
   ///
   /// Input functions
   /// 
-  
+  final void Function() sendConnectRequest;
+  final void Function() cancelConnectRequest;
+  final void Function() acceptConnectRequest;
+  final void Function() disconnect;
 
   ///
   /// Output streams
   /// 
   final ValueStream<ProfileState> profileState$;
+  final ValueStream<RecentFeedState> recentFeedState$;
 
   ///
   /// Clean up
@@ -40,6 +48,11 @@ class ProfileBloc implements BaseBloc {
 
   ProfileBloc._({
     @required this.profileState$,
+    @required this.recentFeedState$,
+    @required this.sendConnectRequest,
+    @required this.cancelConnectRequest,
+    @required this.acceptConnectRequest,
+    @required this.disconnect,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -57,9 +70,17 @@ class ProfileBloc implements BaseBloc {
     assert(postRepository != null, 'postRepository cannot be null');
 
     ///
-    /// Stream controllers
+    /// Controllers
     /// 
-    
+    final sendConnectRequestController = PublishSubject<void>();
+    final cancelConnectRequestController = PublishSubject<void>();
+    final acceptConnectRequestController = PublishSubject<void>();
+    final disconnectController = PublishSubject<void>();
+
+    final sendConnectRequest$ = sendConnectRequestController.exhaustMap((_) => _sendConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
+    final cancelConnectRequest$ = cancelConnectRequestController.exhaustMap((_) => _cancelConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
+    final acceptConnectRequest$ = acceptConnectRequestController.exhaustMap((_) => _acceptConnectRequest(userRepository, userId, userBloc.loginState$.value)).publish();
+    final disconnect$ = disconnectController.exhaustMap((_) => _disconnect(userRepository, userId, userBloc.loginState$.value)).publish();
 
     /// 
     /// Streams
@@ -67,18 +88,44 @@ class ProfileBloc implements BaseBloc {
     final profileState$ = _getProfile(
       userBloc,
       userId,
-      userRepository,
-      postRepository
+      userRepository
     ).publishValueSeeded(_kInitialProfileState);
 
+    final recentFeedState$ = _getRecentFeed(
+        userBloc,
+        userId,
+        postRepository
+    ).publishValueSeeded(_kInitialRecentFeedState);
+
+    ///
+    /// Subscriptions and controllers
+    ///
     final subscriptions = <StreamSubscription>[
       profileState$.connect(),
+      recentFeedState$.connect(),
+      sendConnectRequest$.connect(),
+      cancelConnectRequest$.connect(),
+      acceptConnectRequest$.connect(),
+      disconnect$.connect(),
+    ];
+
+    final controllers = <StreamController>[
+      sendConnectRequestController,
+      cancelConnectRequestController,
+      acceptConnectRequestController,
+      disconnectController
     ];
 
     return ProfileBloc._(
       profileState$: profileState$,
+      recentFeedState$: recentFeedState$,
+      sendConnectRequest: () => sendConnectRequestController.add(null),
+      cancelConnectRequest: () => cancelConnectRequestController.add(null),
+      acceptConnectRequest: () => acceptConnectRequestController.add(null),
+      disconnect: () => disconnectController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
       }
     );
   }
@@ -86,9 +133,53 @@ class ProfileBloc implements BaseBloc {
   @override
   void dispose() => _dispose();
 
+  static _sendConnectRequest(
+    FirestoreUserRepository userRepository,
+    String userID,
+    LoginState loginState,
+  ) {
+    print('_sendConnectRequest');
+    if(loginState is LoggedInUser){
+      userRepository.sendConnectionRequest(loginState.uid, userID);
+    }
+  }
+
+  static _cancelConnectRequest(
+    FirestoreUserRepository userRepository,
+    String userID,
+    LoginState loginState,
+  ) {
+    print('_cancelConnectRequest');
+    if(loginState is LoggedInUser){
+      userRepository.cancelConnectionRequest(loginState.uid, userID);
+    }
+  }
+
+  static _acceptConnectRequest(
+    FirestoreUserRepository userRepository,
+    String userID,
+    LoginState loginState,
+  ) {
+    print('_acceptConnectRequest');
+    if(loginState is LoggedInUser){
+      userRepository.acceptConnectionRequest(userID, loginState.uid);
+    }
+  }
+
+  static _disconnect(
+    FirestoreUserRepository userRepository,
+    String userID,
+    LoginState loginState,
+  ) {
+    print('_disconnect');
+    if(loginState is LoggedInUser){
+      userRepository.disconnect(loginState.uid, userID);
+    }
+  }
+
   static List<FeedItem> _entitiesToFeedItems(
-      List<PostEntity> entities,
-      ) {
+    List<PostEntity> entities,
+  ) {
     return entities.map((entity) {
       return FeedItem(
         id: entity.documentId,
@@ -116,11 +207,10 @@ class ProfileBloc implements BaseBloc {
     return images;
   }
 
-  static Stream<ProfileState> _toState(
+  static Stream<ProfileState> _toProfileState(
     LoginState loginState,
     String userId,
     FirestoreUserRepository userRepository,
-    FirestorePostRepository postRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -132,20 +222,14 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
-        userRepository.getUserById(uid: userId),
-        postRepository.postsByOwner(uid: userId),
-        (user, posts) {
-          var profile = _entityToProfileItem(user, loginState);
-          var userPosts = _entitiesToFeedItems(posts);
-
-          return _kInitialProfileState.copyWith(
-              feedItems: userPosts,
-              profile: profile,
-              isLoading: false
-          );
-        }
-      )
+      return userRepository.getUserById(uid: userId)
+      .map((user){
+        var profile = _entityToProfileItem(user, loginState);
+        return _kInitialProfileState.copyWith(
+            profile: profile,
+            isLoading: false
+        );
+      })
       .startWith(_kInitialProfileState)
       .onErrorReturnWith((e) {
         return _kInitialProfileState.copyWith(
@@ -162,6 +246,46 @@ class ProfileBloc implements BaseBloc {
       ),
     );
   }
+
+  static Stream<RecentFeedState> _toFeedState(
+      LoginState loginState,
+      String userId,
+      FirestorePostRepository postRepository,
+  ) {
+    if (loginState is Unauthenticated) {
+      return Stream.value(
+        _kInitialRecentFeedState.copyWith(
+          error: ProfileNotLoggedInError(),
+          isLoading: false,
+        ),
+      );
+    }
+
+    if (loginState is LoggedInUser) {
+      return postRepository.postsByUser(uid: userId)
+      .map((posts){
+        var userPosts = _entitiesToFeedItems(posts);
+        return _kInitialRecentFeedState.copyWith(
+            feedItems: userPosts,
+            isLoading: false
+        );
+      })
+      .startWith(_kInitialRecentFeedState)
+      .onErrorReturnWith((e) {
+        return _kInitialRecentFeedState.copyWith(
+          error: e,
+          isLoading: false,
+        );
+      });
+    }
+
+    return Stream.value(
+      _kInitialRecentFeedState.copyWith(
+        error: 'Dont know loginState=$loginState',
+        isLoading: false,
+      ),
+    );
+}
 
   static ProfileItem _entityToProfileItem(
     UserEntity entity,
@@ -199,14 +323,26 @@ class ProfileBloc implements BaseBloc {
     UserBloc userBloc,
     String userId,
     FirestoreUserRepository userRepository,
-    FirestorePostRepository postRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
-      return _toState(
+      return _toProfileState(
         loginState,
         userId,
         userRepository,
-        postRepository
+      );
+    });
+  }
+
+  static Stream<RecentFeedState> _getRecentFeed(
+      UserBloc userBloc,
+      String userId,
+      FirestorePostRepository postRepository,
+      ) {
+    return userBloc.loginState$.switchMap((loginState) {
+      return _toFeedState(
+          loginState,
+          userId,
+          postRepository
       );
     });
   }
