@@ -12,17 +12,25 @@ class LoggedInUser extends Equatable implements LoginState {
   final String email;
   final String fullName;
   final List<ChatData> chatList;
+  final String image;
 
   const LoggedInUser({
     @required this.uid,
     @required this.email,
     @required this.fullName,
     @required this.chatList,
+    @required this.image,
   });
 
   @override
   List get props {
-    return [uid, email, fullName, chatList];
+    return [
+      uid, 
+      email, 
+      fullName, 
+      chatList,
+      image,
+    ];
   }
 
   @override

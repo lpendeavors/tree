@@ -56,7 +56,6 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   Stream<List<PostEntity>> postsForCollage() {
     return _firestore
       .collection('postBase')
-      .limit(50)
       .snapshots()
       .map(_toEntities);
   }
@@ -74,5 +73,22 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     return querySnapshot.documents.map((documentSnapshot) {
       return PostEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
+  }
+
+  @override
+  Future<void> likeOrUnlikePost({
+    bool shouldLike, 
+    String postId, 
+    String userId
+  }) {
+    if (shouldLike) {
+      return _firestore
+        .document('postBase/$postId')
+        .updateData({'likes': FieldValue.arrayUnion([userId])});
+    } else {
+      return _firestore
+        .document('postBase/$postId')
+        .updateData({'likes': FieldValue.arrayRemove([userId])});
+    }
   }
 }

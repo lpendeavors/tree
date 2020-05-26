@@ -160,7 +160,9 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
           ChatRooms(
             bloc: widget.chatBloc,
           ),
-          Container(color: Colors.blue),
+          ChatGroups(
+            bloc: widget.chatBloc,
+          ),
         ],
       ),
     );

@@ -75,6 +75,7 @@ class UserBloc implements BaseBloc {
       email: userEntity.email,
       uid: userEntity.id,
       chatList: userEntity.myChatsList13 ?? [],
+      image: userEntity.image,
     );
   }
 }

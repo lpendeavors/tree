@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
+import '../../generated/l10n.dart';
 import '../../pages/feed/widgets/feed_list_item.dart';
 import '../../models/old/trophy.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
-import '../../generated/l10n.dart';
 import './profile_bloc.dart';
 import './profile_state.dart';
 
@@ -28,7 +28,7 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   ProfileBloc _profileBloc;
   List<StreamSubscription> _subscriptions;
 
@@ -59,24 +59,35 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, snapshot) {
         var data = snapshot.data;
 
-        if(!data.isLoading){
-          return Scaffold(
-            body: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Column(
-                children: <Widget>[
-                  _appBar(data),
-                  _profile(data),
-                  _recentPostList(data)
-                ],
-              ),
-            ),
-          );
-        } else {
+        print(data.profile);
+
+        if (data.isLoading) {
           return Center(
             child: CircularProgressIndicator(),
           );
         }
+
+        if (data.error != null) {
+          print(data.error);
+          return Center(
+            child: Text(
+              S.of(context).error_occurred,
+            ),
+          );
+        }
+
+        return Scaffold(
+          body: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Column(
+              children: <Widget>[
+                _appBar(data),
+                _profile(data),
+                _recentPostList(data)
+              ],
+            ),
+          ),
+        );
       }
     );
   }
@@ -103,16 +114,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     )
                   ),
                 ),
-                Align(
-                  alignment: Alignment.center,
-                  child: Image(
-                    image: CacheImage(data.profile.photo),
-                    height: 300,
-                    width: MediaQuery.of(context).size.width,
+                if (data.profile.photo != null) ...[
+                  Align(
                     alignment: Alignment.center,
-                    fit: BoxFit.cover,
+                    child: Image(
+                      image: CacheImage(data.profile.photo),
+                      height: 300,
+                      width: MediaQuery.of(context).size.width,
+                      alignment: Alignment.center,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
+                ],
                 Container(
                   height: 300,
                   decoration: BoxDecoration(
@@ -810,7 +823,15 @@ class _ProfilePageState extends State<ProfilePage> {
             data.feedItems.length,
             (index) {
               return FeedListItem(
+                context: context,
+                tickerProvider: this,
                 feedItem: data.feedItems[index],
+                likeFeedItem: (item) {
+                  // TODO: finish saving like
+                  // _feedBloc.postToLikeChanged(item);
+                  // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
+                  // _feedBloc.saveLikeValue();
+                },
               );
             }
           )

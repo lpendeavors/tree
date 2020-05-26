@@ -8,23 +8,24 @@ import '../../../user_bloc/user_bloc.dart';
 import '../../../bloc/bloc_provider.dart';
 import '../feed_state.dart';
 
-class FeedListItem extends StatefulWidget {
+class FeedListItem extends StatelessWidget {
   final FeedItem feedItem;
+  final Function(String) likeFeedItem;
+  final BuildContext context;
+  final TickerProvider tickerProvider;
 
   const FeedListItem({
     @required this.feedItem,
+    @required this.likeFeedItem,
+    @required this.context,
+    @required this.tickerProvider,
   });
 
   @override
-  _FeedListItemState createState() => _FeedListItemState();
-}
-
-class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMixin {
-  var _imagesController = PageController();
-  var _currentPage = 0;
-
-  @override
   Widget build(BuildContext context) {
+    var _imagesController = PageController();
+    var _currentPage = 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -59,7 +60,10 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                             children: <Widget>[
                               InkWell(
                                 onTap: () {
-                                  // TODO: navigate to profile
+                                  Navigator.of(context).pushNamed(
+                                    '/profile',
+                                    arguments: feedItem.userId,
+                                  );
                                 },
                                 child: AbsorbPointer(
                                   child: GestureDetector(
@@ -101,10 +105,10 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                                     ),
                                                   ),
                                                 ),
-                                                if (widget.feedItem.userImage != null)
+                                                if (feedItem.userImage != null)
                                                   Image(
                                                     fit: BoxFit.cover,
-                                                    image: CacheImage(widget.feedItem.userImage),
+                                                    image: CacheImage(feedItem.userImage),
                                                   ),
                                               ],
                                             ),
@@ -121,7 +125,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                   onTap: () {
                                     Navigator.of(context).pushNamed(
                                       '/profile',
-                                      arguments: widget.feedItem.userId,
+                                      arguments: feedItem.userId,
                                     );
                                   },
                                   child: Column(
@@ -131,7 +135,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                         TextSpan(
                                           children: [
                                             TextSpan(
-                                              text: widget.feedItem.name,
+                                              text: feedItem.name,
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.bold,
@@ -141,7 +145,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                         ),
                                       ),
                                       Text(
-                                        widget.feedItem.timePostedString,
+                                        feedItem.timePostedString,
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: Colors.grey,
@@ -152,7 +156,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                 ),
                               ),
                               SizedBox(width: 10),
-                              if (widget.feedItem.isPoll) ...[
+                              if (feedItem.isPoll) ...[
                                 Container(
                                   padding: EdgeInsets.only(
                                     left: 10,
@@ -181,13 +185,13 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                             Icons.more_vert,
                           ),
                           onPressed: () {
-                            // TODO: Post menu
+                            _showPostOptions();
                           },
                         ),
                       ],
                     ),
                   ),
-                  if (widget.feedItem.message.isNotEmpty) ...[
+                  if ((feedItem.message ?? "").isNotEmpty) ...[
                     Padding(
                       padding: EdgeInsets.only(left: 10, right: 10, top: 10),
                       child: Row(
@@ -197,7 +201,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                             flex: 1,
                             fit: FlexFit.tight,
                             child: AnimatedSize(
-                              vsync: this,
+                              vsync: tickerProvider,
                               duration: Duration(
                                 milliseconds: 500,
                               ),
@@ -209,7 +213,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     SmartText(
-                                      text: widget.feedItem.message,
+                                      text: feedItem.message,
                                       onTagClick: (tag) {
                                         // TODO: hash tag screen
                                       },
@@ -232,16 +236,16 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                       ),
                     ),
                   ],
-                  if (widget.feedItem.postImages.length > 0) ...[
+                  if (feedItem.postImages.length > 0) ...[
                     Container(
                       width: MediaQuery.of(context).size.width,
-                      child: widget.feedItem.postImages.length == 1
+                      child: feedItem.postImages.length == 1
                         ? GestureDetector(
                             onTap: () {
                               // TODO: preview image
                             },
                             child: Image(
-                              image: CacheImage(widget.feedItem.postImages[0]),
+                              image: CacheImage(feedItem.postImages[0]),
                               alignment: Alignment.center,
                             ),
                           )
@@ -251,7 +255,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                               children: <Widget>[
                                 PageView.builder(
                                   controller: _imagesController,
-                                  itemCount: widget.feedItem.postImages.length,
+                                  itemCount: feedItem.postImages.length,
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () {
@@ -261,7 +265,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                         fit: StackFit.expand,
                                         children: <Widget>[
                                           Image(
-                                            image: CacheImage(widget.feedItem.postImages[index]),
+                                            image: CacheImage(feedItem.postImages[index]),
                                             fit: BoxFit.cover,
                                             alignment: Alignment.center,
                                           ),
@@ -284,7 +288,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: List<Widget>.generate(
-                                          widget.feedItem.postImages.length,
+                                          feedItem.postImages.length,
                                           (int index) {
                                             if (index == _currentPage) {
                                               return Container(
@@ -322,7 +326,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                       borderRadius: BorderRadius.circular(25),
                                     ),
                                     child: Text(
-                                      '${_currentPage+1}/${widget.feedItem.postImages.length}',
+                                      '${_currentPage+1}/${feedItem.postImages.length}',
                                       style: TextStyle(
                                         color: Colors.white,
                                       ),
@@ -334,7 +338,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                           ),
                     ),
                   ],
-                  if (widget.feedItem.isPoll) ...[
+                  if (feedItem.isPoll) ...[
 
                   ],
                   Padding(
@@ -348,13 +352,17 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                         _feedButton(
                           title: 'Like', 
                           icon: Icons.favorite,
+                          color: !feedItem.isLiked
+                            ? Colors.grey
+                            : Theme.of(context).primaryColor,
                           textAlign: null, 
                           alignment: MainAxisAlignment.start,
-                          onTap: null, 
+                          onTap: () => likeFeedItem(feedItem.id),
                         ),
                         _feedButton(
                           title: 'Comment', 
                           icon: Icons.comment,
+                          color: Colors.grey,
                           textAlign: null, 
                           alignment: MainAxisAlignment.center,
                           onTap: () {
@@ -368,7 +376,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                                     commentsBloc: CommentsBloc(
                                       userBloc: BlocProvider.of<UserBloc>(context),
                                       commentRepository: Injector.of(context).commentRepository,
-                                      postId: widget.feedItem.id,
+                                      postId: feedItem.id,
                                     ),
                                   );
                                 }
@@ -379,9 +387,10 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                         _feedButton(
                           title: 'Share', 
                           icon: Icons.share,
+                          color: Colors.grey,
                           textAlign: TextAlign.left, 
                           alignment: MainAxisAlignment.end,
-                          onTap: null, 
+                          onTap: () => _showShareOptions(), 
                         ),
                       ],
                     ),
@@ -401,6 +410,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
     @required Function() onTap,
     @required TextAlign textAlign,
     @required MainAxisAlignment alignment,
+    @required Color color,
   }) {
     return Flexible(
       child: Stack(
@@ -414,7 +424,7 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
                   child: Icon(
                     icon,
                     size: 22,
-                    color: Colors.grey,
+                    color: color,
                   ),
                 ),
               ),
@@ -439,5 +449,57 @@ class _FeedListItemState extends State<FeedListItem> with TickerProviderStateMix
         ],
       ),
     );
+  }
+
+  Future<void> _showShareOptions() async {
+
+  }
+
+  Future<void> _showPostOptions() async {
+    switch (await showDialog<PostOption>(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(
+            'Tree',
+          ),
+          children: <Widget>[
+            if (feedItem.isMine) ...[
+              SimpleDialogOption(
+                child: Text('Edit Post'),
+                onPressed: () => Navigator.pop(context, PostOption.edit),
+              ),
+              SimpleDialogOption(
+                child: Text('Delete Post'),
+                onPressed: () => Navigator.pop(context, PostOption.delete),
+              ),
+            ],
+            if (!feedItem.isMine) ...[
+              SimpleDialogOption(
+                child: Text('Unconnect with this person'),
+                onPressed: () => Navigator.pop(context, PostOption.unconnect),
+              ),
+              SimpleDialogOption(
+                child: Text('Report this post'),
+                onPressed: () => Navigator.pop(context, PostOption.report),
+              ),
+            ],
+          ],
+        );
+      }
+    )) {
+      case PostOption.edit:
+        print('edit');
+      break;
+      case PostOption.delete:
+        print('delete');
+      break;
+      case PostOption.unconnect:
+        print('unconnect');
+      break;
+      case PostOption.report:
+        print('report');
+      break;
+    }
   }
 }

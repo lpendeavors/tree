@@ -206,8 +206,15 @@ class ChatTabsBloc implements BaseBloc {
     String uid,
   ) {
     return Tuple2(
-      groups.where((group) => group.byAdmin).where((group) => group.isPrivate != true).toList(),
-      groups.where((group) => group.ownerId != null).toList(),
+      groups
+        .where((group) => group.byAdmin)
+        .where((group) => group.isPrivate != true)
+        .toList(),
+      groups
+        .where((group) => !group.byAdmin)
+        .where((group) => group.isGroup)
+        .where((group) => (group.image ?? "").isNotEmpty)
+        .toList(),
     );
   }
 }

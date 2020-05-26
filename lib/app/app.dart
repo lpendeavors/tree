@@ -2,12 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import '../pages/connections/connections_bloc.dart';
-import '../pages/connections/connections_page.dart';
-import '../pages/trophies/trophies_bloc.dart';
-import '../pages/trophies/trophies_page.dart';
-import '../pages/trophy_info/trophy_info_bloc.dart';
-import '../pages/trophy_info/trophy_info_page.dart';
 import '../util/asset_utils.dart';
 import '../generated/l10n.dart';
 import './app_locale_bloc.dart';
@@ -45,6 +39,8 @@ import '../pages/trophies/trophies_page.dart';
 import '../pages/trophies/trophies_bloc.dart';
 import '../pages/trophy_info/trophy_info_page.dart';
 import '../pages/trophy_info/trophy_info_bloc.dart';
+import '../pages/post_edit/post_edit_page.dart';
+import '../pages/post_edit/post_edit_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -295,6 +291,23 @@ class MyApp extends StatelessWidget {
             },
           );
         },
+      );
+    }
+
+    if (routerSettings.name == '/edit_post') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return EditPostPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEditPostBloc: () {
+              return EditPostBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                postId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
       );
     }
 

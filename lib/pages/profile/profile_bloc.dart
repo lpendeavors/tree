@@ -18,7 +18,7 @@ import 'package:timeago/timeago.dart' as timeago;
 const _kInitialProfileState = ProfileState(
   profile: null,
   isLoading: true,
-  error: false,
+  error: null,
   feedItems: []
 );
 
@@ -88,6 +88,7 @@ class ProfileBloc implements BaseBloc {
 
   static List<FeedItem> _entitiesToFeedItems(
       List<PostEntity> entities,
+      String uid,
       ) {
     return entities.map((entity) {
       return FeedItem(
@@ -97,10 +98,12 @@ class ProfileBloc implements BaseBloc {
         timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
         message: entity.postMessage,
         name: entity.fullName != null ? entity.fullName : entity.churchName,
-        userImage: entity.image,
+        userImage: entity.image ?? "",
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
         userId: entity.ownerId,
+        isLiked: (entity.likes ?? []).contains(uid),
+        isMine: entity.ownerId == uid,
       );
     }).toList();
   }
@@ -134,12 +137,12 @@ class ProfileBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        userRepository.getUserById(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
-        postRepository.postsByOwner(uid: userId ?? '02zZ20juDYfvWCHWwYzGgrOPvAr2'),//loginState.uid),
+        userRepository.getUserById(uid: userId),
+        postRepository.postsByOwner(uid: userId),
         (user, posts){
           return _kInitialProfileState.copyWith(
             isLoading: false,
-            feedItems: _entitiesToFeedItems(posts),
+            feedItems: _entitiesToFeedItems(posts, loginState.uid),
             profile: _entityToProfileItem(user, loginState),
           );
         })
@@ -175,7 +178,7 @@ class ProfileBloc implements BaseBloc {
     return ProfileItem(
       id: entity.documentId,
       uid: entity.uid,
-      photo: entity.image ?? "",
+      photo: entity.image,
       isChurch: entity.isChurch ?? false,
       isVerified: entity.isVerified ?? false,
       fullName: entity.fullName,

@@ -210,10 +210,16 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       onClickMenu: (item) {
         switch (item.menuTitle) {
           case 'Post':
-            print('new post');
+            Navigator.of(context).pushNamed(
+              '/edit_post',
+              arguments: null,
+            );
           break;
           case 'Poll':
-            print('new poll');
+            Navigator.of(context).pushNamed(
+              '/edit_poll',
+              arguments: null,
+            );
           break;
           case 'Event':
             Navigator.of(context).pushNamed(

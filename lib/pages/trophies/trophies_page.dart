@@ -37,6 +37,9 @@ class _TrophiesPageState extends State<TrophiesPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Trophies"),
+      ),
       body: Container(
         child: StreamBuilder<TrophiesState>(
           stream: _trophiesBloc.trophiesState$,
@@ -123,9 +126,6 @@ class _TrophiesPageState extends State<TrophiesPage>{
             );
           },
         ),
-      ),
-      appBar: AppBar(
-        title: Text("Trophies"),
       ),
     );
   }
