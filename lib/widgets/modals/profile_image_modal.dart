@@ -87,8 +87,8 @@ class ProfileImageModal extends StatelessWidget {
                                       CrossAxisAlignment.center,
                                       children: <Widget>[
                                         Text(
-                                            options[position],
-                                            style: TextStyle(fontFamily: 'Nirmala', fontSize: 15.0, color: Colors.black87)
+                                          options[position],
+                                          style: TextStyle(fontFamily: 'Nirmala', fontSize: 15.0, color: Colors.black87)
                                         ),
                                       ],
                                     ),

@@ -153,7 +153,6 @@ class ProfileBloc implements BaseBloc {
     String userID,
     LoginState loginState,
   ) {
-    print('_sendConnectRequest');
     if(loginState is LoggedInUser){
       userRepository.sendConnectionRequest(loginState.uid, userID);
     }
@@ -164,7 +163,6 @@ class ProfileBloc implements BaseBloc {
     String userID,
     LoginState loginState,
   ) {
-    print('_cancelConnectRequest');
     if(loginState is LoggedInUser){
       userRepository.cancelConnectionRequest(loginState.uid, userID);
     }
@@ -175,7 +173,6 @@ class ProfileBloc implements BaseBloc {
     String userID,
     LoginState loginState,
   ) {
-    print('_acceptConnectRequest');
     if(loginState is LoggedInUser){
       userRepository.acceptConnectionRequest(userID, loginState.uid);
     }
@@ -186,7 +183,6 @@ class ProfileBloc implements BaseBloc {
     String userID,
     LoginState loginState,
   ) {
-    print('_disconnect');
     if(loginState is LoggedInUser){
       userRepository.disconnect(loginState.uid, userID);
     }
@@ -196,7 +192,6 @@ class ProfileBloc implements BaseBloc {
       FirestoreUserRepository userRepository,
       String userID,
     ) {
-    print('_approveAccount');
     userRepository.approveAccount(userID);
   }
 
@@ -205,7 +200,6 @@ class ProfileBloc implements BaseBloc {
     String userID,
     File file
   ) {
-    print('_upload');
     userRepository.uploadImage(userID, file);
   }
 

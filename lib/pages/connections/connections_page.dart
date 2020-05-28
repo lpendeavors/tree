@@ -81,7 +81,12 @@ class _ConnectionsPageState extends State<ConnectionsPage>{
 
   Widget _userItem(ConnectionItem user){
     return InkWell(
-      onTap: (){},
+      onTap: (){
+        Navigator.of(context).pushNamed(
+          '/profile',
+          arguments: user.uid
+        );
+      },
       child: Container(
         padding: EdgeInsets.all(15.0),
         child: Row(
@@ -157,7 +162,7 @@ class _ConnectionsPageState extends State<ConnectionsPage>{
                     ),
                     SizedBox(height: 5.0),
                     Text(
-                      user.aboutMe.isEmpty ? "Hey there! I am using Tree" : user.aboutMe,
+                      user.aboutMe,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

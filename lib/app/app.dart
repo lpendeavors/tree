@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:treeapp/pages/preview_image/preivew_image_page.dart';
+import '../pages/preview_image/preivew_image_page.dart';
 import '../pages/connections/connections_bloc.dart';
 import '../pages/connections/connections_page.dart';
 import '../pages/trophies/trophies_bloc.dart';
@@ -110,7 +110,9 @@ class MyApp extends StatelessWidget {
       return EventTypesPage();
     },
     '/settings': (context) {
-      return SettingsPage();
+      return SettingsPage(
+        userBloc: BlocProvider.of<UserBloc>(context),
+      );
     },
   };
 

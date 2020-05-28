@@ -125,11 +125,11 @@ class ConnectionsBloc implements BaseBloc {
       return ConnectionItem(
         id: entity.documentId,
         uid: entity.uid,
-        photo: entity.image,
+        photo: entity.image ?? "",
         isChurch: entity.isChurch,
         fullName: entity.fullName,
         churchName: entity.churchName,
-        aboutMe: entity.aboutMe,
+        aboutMe: entity.aboutMe ?? "Hey there! I am using Tree",
       );
     }).toList();
   }

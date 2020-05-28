@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_pickers/CropConfig.dart';
 import 'package:image_pickers/UIConfig.dart';
 import 'package:image_pickers/image_pickers.dart';
-import 'package:treeapp/widgets/modals/profile_image_modal.dart';
+import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
 import '../../widgets/modals/disconnect_modal.dart';
 import '../../pages/feed/widgets/feed_list_item.dart';
@@ -115,7 +115,6 @@ class _ProfilePageState extends State<ProfilePage> {
       children: <Widget>[
         InkWell(
           onTap: () {
-            // TODO: action
             showDialog(
               context: context,
               builder: (BuildContext context){
@@ -223,7 +222,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 color: Colors.white,
                               ),
                               onPressed: () {
-                                // TODO: Connect, report, block
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context){
+                                    return ProfileImageModal(
+                                      options: ["Report User", "Block User"]
+                                    );
+                                  }
+                                ).then((value){
+                                  //broken in original app too
+                                });
                               },
                             ),
                           ],
@@ -362,7 +370,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             color: Theme.of(context).primaryColor,
             onPressed: () {
-              //TODO: action
+              //TODO: Action
             }
           ),
         Container(
