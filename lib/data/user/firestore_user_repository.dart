@@ -13,6 +13,8 @@ abstract class FirestoreUserRepository {
 
   Stream<List<UserEntity>> getConnections();
 
+  Stream<List<UserEntity>> getMyConnections(List<String> connections);
+
   Future<void> signOut();
 
   Future<void> signInWithEmailAndPassword({

@@ -16,10 +16,11 @@ abstract class FirestoreEventRepository {
     DateTime startTime,
     DateTime endDate,
     DateTime endTime,
-    String image,
+    List<String> images,
     String webAddress,
     double cost,
     String venue,
-    double budget
+    double budget,
+    bool isSponsored,
   );
 }

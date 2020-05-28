@@ -211,4 +211,8 @@ class _EventsListItemState extends State<EventsListItem> {
       ),
     );
   }
+
+  Future<void> _showOptionsDialog() async {
+    
+  }
 }

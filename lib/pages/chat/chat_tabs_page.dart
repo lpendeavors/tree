@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
+import '../../util/asset_utils.dart';
 import './widgets/chat_messages.dart';
 import './widgets/chat_rooms.dart';
 import './widgets/chat_groups.dart';
@@ -164,6 +165,36 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
             bloc: widget.chatBloc,
           ),
         ],
+      ),
+      floatingActionButton: ValueListenableBuilder(
+        valueListenable: _currentPage,
+        builder: (context, value, child) {
+          if (value == 1) return Container();
+
+          return FloatingActionButton(
+            backgroundColor: Theme.of(context).primaryColor,
+            onPressed: () {
+              if (value == 0) {
+                Navigator.of(context).pushNamed(
+                  '/create_message',
+                  arguments: 1,
+                );
+              }
+              if (value == 2) {
+                Navigator.of(context).pushNamed(
+                  '/create_message',
+                  arguments: 0,
+                );
+              }
+            },
+            child: Image.asset(
+              compose_icon,
+              height: 15,
+              width: 15,
+              color: Colors.white,
+            ),
+          );
+        },
       ),
     );
   }

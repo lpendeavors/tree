@@ -202,4 +202,15 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       .document('userBase/$user')
       .setData(addition, merge: true);
   }
+
+  @override
+  Stream<List<UserEntity>> getMyConnections(
+    List<String> connections
+  ) {
+    return _firestore
+      .collection('userBase')
+      .where('docId', whereIn: connections)
+      .snapshots()
+      .map(_toEntities);
+  }
 }

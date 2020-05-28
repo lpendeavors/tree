@@ -41,6 +41,11 @@ import '../pages/trophy_info/trophy_info_page.dart';
 import '../pages/trophy_info/trophy_info_bloc.dart';
 import '../pages/post_edit/post_edit_page.dart';
 import '../pages/post_edit/post_edit_bloc.dart';
+import '../pages/create_message/create_message_page.dart';
+import '../pages/create_message/create_message_bloc.dart';
+import '../pages/create_message/create_message_state.dart';
+import '../pages/create_group/create_group_bloc.dart';
+import '../pages/create_group/create_group_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -304,6 +309,41 @@ class MyApp extends StatelessWidget {
                 userBloc: BlocProvider.of<UserBloc>(context),
                 postRepository: Injector.of(context).postRepository,
                 postId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/create_message') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return CreateMessagePage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initCreateMessageBloc: () {
+              return CreateMessageBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                groupRepository: Injector.of(context).groupRepository,
+                chatRepository: Injector.of(context).chatRepository,
+                userRepository: Injector.of(context).userRepository,
+                type: routerSettings.arguments as int,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/create_group') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return CreateGroupPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initCreateGroupBloc: () {
+              return CreateGroupBloc(
+                groupRepository: Injector.of(context).groupRepository,
+                members: routerSettings.arguments as List<MemberItem>,
               );
             },
           );
