@@ -4,6 +4,7 @@ import 'package:treeapp/widgets/modals/profile_image_modal.dart';
 import 'package:treeapp/widgets/modals/sign_out_modal.dart';
 import '../../user_bloc/user_bloc.dart';
 import './settings_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -81,7 +82,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       'Deactivate Account',
                       'Logout',
                     ],
-                    onClicked: (index){_showLogoutConfirmation(index == 0 ? LogoutType.deactivate : LogoutType.logOut);},
+                    onClicked: (index) =>
+                        _showLogoutConfirmation(LogoutType.values[index]),
                     alertBackground: true
                 ),
               ],
@@ -152,7 +154,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                             Icon(
                               Icons.navigate_next,
-                              color: Colors.black.withOpacity(0.4),
+                              color: (alertBackground && index == 0)
+                                ? Colors.white
+                                : Colors.black.withOpacity(0.4),
                             ),
                           ],
                         ),
@@ -177,10 +181,10 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showAppPolicy(PolicyType type) {
     switch (type) {
       case PolicyType.privacyPolicy:
-        Navigator.pushNamed(context, '/privacy_policy');
+        launch("https://www.yourtreeapp.com/privacy");
         break;
       case PolicyType.termsOfService:
-        Navigator.pushNamed(context, '/terms_of_service');
+        launch("https://www.yourtreeapp.com/Terms%20of%20Use2/");
         break;
       default:
         break;

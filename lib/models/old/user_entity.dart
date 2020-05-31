@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/util/asset_utils.dart';
 import '../../models/old/church_info.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
@@ -181,6 +182,184 @@ class UserEntity extends Equatable implements FirebaseModel {
       messageNotification,
       isAdmin
     ];
+  }
+
+  static Map<String, dynamic> createWith(Map<String, dynamic> data){
+    //TODO: isChurch, searchData
+    return {
+      'databaseName': "userBase",
+      'docId': data['uid'],
+      'isPublic': false,
+      'phoneVerified': true,
+      'signUpComplete': false,
+      'treeTrophies': [
+        {
+          'trophyCount': [data['uid']],
+          'trophyIcon': 'assets/trophy/t0.png',
+          'trophyInfo': 'Verify phone number',
+          'trophyKey': 'verifyNumber',
+          'trophyUnlockAt': 1,
+          'trophyUnlocked': false,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t1.png',
+          'trophyInfo': 'Watch your first 25 videos',
+          'trophyKey': 'watchVideos',
+          'trophyUnlockAt': 25,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t2.png',
+          'trophyInfo': 'Watch your first 75 videos',
+          'trophyKey': 'watchVideos',
+          'trophyUnlockAt': 75,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t3.png',
+          'trophyInfo': 'Create your first event',
+          'trophyKey': 'createEvent',
+          'trophyUnlockAt': 1,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t4.png',
+          'trophyInfo': 'Create 5 events',
+          'trophyKey': 'createEvent',
+          'trophyUnlockAt': 5,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t5.png',
+          'trophyInfo': 'Post your first 15 word statuses',
+          'trophyKey': 'postWord',
+          'trophyUnlockAt': 15,
+          'trophyWon': false,
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t6.png',
+          'trophyInfo': 'Post your first 50 word statuses',
+          'trophyKey': 'postWord',
+          'trophyUnlockAt': 50,
+          'trophyWon': false,
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t7.png',
+          'trophyInfo': 'Like 50 posts',
+          'trophyKey': 'likePost',
+          'trophyUnlockAt': 50,
+          'trophyWon': false,
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t8.png',
+          'trophyInfo': 'Like 150 posts',
+          'trophyKey': 'likePost',
+          'trophyUnlockAt': 150,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t9.png',
+          'trophyInfo': 'Comment on 25 posts',
+          'trophyKey': 'commentPost',
+          'trophyUnlockAt': 25,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t10.png',
+          'trophyInfo': 'Comment on 75 posts',
+          'trophyKey': 'commentPost',
+          'trophyUnlockAt': 75,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t11.png',
+          'trophyInfo': 'Share 25 people\'s posts',
+          'trophyKey': 'sharePost',
+          'trophyUnlockAt': 25,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t12.png',
+          'trophyInfo': 'Share 75 people\'s post',
+          'trophyKey': 'sharePost',
+          'trophyUnlockAt': 75,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t13.png',
+          'trophyInfo': 'Share 150 people\'s post',
+          'trophyKey': 'sharePost',
+          'trophyUnlockAt': 150,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t14.png',
+          'trophyInfo': 'Connect with 50 people',
+          'trophyKey': 'connectWith',
+          'trophyUnlockAt': 50,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t15.png',
+          'trophyInfo': 'Connect with 100 people',
+          'trophyKey': 'connectWith',
+          'trophyUnlockAt': 100,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t16.png',
+          'trophyInfo': 'Post your first 10 media posts',
+          'trophyKey': 'mediaPost',
+          'trophyUnlockAt': 10,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t17.png',
+          'trophyInfo': 'Post your first 25 media posts',
+          'trophyKey': 'mediaPost',
+          'trophyUnlockAt': 25,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t18.png',
+          'trophyInfo': 'Comment 100 times in the chat rooms',
+          'trophyKey': 'commentChat',
+          'trophyUnlockAt': 100,
+          'trophyWon': false
+        },
+        {
+          'trophyCount': [],
+          'trophyIcon': 'assets/trophy/t19.png',
+          'trophyInfo': 'Comment 250 times in the chat rooms',
+          'trophyKey': 'commentChat',
+          'trophyUnlockAt': 250,
+          'trophyWon': false
+        },
+      ],
+      'trophyCreated': true,
+      'visibility': 0,
+      'newApp1': true,
+      ...data
+    };
   }
 
   @override

@@ -81,16 +81,20 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
     user.linkWithCredential(emailCredential);
 
+
+
     await _updateUserData(
       user.uid,
-      <String, dynamic>{
+      UserEntity.createWith({
         'joined': FieldValue.serverTimestamp(),
         'phone': user.phoneNumber,
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
-        'password': password
-      }
+        'password': password,
+        'fullName': "$firstName $lastName",
+        'uid': user.uid
+      })
     );
 
     print('[USER_REPO] registerWithPhone firebaseUser=$user');

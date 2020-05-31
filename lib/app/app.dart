@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/settings/profile/profile_settings_bloc.dart';
+import '../pages/settings/profile/profile_settings_page.dart';
 import '../pages/preview_image/preivew_image_page.dart';
 import '../pages/connections/connections_bloc.dart';
 import '../pages/connections/connections_page.dart';
@@ -40,6 +42,7 @@ import '../pages/chat_settings/chat_settings_bloc.dart';
 import '../pages/settings/settings_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/profile_bloc.dart';
+import '../pages/settings/notifications/notification_settings_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -114,6 +117,10 @@ class MyApp extends StatelessWidget {
         userBloc: BlocProvider.of<UserBloc>(context),
       );
     },
+    '/notification_settings': (context) {
+      //Old app does have this working either
+      return NotificationSettingsPage();
+    }
   };
 
   final RouteFactory onGenerateRoute = (routerSettings) {
@@ -302,6 +309,23 @@ class MyApp extends StatelessWidget {
             imageURL: routerSettings.arguments as String,
           );
         },
+      );
+    }
+
+    if(routerSettings.name == '/update_info'){
+      return MaterialPageRoute(
+        builder: (context) {
+          return ProfileSettingsPage(
+            initProfileSettingsBloc: (){
+              return ProfileSettingsBloc(
+                index: routerSettings.arguments as int,
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userRepository: Injector.of(context).userRepository,
+              );
+            },
+            index: routerSettings.arguments as int
+          );
+        }
       );
     }
 

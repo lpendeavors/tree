@@ -395,7 +395,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           )
                         ),
                         Text(
-                          "${data.profile.trophies.where((element) => element.trophyUnlocked ?? false).length} Unlocked",
+                          "${data.profile.trophies.where((element) => element.trophyCount.length == element.trophyUnlockAt).length} Unlocked",
                           style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54),
                         ),
                       ],
