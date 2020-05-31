@@ -62,16 +62,50 @@ class EditPollState extends Equatable {
 @immutable
 class FeedPollItem extends Equatable {
   final String id;
+  final int type;
+  final List<PollAnswerItem> answers;
 
   const FeedPollItem({
     @required this.id,
+    @required this.type,
+    @required this.answers,
   });
 
   @override
   List get props => [
     id,
+    type,
+    answers,
   ];
 
   @override
   bool get stringify => true;
+}
+
+@immutable
+class TaggedItem extends Equatable {
+  final String id;
+  final String name;
+  final String image;
+
+  const TaggedItem({
+    @required this.id,
+    @required this.name,
+    @required this.image,
+  });
+
+  @override
+  List get props => [
+    id,
+    name,
+    image,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+class PollAnswerItem {
+  String label;
+  String answer;
 }

@@ -77,6 +77,10 @@ class UserBloc implements BaseBloc {
       chatList: userEntity.myChatsList13 ?? [],
       image: userEntity.image,
       connections: userEntity.connections ?? [],
+      church: userEntity.churchInfo != null 
+        ? userEntity.churchInfo.churchName 
+        : "",
+      city: userEntity.city ?? "",
     );
   }
 }

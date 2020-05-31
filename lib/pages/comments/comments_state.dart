@@ -66,6 +66,7 @@ class CommentItem extends Equatable {
   final DateTime datePosted;
   final bool isGif;
   final String gif;
+  final String owner;
 
   const CommentItem({
     @required this.id,
@@ -75,6 +76,7 @@ class CommentItem extends Equatable {
     @required this.datePosted,
     @required this.isGif,
     @required this.gif,
+    @required this.owner,
   });
 
   @override
@@ -86,6 +88,7 @@ class CommentItem extends Equatable {
     datePosted,
     isGif,
     gif,
+    owner,
   ];
 
   @override

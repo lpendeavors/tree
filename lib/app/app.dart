@@ -41,11 +41,15 @@ import '../pages/trophy_info/trophy_info_page.dart';
 import '../pages/trophy_info/trophy_info_bloc.dart';
 import '../pages/post_edit/post_edit_page.dart';
 import '../pages/post_edit/post_edit_bloc.dart';
+import '../pages/poll_edit/poll_edit_bloc.dart';
+import '../pages/poll_edit/poll_edit_page.dart';
 import '../pages/create_message/create_message_page.dart';
 import '../pages/create_message/create_message_bloc.dart';
 import '../pages/create_message/create_message_state.dart';
 import '../pages/create_group/create_group_bloc.dart';
 import '../pages/create_group/create_group_page.dart';
+import '../pages/post_details/post_details_bloc.dart';
+import '../pages/post_details/post_details_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -316,6 +320,23 @@ class MyApp extends StatelessWidget {
       );
     }
 
+    if (routerSettings.name == '/edit_poll') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return EditPollPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEditPollBloc: () {
+              return EditPollBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                pollId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
     if (routerSettings.name == '/create_message') {
       return MaterialPageRoute(
         builder: (context) {
@@ -344,6 +365,24 @@ class MyApp extends StatelessWidget {
               return CreateGroupBloc(
                 groupRepository: Injector.of(context).groupRepository,
                 members: routerSettings.arguments as List<MemberItem>,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/post_details') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return PostDetailsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initPostDetailsBloc: () {
+              return PostDetailsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                commentRepository: Injector.of(context).commentRepository,
+                postId: routerSettings.arguments as String,
               );
             },
           );

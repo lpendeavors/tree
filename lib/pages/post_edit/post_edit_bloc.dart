@@ -33,6 +33,7 @@ class EditPostBloc implements BaseBloc {
   final ValueStream<EditPostState> postEditState$;
   final Stream<PostAddedMessage> message$;
   final ValueStream<bool> isLoading$;
+  final ValueStream<bool> postIsPublic$;
 
   /// 
   /// Clean up
@@ -48,6 +49,7 @@ class EditPostBloc implements BaseBloc {
     @required this.postVideosChanged,
     @required this.postTagsChanged,
     @required this.postEditState$,
+    @required this.postIsPublic$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -129,6 +131,7 @@ class EditPostBloc implements BaseBloc {
       postImagesChanged: imagesSubject.add,
       postVideosChanged: videosSubject.add,
       postTagsChanged: tagsSubject.add,
+      postIsPublic$: isPublicSubject.stream,
       isLoading$: isLoadingSubject,
       message$: message$,
       postEditState$: postEditState$,

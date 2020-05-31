@@ -14,6 +14,8 @@ class LoggedInUser extends Equatable implements LoginState {
   final List<ChatData> chatList;
   final String image;
   final List<String> connections;
+  final String church;
+  final String city;
 
   const LoggedInUser({
     @required this.uid,
@@ -22,6 +24,8 @@ class LoggedInUser extends Equatable implements LoginState {
     @required this.chatList,
     @required this.image,
     @required this.connections,
+    @required this.church,
+    @required this.city,
   });
 
   @override
@@ -33,6 +37,8 @@ class LoggedInUser extends Equatable implements LoginState {
       chatList,
       image,
       connections,
+      church,
+      city,
     ];
   }
 

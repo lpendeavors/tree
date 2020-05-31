@@ -11,9 +11,17 @@ abstract class FirestoreUserRepository {
 
   Stream<List<UserEntity>> get();
 
-  Stream<List<UserEntity>> getConnections();
+  Stream<List<UserEntity>> getSuggestionsByCity({
+    @required String city,
+  });
 
-  Stream<List<UserEntity>> getMyConnections(List<String> connections);
+  Stream<List<UserEntity>> getSuggestionsByChurch({
+    @required String church,
+  });
+
+  Stream<List<UserEntity>> getMyConnections(
+    List<String> connections
+  );
 
   Future<void> signOut();
 
@@ -47,9 +55,13 @@ abstract class FirestoreUserRepository {
 
   Future<void> sendPasswordResetEmail(String email);
 
-  Stream<UserEntity> getUserById({@required String uid});
+  Stream<UserEntity> getUserById({
+    @required String uid
+  });
 
-  Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
+  Stream<List<UserPreviewEntity>> getUserConnections({
+    @required String uid
+  });
   
   Future<void> saveNotifications({
     @required String user,

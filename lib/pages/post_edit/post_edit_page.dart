@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../widgets/image_holder.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -66,6 +69,7 @@ class _EditPostPageState extends State<EditPostPage> {
         return WillPopScope(
           onWillPop: () async {
             // TODO: confirm exit
+            return true;
           },
           child: Scaffold(
             backgroundColor: Colors.white,
@@ -108,20 +112,27 @@ class _EditPostPageState extends State<EditPostPage> {
                 Expanded(
                   child: ListView(
                     children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          Container(),
-                          InkWell(
-                            onTap: () {
-
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              padding: EdgeInsets.all(5),
-                              child: Text('Show all options'),
-                            ),
-                          ),
-                        ],
+                      StreamBuilder<bool>(
+                        stream: _editPostBloc.postIsPublic$,
+                        initialData: _editPostBloc.postIsPublic$.value,
+                        builder: (context, snapshot) {
+                          return Column(
+                            children: <Widget>[
+                              _menuItem(
+                                title: 'Public',
+                                description: 'This post can be seen by anyone on Tree and can be shared by others',
+                                onChange: () => _editPostBloc.postIsPublicChanged(true),
+                                active: snapshot.data,
+                              ),
+                              _menuItem(
+                                title: 'Connections Only',
+                                description: "This post can only be seen by your connections and can't be shared by others",
+                                onChange: () => _editPostBloc.postIsPublicChanged(false),
+                                active: !snapshot.data,
+                              ),
+                            ],
+                          );
+                        },
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
@@ -131,7 +142,7 @@ class _EditPostPageState extends State<EditPostPage> {
                           children: <Widget>[
                             ImageHolder(
                               size: 40,
-                              image: '',
+                              image: (widget.userBloc.loginState$.value as LoggedInUser).image ?? '',
                             ),
                             SizedBox(width: 10),
                             Flexible(
@@ -142,7 +153,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                 ),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: 'Hi fullName Share Something?',
+                                  hintText: 'Hi ${(widget.userBloc.loginState$.value as LoggedInUser).fullName} Share Something?',
                                   hintStyle: TextStyle(
                                     color: Colors.grey.withOpacity(0.7),
                                   ),
@@ -244,8 +255,16 @@ class _EditPostPageState extends State<EditPostPage> {
                           ),
                           borderRadius: BorderRadius.circular(25),
                         ),
-                        onPressed: () {
-                          // TODO: pick media
+                        onPressed: () async {
+                          var image = await ImagePicker.pickImage(
+                            source: ImageSource.gallery
+                          );
+                          if (image != null) {
+                            var cropped = await ImageCropper.cropImage(
+                              sourcePath: image.path
+                            );
+                            _editPostBloc.postImagesChanged([cropped.path]);
+                          }
                         },
                         child: Row(
                           children: <Widget>[
@@ -282,7 +301,12 @@ class _EditPostPageState extends State<EditPostPage> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                         onPressed: () async {
-                          // TODO: pick media
+                          var video = await FilePicker.getFilePath(
+                            type: FileType.video,
+                          );
+                          if (video != null) {
+                            _editPostBloc.postVideosChanged([video]);
+                          }
                         },
                         child: Row(
                           children: <Widget>[
@@ -355,6 +379,101 @@ class _EditPostPageState extends State<EditPostPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _menuItem({
+    String title,
+    String description,
+    Function onChange,
+    bool active,
+  }) {
+    return InkWell(
+      onTap: onChange,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            color: active ? Colors.grey[50] : null,
+            padding: EdgeInsets.all(15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+                if (active)
+                  Container(
+                    height: 20,
+                    width: 20,
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Container(
+                      height: 20,
+                      width: 20,
+                      child: Icon(
+                        Icons.check,
+                        size: 10,
+                        color: Colors.white,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green[700],
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.black.withOpacity(0.4),
+                        )
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 20,
+                    width: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.4),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: Colors.black.withOpacity(0.04),
+          ),
+        ],
+      ),
     );
   }
 }

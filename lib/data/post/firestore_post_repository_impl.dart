@@ -37,10 +37,10 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     String uid,
   }) {
     return _firestore
-        .collection('postBase')
-        .where('ownerId', isEqualTo: uid)
-        .snapshots()
-        .map(_toEntities);
+      .collection('postBase')
+      .where('ownerId', isEqualTo: uid)
+      .snapshots()
+      .map(_toEntities);
   }
 
   @override
@@ -56,6 +56,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   Stream<List<PostEntity>> postsForCollage() {
     return _firestore
       .collection('postBase')
+      .where('isVerified', isEqualTo: true)
       .snapshots()
       .map(_toEntities);
   }

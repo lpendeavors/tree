@@ -44,7 +44,12 @@ class ExploreState extends Equatable {
   }
 
   @override
-  List get props => [connectionItems, postItems, isLoading, error];
+  List get props => [
+    connectionItems, 
+    postItems, 
+    isLoading, 
+    error
+  ];
 
   @override
   bool get stringify => true;
@@ -89,17 +94,19 @@ class ConnectionItem extends Equatable {
   final String id;
   final String name;
   final String church;
-  final String location;
+  final String city;
   final bool isChurch;
   final String image;
+  final String denomination;
 
   const ConnectionItem({
     @required this.id,
     @required this.name,
     @required this.church,
-    @required this.location,
+    @required this.city,
     @required this.isChurch,
     @required this.image,
+    @required this.denomination,
   });
 
   @override
@@ -107,9 +114,10 @@ class ConnectionItem extends Equatable {
     id, 
     name, 
     church, 
-    location,
+    city,
     isChurch,
     image,
+    denomination,
   ];
 
   @override

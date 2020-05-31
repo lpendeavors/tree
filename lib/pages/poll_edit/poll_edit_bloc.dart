@@ -19,11 +19,17 @@ class EditPollBloc implements BaseBloc {
   /// 
   /// Input functions
   /// 
+  final void Function(int) typeChanged;
+  final void Function(List<TaggedItem>) taggedChanged;
+  final void Function(List<PollAnswerItem>) answersChanged;
   final void Function() savePoll;
   
   /// 
   /// Output streams
   /// 
+  final ValueStream<int> type$;
+  final ValueStream<List<TaggedItem>> tagged$;
+  final ValueStream<List<PollAnswerItem>> answers$;
   final ValueStream<EditPollState> pollEditState$;
   final Stream<PollAddedMessage> message$;
   final ValueStream<bool> isLoading$;
@@ -36,6 +42,12 @@ class EditPollBloc implements BaseBloc {
   EditPollBloc._({
     @required this.savePoll,
     @required this.pollEditState$,
+    @required this.typeChanged,
+    @required this.taggedChanged,
+    @required this.answersChanged,
+    @required this.type$,
+    @required this.tagged$,
+    @required this.answers$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -58,6 +70,9 @@ class EditPollBloc implements BaseBloc {
     /// 
     /// Stream controller
     /// 
+    final typeSubject = BehaviorSubject<int>.seeded(0);
+    final answersSubject = BehaviorSubject<List<PollAnswerItem>>.seeded([]);
+    final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
     final savePollSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
@@ -88,11 +103,20 @@ class EditPollBloc implements BaseBloc {
     ];
 
     final controllers = <StreamController>[
+      typeSubject,
+      taggedSubject,
+      answersSubject,
       isLoadingSubject,
     ];
 
     return EditPollBloc._(
       savePoll: () => savePollSubject.add(null),
+      typeChanged: typeSubject.add,
+      taggedChanged: taggedSubject.add,
+      answersChanged: answersSubject.add,
+      type$: typeSubject.stream,
+      tagged$: taggedSubject.stream,
+      answers$: answersSubject.stream,
       isLoading$: isLoadingSubject,
       message$: message$,
       pollEditState$: pollEditState$,
@@ -158,6 +182,8 @@ class EditPollBloc implements BaseBloc {
   ) {
     return FeedPollItem(
       id: entity.documentId,
+      type: entity.type,
+      answers: [],
     );
   }
 

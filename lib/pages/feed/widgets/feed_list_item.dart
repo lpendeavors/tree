@@ -245,7 +245,7 @@ class FeedListItem extends StatelessWidget {
                               // TODO: preview image
                             },
                             child: Image(
-                              image: CacheImage(feedItem.postImages[0]),
+                              image: CacheImage(feedItem.postImages[0] ?? ""),
                               alignment: Alignment.center,
                             ),
                           )
@@ -400,6 +400,7 @@ class FeedListItem extends StatelessWidget {
             ),
           ),
         ),
+        SizedBox(height: 20),
       ],
     );
   }

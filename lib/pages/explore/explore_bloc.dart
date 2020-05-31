@@ -95,17 +95,30 @@ class ExploreBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
-        userRepository.getConnections(),
+      return Rx.zip4(
+        userRepository.getSuggestionsByChurch(
+          church: loginState.church,
+        ),
+        userRepository.getSuggestionsByCity(
+          city: loginState.city,
+        ),
+        userRepository.get(),
         postRepository.postsForCollage(),
-        (users, posts) {
-          
+        (churchUsers, cityUsers, newestUsers, posts) {
           var filiteredPosts = (posts as List<PostEntity>).where((p) {
             return _getPostImage(p) != null;
           }).toList();
 
+          filiteredPosts.sort((a, b) => b.time.compareTo(a.time));
+          (newestUsers as List<UserEntity>).sort((a, b) => b.time.compareTo(a.time));
+
+          var suggestions = churchUsers as List<UserEntity>;
+
+          suggestions.addAll(cityUsers);
+          suggestions.addAll(newestUsers);
+
           return _kInitialExploreState.copyWith(
-            connectionItems: _userEntitiesToItems(users),
+            connectionItems: _userEntitiesToItems(suggestions),
             postItems: _postEntitiesToItems(filiteredPosts),
             isLoading: false,
           );
@@ -133,11 +146,12 @@ class ExploreBloc implements BaseBloc {
     return entities.map((entity) {
       return ConnectionItem(
         id: entity.id,
-        location: "",
-        church: "",
+        city: entity.city ?? "None",
+        church: entity.churchInfo != null ? entity.churchInfo.churchName : "None",
         isChurch: entity.isChurch ?? false,
         image: entity.image,
-        name: _getName(entity),
+        name: entity.fullName ?? entity.firstName,
+        denomination: entity.churchInfo != null ? entity.churchInfo.churchDenomination : "None",
       );
     }).toList();
   }
@@ -168,20 +182,6 @@ class ExploreBloc implements BaseBloc {
     });
   }
 
-  static String _getName(
-    UserEntity entity,
-  ) {
-    if (entity.churchInfo == null) {
-      if (entity.fullName != null) {
-        return entity.fullName;
-      } else {
-        return "No full name";
-      }
-    } else {
-      return entity.churchInfo.churchName ?? "No church name";
-    }
-  }
-
   static String _getPostImage(
     PostEntity entity,
   ) {
@@ -189,10 +189,10 @@ class ExploreBloc implements BaseBloc {
       if (entity.postData.length > 0) {
         return entity.postData[0].imageUrl;
       } else {
-        return "";
+        return null;
       }
     } else {
-      return "";
+      return null;
     }
   }
 }

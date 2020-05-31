@@ -95,19 +95,19 @@ class _CommentsPanelState extends State<CommentsPanel> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              FlatButton(
-                                onPressed: () => Navigator.pushNamed(context, '/comments'),
-                                child: Center(
-                                  child: Text(
-                                    'View comments fullscreen',
-                                    textAlign: TextAlign.end,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // FlatButton(
+                              //   onPressed: () => Navigator.pushNamed(context, '/comments'),
+                              //   child: Center(
+                              //     child: Text(
+                              //       'View comments fullscreen',
+                              //       textAlign: TextAlign.end,
+                              //       style: TextStyle(
+                              //         fontSize: 14,
+                              //         color: Colors.black,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
                               Flexible(
                                 child: StreamBuilder<CommentsState>(
                                   stream: _commentsBloc.commentsState$,
