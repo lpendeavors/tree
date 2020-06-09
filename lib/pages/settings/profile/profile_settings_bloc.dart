@@ -13,9 +13,11 @@ import '../../../pages/settings/profile/profile_settings_state.dart';
 const _kInitialProfileSettingsState = ProfileSettingsState(
   isLoading: true,
   error: false,
+  isChurch: false,
   firstName: null,
   lastName: null,
-  phoneNumber: null
+  phoneNo: null,
+  type: 0
 );
 
 class ProfileSettingsBloc implements BaseBloc{
@@ -129,9 +131,11 @@ class ProfileSettingsBloc implements BaseBloc{
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((user){
         return _kInitialProfileSettingsState.copyWith(
+          isChurch: user.isChurch,
           firstName: user.firstName,
           lastName: user.lastName,
-          phoneNumber: user.phoneNumber
+          phoneNo: user.phoneNo,
+          type: user.type
         );
       })
       .startWith(_kInitialProfileSettingsState)
@@ -166,7 +170,7 @@ class ProfileSettingsBloc implements BaseBloc{
   static saveProfileChanges(
     String firstName,
     String lastName,
-    String phoneNumber,
+    String phoneNo,
     FirestoreUserRepository userRepository
   ){
 

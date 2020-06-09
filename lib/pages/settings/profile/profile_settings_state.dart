@@ -22,25 +22,31 @@ class SettingsNotLoggedInError {
 class ProfileSettingsState extends Equatable {
   final bool isLoading;
   final Object error;
+  final bool isChurch;
   final String firstName;
   final String lastName;
-  final String phoneNumber;
+  final String phoneNo;
+  final int type;
 
   const ProfileSettingsState({
     @required this.isLoading,
     @required this.error,
+    @required this.isChurch,
     @required this.firstName,
     @required this.lastName,
-    @required this.phoneNumber,
+    @required this.phoneNo,
+    @required this.type,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, firstName, lastName, phoneNumber}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, type}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      isChurch: isChurch ?? this.isChurch,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      phoneNo: phoneNo ?? this.phoneNo,
+      type: type ?? this.type,
     );
   }
 
@@ -48,9 +54,11 @@ class ProfileSettingsState extends Equatable {
   List get props => [
     isLoading,
     error,
+    isChurch,
     firstName,
     lastName,
-    phoneNumber
+    phoneNo,
+    type
   ];
 
   @override

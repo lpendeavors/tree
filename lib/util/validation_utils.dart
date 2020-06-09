@@ -13,12 +13,12 @@ bool isValidName(String name) {
 }
 
 bool isPhoneNumberValid(String phone) {
-  var phoneNumber = phone
+  var phoneNo = phone
       .replaceAll("(", "")
       .replaceAll(")", "")
       .replaceAll("-", "")
       .replaceAll(" ", "");
-  return phoneNumber.length == 10;
+  return phoneNo.length == 10;
 }
 
 bool isValidVerificationCode(String verification) {

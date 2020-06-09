@@ -168,7 +168,8 @@ class _ConnectionsPageState extends State<ConnectionsPage>{
                       style: TextStyle(
                         fontSize: 13.0,
                         fontFamily: 'Nirmala',
-                        color: Colors.black54
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal,
                       )
                     ),
                   ],

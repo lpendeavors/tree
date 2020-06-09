@@ -39,7 +39,7 @@ class ProfileImageModal extends StatelessWidget {
                           flex: 1,
                           child: Text(
                             "Tree",
-                            style: TextStyle(fontFamily: 'Nirmala', fontSize: 11.0, color: Colors.black26),
+                            style: TextStyle(fontFamily: 'Nirmala', fontSize: 11.0, color: Colors.black26, fontWeight: FontWeight.normal,),
                           )
                       ),
                       SizedBox(width: 15.0),
@@ -88,7 +88,7 @@ class ProfileImageModal extends StatelessWidget {
                                       children: <Widget>[
                                         Text(
                                           options[position],
-                                          style: TextStyle(fontFamily: 'Nirmala', fontSize: 15.0, color: Colors.black87)
+                                          style: TextStyle(fontFamily: 'Nirmala', fontSize: 15.0, color: Colors.black87, fontWeight: FontWeight.normal,)
                                         ),
                                       ],
                                     ),

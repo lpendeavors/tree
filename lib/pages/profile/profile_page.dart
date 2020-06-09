@@ -396,7 +396,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         Text(
                           "${data.profile.trophies.where((element) => element.trophyCount.length == element.trophyUnlockAt).length} Unlocked",
-                          style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54),
+                          style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54, fontWeight: FontWeight.normal),
                         ),
                       ],
                     ),
@@ -411,7 +411,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 4.0, right: 4.0),
                         child: Text(
                           "View Trophies",
-                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor),
+                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor, fontWeight: FontWeight.normal),
                         ),
                       ),
                     )
@@ -707,7 +707,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           Text(
-                            "${data.profile.type == 1 ? "Youth Church" : "Adult Church"}",
+                            "${data.profile.type == 1 ? "Youth Ministry" : "Adult Ministry"}",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black.withOpacity(0.5)

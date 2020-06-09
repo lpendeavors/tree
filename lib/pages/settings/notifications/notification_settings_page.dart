@@ -101,7 +101,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage>{
                         style: TextStyle(
                           fontSize: 16.0,
                           color: Colors.black,
-                          fontFamily: 'Nirmala'
+                          fontFamily: 'Nirmala',
+                          fontWeight: FontWeight.normal,
                         )
                       ),
                       SizedBox(height: 5.0),
@@ -110,7 +111,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage>{
                         style: TextStyle(
                           fontSize: 12.0,
                           color: Colors.grey,
-                          fontFamily: 'Nirmala'
+                          fontFamily: 'Nirmala',
+                          fontWeight: FontWeight.normal,
                         )
                       ),
                       SizedBox(height: 10.0),

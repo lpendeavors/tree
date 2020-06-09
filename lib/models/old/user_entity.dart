@@ -26,7 +26,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final bool isPublic;
   final bool newApp1;
   final String password;
-  final String phoneNumber;
+  final String phoneNo;
   final bool phoneVerified;
   final String pushNotificationToken;
   final List<String> searchData;
@@ -88,7 +88,7 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.lastName,
     this.newApp1,
     this.password,
-    this.phoneNumber,
+    this.phoneNo,
     this.phoneVerified,
     this.pushNotificationToken,
     this.searchData,
@@ -147,7 +147,7 @@ class UserEntity extends Equatable implements FirebaseModel {
       lastName,
       newApp1,
       password,
-      phoneNumber,
+      phoneNo,
       phoneVerified,
       pushNotificationToken,
       searchData,
