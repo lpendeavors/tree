@@ -4,23 +4,18 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../models/old/trophy.dart';
 import '../../models/old/user_entity.dart';
-import '../../data/post/firestore_post_repository.dart';
-import '../../models/old/post_entity.dart';
-import '../../pages/feed/feed_state.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
-import '../../models/old/user_preview_entity.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './trophy_info_state.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 
 
 const _kInitialTrophyInfoState = TrophyInfoState(
-    isLoading: true,
-    error: null,
-    trophy: null
+  isLoading: true,
+  error: null,
+  trophy: null
 );
 
 class TrophyInfoBloc implements BaseBloc {

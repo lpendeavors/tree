@@ -6,9 +6,13 @@ import '../explore_state.dart';
 
 class ConnectionListItem extends StatefulWidget {
   final ConnectionItem connectionItem;
+  final Function(ConnectionItem) onRemove;
+  final Function(ConnectionItem) onConnect;
 
   const ConnectionListItem({
     @required this.connectionItem,
+    @required this.onRemove,
+    @required this.onConnect,
   });
 
   @override
@@ -20,7 +24,10 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        // TODO: view profile
+        Navigator.of(context).pushNamed(
+          '/profile',
+          arguments: widget.connectionItem.id,
+        );
       },
       child: Container(
         padding: EdgeInsets.all(15),
@@ -74,7 +81,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                           ),
                           SizedBox(width: 5),
                           Text(
-                            'Church denomination',
+                            widget.connectionItem.denomination ?? "None",
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
@@ -103,7 +110,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             ),
                             SizedBox(width: 5),
                             Text(
-                              widget.connectionItem.name,
+                              widget.connectionItem.church ?? "None",
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
@@ -131,7 +138,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                           SizedBox(width: 5),
                           Flexible(
                             child: Text(
-                              'Church addy or user city',
+                              widget.connectionItem.city,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
@@ -152,9 +159,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () {
-                              // TODO: 
-                            },
+                            onPressed: () => widget.onConnect(widget.connectionItem),
                             child: Center(
                               child: Text(
                                 'Connect',
@@ -172,9 +177,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () {
-                              // TODO
-                            },
+                            onPressed: () => widget.onRemove(widget.connectionItem),
                             child: Center(
                               child: Text(
                                 'Remove',

@@ -25,7 +25,7 @@ class FeedPage extends StatefulWidget {
   _FeedPageState createState() => _FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> {
+class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   List<StreamSubscription> _subscriptions;
   FeedBloc _feedBloc;
 
@@ -38,7 +38,12 @@ class _FeedPageState extends State<FeedPage> {
       widget.userBloc.loginState$
         .where((state) => state is Unauthenticated)
         .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+      _feedBloc.message$.listen(_showMessageResult),
     ];
+  }
+
+  void _showMessageResult(FeedItemLikeMessage message) {
+    print('[DEBUG] FeedItemLikeMessage=$message');
   }
 
   @override
@@ -51,7 +56,11 @@ class _FeedPageState extends State<FeedPage> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return CurvedScaffold(
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,10 +177,17 @@ class _FeedPageState extends State<FeedPage> {
 
             return ListView.builder(
               itemCount: data.feedItems.length,
-              physics: BouncingScrollPhysics(),
+              physics: AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return FeedListItem(
+                  context: context,
+                  tickerProvider: this,
                   feedItem: data.feedItems[index],
+                  likeFeedItem: (item) {
+                    _feedBloc.postToLikeChanged(item);
+                    _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
+                    _feedBloc.saveLikeValue();
+                  },
                 );
               },
             );

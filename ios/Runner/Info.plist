@@ -61,5 +61,7 @@
 	<string>YES</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Tree needs access to search photos</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+  <string>This app needs your location to show the map</string>
 </dict>
 </plist>

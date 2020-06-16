@@ -1,6 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
+/// 
+/// Enums
+/// 
+enum EventMediaType { other, image, video }
+
 ///
 /// EditEventMessage
 ///
@@ -130,9 +135,10 @@ class EventEditItem extends Equatable {
   final DateTime startTime;
   final DateTime endDate;
   final DateTime endTime;
-  final String image;
   final double eventCost;
   final String venue;
+  final List<EventMediaItem> media;
+  final bool isSponsored;
 
   const EventEditItem({
     @required this.id,
@@ -141,9 +147,10 @@ class EventEditItem extends Equatable {
     @required this.startTime,
     @required this.endDate,
     @required this.endTime,
-    @required this.image,
     @required this.eventCost,
     @required this.venue,
+    @required this.media,
+    @required this.isSponsored,
   });
 
   @override
@@ -154,9 +161,30 @@ class EventEditItem extends Equatable {
     startTime,
     endDate,
     endTime,
-    image,
     eventCost,
     venue,
+    media,
+    isSponsored,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable 
+class EventMediaItem extends Equatable {
+  final EventMediaType type;
+  final String url;
+
+  const EventMediaItem({
+    @required this.type,
+    @required this.url,
+  });
+
+  @override
+  List get props => [
+    type,
+    url,
   ];
 
   @override

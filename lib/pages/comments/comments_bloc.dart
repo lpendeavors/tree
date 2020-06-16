@@ -146,6 +146,7 @@ class CommentsBloc implements BaseBloc {
         datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
         isGif: entity.isGIF ?? false,
         gif: entity.imagePath,
+        owner: entity.ownerId,
       );
     }).toList();
   }

@@ -12,7 +12,17 @@ abstract class FirestoreUserRepository {
 
   Stream<List<UserEntity>> get();
 
-  Stream<List<UserEntity>> getConnections();
+  Stream<List<UserEntity>> getSuggestionsByCity({
+    @required String city,
+  });
+
+  Stream<List<UserEntity>> getSuggestionsByChurch({
+    @required String church,
+  });
+
+  Stream<List<UserEntity>> getMyConnections(
+    List<String> connections
+  );
 
   Future<void> signOut();
 
@@ -46,7 +56,9 @@ abstract class FirestoreUserRepository {
 
   Future<void> sendPasswordResetEmail(String email);
 
-  Stream<UserEntity> getUserById({@required String uid});
+  Stream<UserEntity> getUserById({
+    @required String uid
+  });
 
   Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
 
@@ -61,7 +73,7 @@ abstract class FirestoreUserRepository {
   Future<void> uploadImage(String uid, File image);
 
   Future<void> approveAccount(String uid);
-
+  
   Future<void> saveNotifications({
     @required String user,
     @required bool messages,
@@ -69,4 +81,6 @@ abstract class FirestoreUserRepository {
     @required bool group,
     @required bool online,
   });
+
+  Stream<List<UserEntity>> getPublicFigures();
 }

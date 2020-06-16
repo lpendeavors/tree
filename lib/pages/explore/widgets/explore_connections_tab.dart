@@ -62,6 +62,8 @@ class ExploreConnectionsTab extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return ConnectionListItem(
                       connectionItem: data.connectionItems[index],
+                      onRemove: (connection) => print('remove ${connection.name}'),
+                      onConnect: (connection) => print('connect with ${connection.name}'),
                     );
                   },
                   separatorBuilder: (context, index) {

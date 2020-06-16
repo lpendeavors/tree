@@ -47,11 +47,12 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     DateTime startTime,
     DateTime endDate,
     DateTime endTime,
-    String image,
+    List<String> images,
     String webAddress,
     double cost,
     String venue,
-    double budget
+    double budget,
+    bool isSponsored,
   ) {
     if (ownerId == null) {
       return Future.error('ownerId cannot be null');
