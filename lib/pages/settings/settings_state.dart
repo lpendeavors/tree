@@ -11,8 +11,8 @@ enum SettingsType {
 }
 
 enum PolicyType { 
-  termsOfService, 
-  privacyPolicy 
+  privacyPolicy,
+  termsOfService,
 }
 
 enum LogoutType { 

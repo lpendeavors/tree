@@ -139,6 +139,7 @@ class _TrophyInfoPageState extends State<TrophyInfoPage>{
                                     fontSize: 14.0,
                                     color: Colors.white,
                                     fontFamily: 'Nirmala',
+                                    fontWeight: FontWeight.normal,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -185,7 +186,8 @@ class _TrophyInfoPageState extends State<TrophyInfoPage>{
                                       style: TextStyle(
                                         fontSize: 16.0,
                                         fontFamily: 'Nirmala',
-                                        color: Colors.white
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.normal,
                                       )
                                     ),
                                   ],

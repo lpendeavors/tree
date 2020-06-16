@@ -20,7 +20,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     lastName: json['lastName'] as String,
     newApp1: json['newApp1'] as bool,
     password: json['password'] as String,
-    phoneNumber: json['phoneNumber'] as String,
+    phoneNo: json['phoneNo'] as String,
     phoneVerified: json['phoneVerified'] as bool,
     pushNotificationToken: json['pushNotificationToken'] as String,
     searchData: (json['searchData'] as List)?.map((e) => e as String)?.toList(),
@@ -64,6 +64,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     chatOnlineStatus: json['chatOnlineStatus'] as bool,
     groupNotification: json['groupNotification'] as bool,
     messageNotification: json['messageNotification'] as bool,
+    isAdmin: json['isAdmin'] as bool,
   );
 }
 
@@ -81,7 +82,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'isPublic': instance.isPublic,
       'newApp1': instance.newApp1,
       'password': instance.password,
-      'phoneNumber': instance.phoneNumber,
+      'phoneNo': instance.phoneNo,
       'phoneVerified': instance.phoneVerified,
       'pushNotificationToken': instance.pushNotificationToken,
       'searchData': instance.searchData,
@@ -113,6 +114,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'chatOnlineStatus': instance.chatOnlineStatus,
       'groupNotification': instance.groupNotification,
       'messageNotification': instance.messageNotification,
+      'isAdmin': instance.isAdmin,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

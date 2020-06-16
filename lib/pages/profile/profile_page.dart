@@ -1,8 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
+import 'package:image_pickers/CropConfig.dart';
+import 'package:image_pickers/UIConfig.dart';
+import 'package:image_pickers/image_pickers.dart';
+import '../../widgets/modals/profile_image_modal.dart';
+import '../../widgets/modals/cancel_request_modal.dart';
+import '../../widgets/modals/disconnect_modal.dart';
 import '../../pages/feed/widgets/feed_list_item.dart';
 import '../../models/old/trophy.dart';
 import '../../util/asset_utils.dart';
@@ -53,31 +60,53 @@ class _ProfilePageState extends State<ProfilePage> {
   
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<ProfileState>(
-      stream: _profileBloc.profileState$,
-      initialData: _profileBloc.profileState$.value,
-      builder: (context, snapshot) {
-        var data = snapshot.data;
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            StreamBuilder<ProfileState>(
+              stream: _profileBloc.profileState$,
+              initialData: _profileBloc.profileState$.value,
+              builder: (context, snapshot) {
+                var data = snapshot.data;
 
-        if(!data.isLoading){
-          return Scaffold(
-            body: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Column(
-                children: <Widget>[
-                  _appBar(data),
-                  _profile(data),
-                  _recentPostList(data)
-                ],
-              ),
+                if(!data.isLoading){
+                  return Column(
+                    children: <Widget>[
+                      _appBar(data),
+                      _profile(data),
+                    ],
+                  );
+                } else {
+                  return Container(
+                    height: 800,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+              }
             ),
-          );
-        } else {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      }
+            StreamBuilder<RecentFeedState>(
+                stream: _profileBloc.recentFeedState$,
+                initialData: _profileBloc.recentFeedState$.value,
+                builder: (context, snapshot) {
+                  var data = snapshot.data;
+
+                  if(!data.isLoading){
+                    return Column(
+                      children: <Widget>[
+                        _recentPostList(data),
+                      ],
+                    );
+                  } else {
+                    return Container();
+                  }
+                }
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -86,7 +115,39 @@ class _ProfilePageState extends State<ProfilePage> {
       children: <Widget>[
         InkWell(
           onTap: () {
-            // TODO: action
+            showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return ProfileImageModal(
+                  options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
+                );
+              }
+            ).then((result){
+              if (result == "Add Photo" || result == "Update Picture") {
+                ImagePickers.pickerPaths(
+                  galleryMode: GalleryMode.image,
+                  selectCount: 1,
+                  showCamera: true,
+                  compressSize: 300,
+                  uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
+                  cropConfig: CropConfig(enableCrop: true, width: 10, height: 10)
+                ).then((media) => media[0].path).then((path) => File(path)).then((file) => _profileBloc.setPhoto(file));
+                return;
+              }
+
+              if (result == "View Picture") {
+                Navigator.of(context).pushNamed(
+                  '/preview_image',
+                  arguments: data.profile.photo,
+                );
+                return;
+              }
+
+              if (result == "Approve Account") {
+                _profileBloc.approveAccount();
+                return;
+              }
+            });
           },
           child: Container(
             height: 300,
@@ -173,7 +234,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 color: Colors.white,
                               ),
                               onPressed: () {
-                                // Connect, report, block
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context){
+                                    return ProfileImageModal(
+                                      options: ["Report User", "Block User"]
+                                    );
+                                  }
+                                ).then((value){
+                                  //broken in original app too
+                                });
                               },
                             ),
                           ],
@@ -197,10 +267,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 23,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'NirmalaB'
+                                          color: Colors.white,
+                                          fontSize: 23,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NirmalaB'
                                         ),
                                       ),
                                     ),
@@ -267,7 +337,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ),
                                       ],
                                     ),
-                                    _connectButton(data.profile)
+                                    if(!data.profile.myProfile)
+                                      _connectButton(data.profile)
                                   ],
                                 ),
                               ],
@@ -311,7 +382,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             color: Theme.of(context).primaryColor,
             onPressed: () {
-              //TODO: action
+              //TODO: Action
             }
           ),
         Container(
@@ -336,8 +407,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           )
                         ),
                         Text(
-                          "${data.profile.trophies.where((element) => element.trophyUnlocked ?? false).length} Unlocked",
-                          style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54),
+                          "${data.profile.trophies.where((element) => element.trophyCount.length == element.trophyUnlockAt).length} Unlocked",
+                          style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54, fontWeight: FontWeight.normal),
                         ),
                       ],
                     ),
@@ -352,7 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 4.0, right: 4.0),
                         child: Text(
                           "View Trophies",
-                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor),
+                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor, fontWeight: FontWeight.normal),
                         ),
                       ),
                     )
@@ -379,7 +450,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       onTap: () {
                         Navigator.of(context).pushNamed(
                             '/trophy_info',
-                            arguments: trophy.trophyKey
+                            arguments: index
                         );
                       },
                       radius: 10,
@@ -450,7 +521,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (received) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          _profileBloc.acceptConnectRequest();
         },
         color: Theme.of(context).primaryColor,
         shape: RoundedRectangleBorder(
@@ -476,7 +547,16 @@ class _ProfilePageState extends State<ProfilePage> {
     if (connected) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return DisconnectModal();
+              }
+          ).then((disconnect) {
+            if (disconnect) {
+              _profileBloc.disconnect();
+            }
+          });
         },
         color: Colors.red,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -500,7 +580,16 @@ class _ProfilePageState extends State<ProfilePage> {
     if (sent) {
       return RaisedButton(
         onPressed: () {
-          //TODO: action
+          showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return CancelRequestModal();
+              }
+          ).then((cancel) {
+            if (cancel) {
+              _profileBloc.cancelConnectRequest();
+            }
+          });
         },
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -525,7 +614,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return RaisedButton(
       onPressed: () {
-        //TODO: action
+        _profileBloc.sendConnectRequest();
       },
       color: Theme.of(context).primaryColor,
       shape: RoundedRectangleBorder(
@@ -630,7 +719,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                           Text(
-                            "${data.profile.type == 1 ? "Youth Church" : "Adult Church"}",
+                            "${data.profile.type == 1 ? "Youth Ministry" : "Adult Ministry"}",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black.withOpacity(0.5)
@@ -790,7 +879,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _recentPostList(ProfileState data) {
+  Widget _recentPostList(RecentFeedState data) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

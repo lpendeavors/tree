@@ -36,7 +36,7 @@ class TreeTabItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: isActive ? 10 : 12,
                       color: isActive ? Theme.of(context).primaryColor : Colors.grey,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                     ),
                   )
                 ],

@@ -71,7 +71,7 @@ class _TrophiesPageState extends State<TrophiesPage>{
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         '/trophy_info',
-                        arguments: trophy.trophyKey
+                        arguments: index
                       );
                     },
                     radius: 10,

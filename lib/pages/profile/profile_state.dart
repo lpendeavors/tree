@@ -26,21 +26,21 @@ class ProfileState extends Equatable {
   final ProfileItem profile;
   final bool isLoading;
   final Object error;
-  final List<FeedItem> feedItems;
+  final bool isAdmin;
 
   const ProfileState({
     @required this.profile,
     @required this.isLoading,
     @required this.error,
-    @required this.feedItems,
+    @required this.isAdmin,
   });
 
-  ProfileState copyWith({profile, isLoading, error, feedItems}) {
+  ProfileState copyWith({profile, isLoading, error, isAdmin}) {
     return ProfileState(
       profile: profile ?? this.profile,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
-      feedItems: feedItems ?? this.feedItems,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -49,7 +49,38 @@ class ProfileState extends Equatable {
     profile,
     isLoading,
     error,
-    feedItems
+    isAdmin,
+  ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
+class RecentFeedState extends Equatable {
+  final List<FeedItem> feedItems;
+  final bool isLoading;
+  final Object error;
+
+  const RecentFeedState({
+    @required this.feedItems,
+    @required this.isLoading,
+    @required this.error,
+  });
+
+  RecentFeedState copyWith({feedItems, isLoading, error}) {
+    return RecentFeedState(
+      feedItems: feedItems ?? this.feedItems,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+
+  @override
+  List get props => [
+    feedItems,
+    isLoading,
+    error
   ];
 
   @override

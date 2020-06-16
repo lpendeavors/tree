@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
@@ -48,7 +49,19 @@ abstract class FirestoreUserRepository {
   Stream<UserEntity> getUserById({@required String uid});
 
   Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
-  
+
+  Future<void> sendConnectionRequest(String from, String to);
+
+  Future<void> cancelConnectionRequest(String from, String to);
+
+  Future<void> acceptConnectionRequest(String from, String to);
+
+  Future<void> disconnect(String from, String to);
+
+  Future<void> uploadImage(String uid, File image);
+
+  Future<void> approveAccount(String uid);
+
   Future<void> saveNotifications({
     @required String user,
     @required bool messages,

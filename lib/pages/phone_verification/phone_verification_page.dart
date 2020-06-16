@@ -83,6 +83,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                   fontSize: 40,
                   fontFamily: 'Nirmala',
                   color: Colors.black,
+                  fontWeight: FontWeight.normal,
                 ),
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -91,6 +92,7 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                     fontSize: 40,
                     fontFamily: 'Nirmala',
                     color: Colors.black.withOpacity(0.2),
+                    fontWeight: FontWeight.normal,
                   ),
                 ),
               ),

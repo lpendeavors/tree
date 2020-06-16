@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../models/old/user_preview_entity.dart';
@@ -78,16 +81,20 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
     user.linkWithCredential(emailCredential);
 
+
+
     await _updateUserData(
       user.uid,
-      <String, dynamic>{
+      UserEntity.createWith({
         'joined': FieldValue.serverTimestamp(),
         'phone': user.phoneNumber,
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
-        'password': password
-      }
+        'password': password,
+        'fullName': "$firstName $lastName",
+        'uid': user.uid
+      })
     );
 
     print('[USER_REPO] registerWithPhone firebaseUser=$user');
@@ -201,5 +208,70 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     return _firestore
       .document('userBase/$user')
       .setData(addition, merge: true);
+  }
+
+  @override
+  Future<void> sendConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'sentRequests': FieldValue.arrayUnion([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'receivedRequests': FieldValue.arrayUnion([from])
+      });
+    });
+  }
+
+  @override
+  Future<void> cancelConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'sentRequests': FieldValue.arrayRemove([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'receivedRequests': FieldValue.arrayRemove([from])
+      });
+    });
+  }
+
+  @override
+  Future<void> acceptConnectionRequest(String from, String to) {
+    return _firestore.document('userBase/$to').updateData({
+      'receivedRequests': FieldValue.arrayRemove([from]),
+      'connections': FieldValue.arrayUnion([from])
+    }).then((value){
+      return _firestore.document('userBase/$from').updateData({
+        'sentRequests': FieldValue.arrayRemove([to]),
+        'connections': FieldValue.arrayUnion([to])
+      });
+    });
+  }
+
+  @override
+  Future<void> disconnect(String from, String to) {
+    return _firestore.document('userBase/$from').updateData({
+      'connections': FieldValue.arrayRemove([to])
+    }).then((value){
+      return _firestore.document('userBase/$to').updateData({
+        'connections': FieldValue.arrayRemove([from])
+      });
+    });
+  }
+
+  @override
+  Future<void> uploadImage(String uid, File image) {
+    var refId = new Uuid().v1();
+    StorageReference storageReference = FirebaseStorage.instance.ref().child(refId);
+    StorageUploadTask uploadTask = storageReference.putFile(image);
+    return uploadTask.onComplete.then((value) => value.ref.getDownloadURL()).then((url){
+      _firestore.document('userBase/$uid').updateData({
+        'image': url
+      });
+    });
+  }
+
+  @override
+  Future<void> approveAccount(String uid) {
+    return _firestore.document('userBase/$uid').updateData({
+      'isVerified': true
+    });
   }
 }

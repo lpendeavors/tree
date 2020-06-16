@@ -63,6 +63,7 @@ class TreeInputField extends StatelessWidget {
                 fontFamily: 'Nirmala',
                 fontSize: 18,
                 color: Colors.black.withOpacity(0.2),
+                fontWeight: FontWeight.normal,
               ),
             ),
             style: TextStyle(fontSize: 18),
