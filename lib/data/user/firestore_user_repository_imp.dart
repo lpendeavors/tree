@@ -230,4 +230,13 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       .snapshots()
       .map(_toEntities);
   }
+
+  @override
+  Stream<List<UserEntity>> getPublicFigures() {
+    return _firestore
+      .collection('userBase')
+      .where('isVerified', isEqualTo: true)
+      .snapshots()
+      .map(_toEntities);
+  }
 }

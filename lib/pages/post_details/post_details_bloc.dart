@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:treeapp/pages/comments/comments_state.dart';
+import '../../util/post_utils.dart';
+import '../comments/comments_state.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../data/comment/firestore_comment_repository.dart';
@@ -145,6 +146,7 @@ class PostDetailsBloc extends BaseBloc {
       userId: entity.ownerId,
       isLiked: (entity.likes ?? []).contains(uid),
       isMine: entity.ownerId == uid,
+      abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
     );
   }
 

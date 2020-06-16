@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../util/post_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -174,6 +175,7 @@ class FeedBloc implements BaseBloc {
         postImages: _getPostImages(entity),
         isMine: entity.ownerId == uid,
         isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       );
     }).toList();
   }

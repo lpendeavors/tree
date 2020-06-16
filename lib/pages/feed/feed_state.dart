@@ -95,6 +95,7 @@ class FeedItem extends Equatable {
   final List<String> postImages;
   final bool isMine;
   final bool isLiked;
+  final String abbreviatedPost;
 
   const FeedItem({
     @required this.id,
@@ -109,6 +110,7 @@ class FeedItem extends Equatable {
     @required this.postImages,
     @required this.isMine,
     @required this.isLiked,
+    @required this.abbreviatedPost,
   });
 
   @override
@@ -125,6 +127,7 @@ class FeedItem extends Equatable {
     postImages,
     isMine,
     isLiked,
+    abbreviatedPost,
   ];
 
   @override

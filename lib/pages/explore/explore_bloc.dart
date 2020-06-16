@@ -95,16 +95,17 @@ class ExploreBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip4(
+      return Rx.zip5(
         userRepository.getSuggestionsByChurch(
           church: loginState.church,
         ),
         userRepository.getSuggestionsByCity(
           city: loginState.city,
         ),
+        userRepository.getPublicFigures(),
         userRepository.get(),
         postRepository.postsForCollage(),
-        (churchUsers, cityUsers, newestUsers, posts) {
+        (churchUsers, cityUsers, publicFigures, newestUsers, posts) {
           var filiteredPosts = (posts as List<PostEntity>).where((p) {
             return _getPostImage(p) != null;
           }).toList();
@@ -113,9 +114,10 @@ class ExploreBloc implements BaseBloc {
           (newestUsers as List<UserEntity>).sort((a, b) => b.time.compareTo(a.time));
 
           var suggestions = churchUsers as List<UserEntity>;
-
+          suggestions.addAll(publicFigures);
           suggestions.addAll(cityUsers);
           suggestions.addAll(newestUsers);
+          suggestions.toSet().toList();
 
           return _kInitialExploreState.copyWith(
             connectionItems: _userEntitiesToItems(suggestions),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../util/post_utils.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
 import '../../pages/feed/feed_state.dart';
@@ -104,6 +105,7 @@ class ProfileBloc implements BaseBloc {
         userId: entity.ownerId,
         isLiked: (entity.likes ?? []).contains(uid),
         isMine: entity.ownerId == uid,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       );
     }).toList();
   }

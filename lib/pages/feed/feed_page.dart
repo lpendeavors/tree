@@ -25,7 +25,7 @@ class FeedPage extends StatefulWidget {
   _FeedPageState createState() => _FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
+class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   List<StreamSubscription> _subscriptions;
   FeedBloc _feedBloc;
 
@@ -56,7 +56,11 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return CurvedScaffold(
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -173,7 +177,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin {
 
             return ListView.builder(
               itemCount: data.feedItems.length,
-              physics: BouncingScrollPhysics(),
+              physics: AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return FeedListItem(
                   context: context,

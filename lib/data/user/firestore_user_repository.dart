@@ -70,4 +70,6 @@ abstract class FirestoreUserRepository {
     @required bool group,
     @required bool online,
   });
+
+  Stream<List<UserEntity>> getPublicFigures();
 }
