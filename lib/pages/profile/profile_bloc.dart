@@ -100,7 +100,8 @@ class ProfileBloc implements BaseBloc {
     final profileState$ = _getProfile(
       userBloc,
       userId,
-      userRepository
+      userRepository,
+      postRepository,
     ).publishValueSeeded(_kInitialProfileState);
 
     final recentFeedState$ = _getRecentFeed(
@@ -245,6 +246,7 @@ class ProfileBloc implements BaseBloc {
     LoginState loginState,
     String userId,
     FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -309,7 +311,7 @@ class ProfileBloc implements BaseBloc {
     if (loginState is LoggedInUser) {
       return postRepository.postsByOwner(uid: userId)
       .map((posts){
-        var userPosts = _entitiesToFeedItems(posts);
+        var userPosts = _entitiesToFeedItems(posts, loginState.uid);
         return _kInitialRecentFeedState.copyWith(
             feedItems: userPosts,
             isLoading: false
@@ -368,12 +370,14 @@ class ProfileBloc implements BaseBloc {
     UserBloc userBloc,
     String userId,
     FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toProfileState(
         loginState,
         userId,
         userRepository,
+        postRepository,
       );
     });
   }
