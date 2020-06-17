@@ -95,9 +95,9 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             userBloc: widget.userBloc,
             initProfileBloc: () => ProfileBloc(
               userBloc: widget.userBloc,
-              userId: (widget.userBloc.loginState$.value as LoggedInUser).uid,
               userRepository: widget.userRepository,
-              postRepository: widget.postRepository
+              postRepository: widget.postRepository,
+              userId: (widget.userBloc.loginState$.value as LoggedInUser).uid,
             ),
           ),
         ],
@@ -210,10 +210,16 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       onClickMenu: (item) {
         switch (item.menuTitle) {
           case 'Post':
-            print('new post');
+            Navigator.of(context).pushNamed(
+              '/edit_post',
+              arguments: null,
+            );
           break;
           case 'Poll':
-            print('new poll');
+            Navigator.of(context).pushNamed(
+              '/edit_poll',
+              arguments: null,
+            );
           break;
           case 'Event':
             Navigator.of(context).pushNamed(

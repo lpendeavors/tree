@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_bloc.dart';
+import '../../user_bloc/user_login_state.dart';
 
 class SplashPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -101,12 +102,12 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void _setupRedirect() {
-    var loginState = widget.userBloc.loginState$.value;
-
     Future.delayed(
-      Duration(milliseconds: 1500), 
+      Duration(milliseconds: 3000), 
       () async {
-        if (loginState != null) {
+        var loginState = widget.userBloc.loginState$.value;
+
+        if (loginState is LoggedInUser) {
           Navigator.pushReplacementNamed(context, '/');
         } else {
           Navigator.pushReplacementNamed(context, '/getting_started');

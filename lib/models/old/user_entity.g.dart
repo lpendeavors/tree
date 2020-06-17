@@ -48,10 +48,6 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     churchInfo: json['churchInfo'] == null
         ? null
         : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
-    myChatList13: (json['myChatList13'] as List)
-        ?.map((e) =>
-            e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
-        ?.toList(),
     churchName: json['churchName'] as String,
     isVerified: json['isVerified'] as bool,
     connections:
@@ -105,7 +101,6 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'receivedRequests': instance.receivedRequests,
       'sentRequests': instance.sentRequests,
       'churchInfo': instance.churchInfo?.toJson(),
-      'myChatList13': instance.myChatList13?.map((e) => e?.toJson())?.toList(),
       'connections': instance.connections,
       'shares': instance.shares,
       'type': instance.type,

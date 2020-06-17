@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../util/post_utils.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
 import '../../pages/feed/feed_state.dart';
@@ -17,7 +18,9 @@ import 'package:timeago/timeago.dart' as timeago;
 const _kInitialProfileState = ProfileState(
   profile: null,
   isLoading: true,
-  error: false
+  error: null,
+  feedItems: [],
+  isAdmin: false,
 );
 
 const _kInitialRecentFeedState = RecentFeedState(
@@ -97,7 +100,8 @@ class ProfileBloc implements BaseBloc {
     final profileState$ = _getProfile(
       userBloc,
       userId,
-      userRepository
+      userRepository,
+      postRepository,
     ).publishValueSeeded(_kInitialProfileState);
 
     final recentFeedState$ = _getRecentFeed(
@@ -204,8 +208,9 @@ class ProfileBloc implements BaseBloc {
   }
 
   static List<FeedItem> _entitiesToFeedItems(
-    List<PostEntity> entities,
-  ) {
+      List<PostEntity> entities,
+      String uid,
+      ) {
     return entities.map((entity) {
       return FeedItem(
         id: entity.documentId,
@@ -214,9 +219,13 @@ class ProfileBloc implements BaseBloc {
         timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
         message: entity.postMessage,
         name: entity.fullName != null ? entity.fullName : entity.churchName,
-        userImage: entity.image,
+        userImage: entity.image ?? "",
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
+        userId: entity.ownerId,
+        isLiked: (entity.likes ?? []).contains(uid),
+        isMine: entity.ownerId == uid,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       );
     }).toList();
   }
@@ -237,6 +246,7 @@ class ProfileBloc implements BaseBloc {
     LoginState loginState,
     String userId,
     FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -248,15 +258,24 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getUserById(uid: userId)
-      .map((user){
-        var profile = _entityToProfileItem(user, loginState);
-        return _kInitialProfileState.copyWith(
-          profile: profile,
-          isLoading: false,
-          isAdmin: loginState.isAdmin
-        );
-      })
+      return Rx.zip2(
+        userRepository.getUserById(uid: userId),
+        postRepository.postsByOwner(uid: userId),
+        (user, posts){
+          return _kInitialProfileState.copyWith(
+            isLoading: false,
+            feedItems: _entitiesToFeedItems(posts, loginState.uid),
+            profile: _entityToProfileItem(user, loginState),
+          );
+        })
+        .startWith(_kInitialProfileState)
+        .onErrorReturnWith((e) {
+          return _kInitialProfileState.copyWith(
+            error: e,
+            isLoading: false,
+          );
+        }
+      )
       .startWith(_kInitialProfileState)
       .onErrorReturnWith((e) {
         return _kInitialProfileState.copyWith(
@@ -292,7 +311,7 @@ class ProfileBloc implements BaseBloc {
     if (loginState is LoggedInUser) {
       return postRepository.postsByOwner(uid: userId)
       .map((posts){
-        var userPosts = _entitiesToFeedItems(posts);
+        var userPosts = _entitiesToFeedItems(posts, loginState.uid);
         return _kInitialRecentFeedState.copyWith(
             feedItems: userPosts,
             isLoading: false
@@ -320,30 +339,30 @@ class ProfileBloc implements BaseBloc {
     LoginState loginState,
   ) {
     return ProfileItem(
-        id: entity.documentId,
-        uid: entity.uid,
-        photo: entity.image ?? "",
-        isChurch: entity.isChurch ?? false,
-        isVerified: entity.isVerified ?? false,
-        fullName: entity.fullName ?? "",
-        churchName: entity.churchName ?? "NONE",
-        connections: entity.connections ?? [],
-        shares: entity.shares ?? [],
-        trophies: entity.treeTrophies ?? [],
-        type: entity.type,
-        churchDenomination: entity.churchDenomination ?? 'NONE',
-        churchAddress: entity.churchAddress ?? 'NONE',
-        aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
-        title: entity.title ?? 'NONE',
-        city: entity.city ?? 'NONE',
-        relationStatus: entity.relationStatus ?? 'NONE',
-        churchInfo: entity.churchInfo,
+      id: entity.documentId,
+      uid: entity.uid,
+      photo: entity.image,
+      isChurch: entity.isChurch ?? false,
+      isVerified: entity.isVerified ?? false,
+      fullName: entity.fullName,
+      churchName: entity.churchName ?? "NONE",
+      connections: entity.connections ?? [],
+      shares: entity.shares ?? [],
+      trophies: entity.treeTrophies,
+      type: entity.type,
+      churchDenomination: entity.churchDenomination ?? 'NONE',
+      churchAddress: entity.churchAddress ?? 'NONE',
+      aboutMe: entity.aboutMe ?? 'Hey I am new to Tree',
+      title: entity.title ?? 'NONE',
+      city: entity.city ?? 'NONE',
+      relationStatus: entity.relationStatus ?? 'NONE',
+      churchInfo: entity.churchInfo,
 
-        //Variables
-        myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
-        isFriend: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.connections ?? []).contains(loginState.uid),
-        sent: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.receivedRequests ?? []).contains(loginState.uid),
-        received: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.sentRequests ?? []).contains(loginState.uid)
+      //Variables
+      myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
+      isFriend: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.connections ?? []).contains(loginState.uid),
+      sent: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.receivedRequests ?? []).contains(loginState.uid),
+      received: (loginState is LoggedInUser) && entity.uid != loginState.uid && (entity.sentRequests ?? []).contains(loginState.uid)
     );
   }
 
@@ -351,12 +370,14 @@ class ProfileBloc implements BaseBloc {
     UserBloc userBloc,
     String userId,
     FirestoreUserRepository userRepository,
+    FirestorePostRepository postRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toProfileState(
         loginState,
         userId,
         userRepository,
+        postRepository,
       );
     });
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../util/post_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -20,12 +21,16 @@ class FeedBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-
+  final Function(String) postToLikeChanged;
+  final Function(bool) likePostChanged;
+  final Function() saveLikeValue;
 
   ///
   /// Output streams
   ///
   final ValueStream<FeedListState> feedListState$;
+  final Stream<FeedItemLikeMessage> message$;
+  final ValueStream isLoading$;
 
   ///
   /// Clean up
@@ -33,7 +38,12 @@ class FeedBloc implements BaseBloc {
   final void Function() _dispose;
 
   FeedBloc._({
+    @required this.saveLikeValue,
+    @required this.postToLikeChanged,
+    @required this.likePostChanged,
     @required this.feedListState$,
+    @required this.message$,
+    @required this.isLoading$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -50,24 +60,49 @@ class FeedBloc implements BaseBloc {
     ///
     /// Stream controllers
     ///
-
+    final feedItemToLikeSubject = BehaviorSubject<String>.seeded(null);
+    final postLikeSubject = BehaviorSubject<bool>.seeded(false);
+    final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
+    final savePostLikeSubject = PublishSubject<void>();
 
     ///
     /// Streams
     ///
+    final message$ = savePostLikeSubject
+      .switchMap((_) => performSave(
+        postRepository,
+        postLikeSubject.value,
+        (userBloc.loginState$.value as LoggedInUser).uid,
+        feedItemToLikeSubject.value,
+        isLoadingSubject,
+      )
+    ).publish();
+
     final feedListState$ = _getFeedList(
         userBloc,
         postRepository,
       ).publishValueSeeded(_kInitialFeedListState);
 
     final subscriptions = <StreamSubscription>[
-      feedListState$.connect()
+      feedListState$.connect(),
+      message$.connect(),
+    ];
+
+    final controllers = <StreamController>[
+      postLikeSubject,
+      isLoadingSubject,
     ];
 
     return FeedBloc._(
+      saveLikeValue: () => savePostLikeSubject.add(null),
+      likePostChanged: postLikeSubject.add,
+      postToLikeChanged: feedItemToLikeSubject.add,
+      isLoading$: isLoadingSubject,
+      message$: message$,
       feedListState$: feedListState$,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
       }
     );
   }
@@ -93,8 +128,8 @@ class FeedBloc implements BaseBloc {
         postRepository.getByAdmin(),
         postRepository.postsByUser(uid: loginState.uid),
         (byAdmin, userFeed) {
-          var feed = _entitiesToFeedItems(byAdmin);
-          var userPosts = _entitiesToFeedItems(userFeed);
+          var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
+          var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
 
           feed.addAll(userPosts);
           feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
@@ -124,6 +159,7 @@ class FeedBloc implements BaseBloc {
 
   static List<FeedItem> _entitiesToFeedItems(
     List<PostEntity> entities,
+    String uid,
   ) {
     return entities.map((entity) {
       return FeedItem(
@@ -137,6 +173,9 @@ class FeedBloc implements BaseBloc {
         userId: entity.ownerId,
         isPoll: entity.type == PostType.poll.index,
         postImages: _getPostImages(entity),
+        isMine: entity.ownerId == uid,
+        isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       );
     }).toList();
   }
@@ -163,5 +202,28 @@ class FeedBloc implements BaseBloc {
     }
     
     return images;
+  }
+
+  static Stream<FeedItemLikeMessage> performSave(
+    FirestorePostRepository postRepository,
+    bool shouldLike,
+    String uid,
+    String postId,
+    Sink<bool> isLoadingSink,
+  ) async* {
+    print('[DEBUG] FeedBloc#performSave');
+    try {
+      isLoadingSink.add(true);
+      await postRepository.likeOrUnlikePost(
+        shouldLike: shouldLike,
+        postId: postId,
+        userId: uid,
+      );
+      yield FeedItemLikeSuccess();
+    } catch (e) {
+      yield FeedItemLikeError(e);
+    } finally {
+      isLoadingSink.add(false);
+    }
   }
 }

@@ -45,6 +45,7 @@ PostEntity _$PostEntityFromJson(Map<String, dynamic> json) {
     userImage: json['userImage'] as String,
     username: json['username'] as String,
     time: json['time'] as int,
+    likes: (json['likes'] as List)?.map((e) => e as String)?.toList(),
   );
 }
 
@@ -82,6 +83,7 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'username': instance.username,
       'visibility': instance.visibility,
       'time': instance.time,
+      'likes': instance.likes,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

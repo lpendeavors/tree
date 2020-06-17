@@ -30,6 +30,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Stream<List<UserEntity>> get() {
     return _firestore
       .collection('userBase')
+      .where('isChurch', isEqualTo: false)
+      //.orderBy('time', descending: true)
+      .limit(50)
       .snapshots()
       .map(_toEntities);
   }
@@ -180,12 +183,26 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Stream<List<UserEntity>> getConnections() {
+  Stream<List<UserEntity>> getSuggestionsByCity({
+    String city,
+  }) {
     return _firestore
       .collection('userBase')
       .where('isChurch', isEqualTo: false)
+      .where('city', isEqualTo: city)
       .limit(50)
-      .orderBy('time', descending: true)
+      .snapshots()
+      .map(_toEntities);
+  }
+
+  @override
+  Stream<List<UserEntity>> getSuggestionsByChurch({
+    String church,
+  }) {
+    return _firestore
+      .collection('userBase')
+      .where('churchInfo.churchName', isEqualTo: church)
+      .limit(50)
       .snapshots()
       .map(_toEntities);
   }
@@ -273,5 +290,24 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     return _firestore.document('userBase/$uid').updateData({
       'isVerified': true
     });
+  }
+  
+  Stream<List<UserEntity>> getMyConnections(
+    List<String> connections
+  ) {
+    return _firestore
+      .collection('userBase')
+      .where('docId', whereIn: connections)
+      .snapshots()
+      .map(_toEntities);
+  }
+
+  @override
+  Stream<List<UserEntity>> getPublicFigures() {
+    return _firestore
+      .collection('userBase')
+      .where('isVerified', isEqualTo: true)
+      .snapshots()
+      .map(_toEntities);
   }
 }

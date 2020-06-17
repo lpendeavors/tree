@@ -155,7 +155,7 @@ class ChatRoomBloc implements BaseBloc {
         id: entity.documentId,
         type: MessageType.values[entity.type],
         isMine: entity.ownerId == uid,
-        isRead: entity.readBy.contains(uid),
+        isRead: (entity.readBy ?? []).contains(uid),
         showDate: entity.showDate,
         sentDate: DateTime.fromMillisecondsSinceEpoch(entity.time),
         message: entity.message,

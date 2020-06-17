@@ -20,7 +20,10 @@ class _PostListItemState extends State<PostListItem> {
     if (widget.postItem.image.isNotEmpty) {
       return InkWell(
         onTap: () {
-          // TODO: show post
+          Navigator.of(context).pushNamed(
+            '/post_details',
+            arguments: widget.postItem.id,
+          );
         },
         child: Image(
           fit: BoxFit.cover,

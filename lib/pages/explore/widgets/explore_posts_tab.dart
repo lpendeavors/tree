@@ -80,7 +80,10 @@ class ExplorePostsTab extends StatelessWidget {
             crossAxisCount: 3,
             itemCount: data.postItems.length,
             staggeredTileBuilder: (index) {
-              return StaggeredTile.count(1, 2);
+              return StaggeredTile.count(
+                index == 0 ? 2 : 1,
+                index == 0 ? 2 : 1,
+              );
             },
             itemBuilder: (context, index) {
               return PostListItem(

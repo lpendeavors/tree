@@ -43,6 +43,17 @@ import '../pages/settings/settings_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/profile_bloc.dart';
 import '../pages/settings/notifications/notification_settings_page.dart';
+import '../pages/post_edit/post_edit_page.dart';
+import '../pages/post_edit/post_edit_bloc.dart';
+import '../pages/poll_edit/poll_edit_bloc.dart';
+import '../pages/poll_edit/poll_edit_page.dart';
+import '../pages/create_message/create_message_page.dart';
+import '../pages/create_message/create_message_bloc.dart';
+import '../pages/create_message/create_message_state.dart';
+import '../pages/create_group/create_group_bloc.dart';
+import '../pages/create_group/create_group_page.dart';
+import '../pages/post_details/post_details_bloc.dart';
+import '../pages/post_details/post_details_page.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -323,7 +334,94 @@ class MyApp extends StatelessWidget {
                 userRepository: Injector.of(context).userRepository,
               );
             },
-            index: routerSettings.arguments as int
+            index: routerSettings.arguments as int,
+          );
+        },
+      );
+    }
+
+    if (routerSettings.name == '/edit_post') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return EditPostPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEditPostBloc: () {
+              return EditPostBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                postId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/edit_poll') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return EditPollPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initEditPollBloc: () {
+              return EditPollBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                pollId: routerSettings.arguments as String,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/create_message') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return CreateMessagePage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initCreateMessageBloc: () {
+              return CreateMessageBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                groupRepository: Injector.of(context).groupRepository,
+                chatRepository: Injector.of(context).chatRepository,
+                userRepository: Injector.of(context).userRepository,
+                type: routerSettings.arguments as int,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/create_group') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return CreateGroupPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initCreateGroupBloc: () {
+              return CreateGroupBloc(
+                groupRepository: Injector.of(context).groupRepository,
+                members: routerSettings.arguments as List<MemberItem>,
+              );
+            },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/post_details') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return PostDetailsPage(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            initPostDetailsBloc: () {
+              return PostDetailsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                postRepository: Injector.of(context).postRepository,
+                commentRepository: Injector.of(context).commentRepository,
+                postId: routerSettings.arguments as String,
+              );
+            },
           );
         }
       );

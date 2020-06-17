@@ -72,6 +72,10 @@ class _ChatMessagesState extends State<ChatMessages> {
             itemBuilder: (context, index) {
               return _chatMessageItem(
                 message: data.messages[index],
+                group: _getAssociatedGroup(
+                  data.messages[index],
+                  data.chatRooms,
+                ),
               );
             },
           );
@@ -82,6 +86,7 @@ class _ChatMessagesState extends State<ChatMessages> {
 
   Widget _chatMessageItem({
     MessageItem message,
+    GroupItem group,
   }) {
     return InkWell(
       onLongPress: () {
@@ -112,7 +117,9 @@ class _ChatMessagesState extends State<ChatMessages> {
                   padding: EdgeInsets.all(3),
                   child: ImageHolder(
                     size: 40,
-                    image: message.image,
+                    image: group == null
+                      ? message.image
+                      : group.image,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -142,7 +149,9 @@ class _ChatMessagesState extends State<ChatMessages> {
                               children: <Widget>[
                                 Flexible(
                                   child: Text(
-                                    message.name,
+                                    group == null
+                                      ? message.name
+                                      : group.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -269,6 +278,18 @@ class _ChatMessagesState extends State<ChatMessages> {
       return 'Group';
     } else {
       return 'Conversation';
+    }
+  }
+
+  GroupItem _getAssociatedGroup(
+    MessageItem message,
+    List<GroupItem> groups,
+  ) {
+    try {
+      return groups.where((g) => g.id == message.roomId).single;
+    }
+    catch (e) {
+      return null;
     }
   }
 }

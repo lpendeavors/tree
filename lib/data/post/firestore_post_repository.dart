@@ -21,4 +21,10 @@ abstract class FirestorePostRepository {
   Stream<List<PostEntity>> getByAdmin();
 
   Future<Map<String, String>> savePost(PostEntity post);
+
+  Future<void> likeOrUnlikePost({
+    @required bool shouldLike,
+    @required String postId,
+    @required String userId, 
+  });
 }

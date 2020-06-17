@@ -95,19 +95,19 @@ class _CommentsPanelState extends State<CommentsPanel> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              FlatButton(
-                                onPressed: () => Navigator.pushNamed(context, '/comments'),
-                                child: Center(
-                                  child: Text(
-                                    'View comments fullscreen',
-                                    textAlign: TextAlign.end,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // FlatButton(
+                              //   onPressed: () => Navigator.pushNamed(context, '/comments'),
+                              //   child: Center(
+                              //     child: Text(
+                              //       'View comments fullscreen',
+                              //       textAlign: TextAlign.end,
+                              //       style: TextStyle(
+                              //         fontSize: 14,
+                              //         color: Colors.black,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
                               Flexible(
                                 child: StreamBuilder<CommentsState>(
                                   stream: _commentsBloc.commentsState$,
@@ -144,29 +144,37 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                       );
                                     }
 
-                                    return ListView.separated(
-                                      itemCount: data.comments.length,
-                                      physics: BouncingScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemBuilder: (context, index) {
-                                        return CommentListItem(
-                                          comment: data.comments[index],
-                                        );
-                                      },
-                                      separatorBuilder: (context, index) {
-                                        return Align(
-                                          alignment: Alignment.centerRight,
-                                          child: Container(
-                                            height: 2,
-                                            width: MediaQuery.of(context).size.width,
-                                          ),
-                                        );
-                                      }, 
+                                    return Column(
+                                      children: <Widget>[
+                                        ListView.separated(
+                                          itemCount: data.comments.length,
+                                          physics: BouncingScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) {
+                                            return CommentListItem(
+                                              comment: data.comments[index],
+                                            );
+                                          },
+                                          separatorBuilder: (context, index) {
+                                            return Align(
+                                              alignment: Alignment.centerRight,
+                                              child: Container(
+                                                height: 2,
+                                                width: MediaQuery.of(context).size.width,
+                                              ),
+                                            );
+                                          }, 
+                                        ),
+                                      ],
                                     );
                                   },
                                 ),
                               ),
-                              Container(),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Color(0xff14000000),
+                              ),
                               CommentInput(),
                             ],
                           ),

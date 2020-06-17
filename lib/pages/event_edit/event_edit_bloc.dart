@@ -5,9 +5,9 @@ import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
 import '../../models/old/event_entity.dart';
-import '../../pages/event_edit/event_edit_state.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
+import './event_edit_state.dart';
 
 bool _isTitleValid(String title) {
   return title.length >= 3;
@@ -39,8 +39,8 @@ bool _isEndTimeValid(DateTime end) {
   return end != null;
 }
 
-bool _isValidImage(String imageUrl) {
-  return imageUrl.isNotEmpty;
+bool _isValidImage(List<String> imageUrls) {
+  return imageUrls.isNotEmpty;
 }
 
 bool _isValidWebAddress(String webAddress) {
@@ -76,11 +76,12 @@ class EventEditBloc implements BaseBloc {
   final void Function(DateTime) startTimeChanged;
   final void Function(DateTime) endDateChanged;
   final void Function(DateTime) endTimeChanged;
-  final void Function(String) imageChanged;
+  final void Function(List<String>) imagesChanged;
   final void Function(String) webAddressChanged;
   final void Function(String) costChanged;
   final void Function(String) venueChanged;
   final void Function(String) budgetChanged;
+  final void Function(bool) isSponsoredChanged;
 
   ///
   /// Output streams
@@ -99,6 +100,14 @@ class EventEditBloc implements BaseBloc {
   final Stream<EventEditedMessage> message$;
   final ValueStream<bool> isLoading$;
 
+  final ValueStream<DateTime> startDate$;
+  final ValueStream<DateTime> startTime$;
+  final ValueStream<DateTime> endDate$;
+  final ValueStream<DateTime> endTime$;
+  final ValueStream<bool> isSponsored$;
+  final ValueStream<List<String>> images$;
+  final ValueStream<String> cost$;
+
   ///
   /// Clean up
   ///
@@ -112,11 +121,19 @@ class EventEditBloc implements BaseBloc {
     @required this.startTimeChanged,
     @required this.endDateChanged,
     @required this.endTimeChanged,
-    @required this.imageChanged,
+    @required this.imagesChanged,
     @required this.webAddressChanged,
     @required this.costChanged,
     @required this.venueChanged,
     @required this.budgetChanged,
+    @required this.isSponsoredChanged,
+    @required this.startDate$,
+    @required this.startTime$,
+    @required this.endDate$,
+    @required this.endTime$,
+    @required this.isSponsored$,
+    @required this.images$,
+    @required this.cost$,
     @required this.eventEditState$,
     @required this.titleError$,
     @required this.startDateError$,
@@ -158,11 +175,12 @@ class EventEditBloc implements BaseBloc {
     final startTimeSubject = BehaviorSubject<DateTime>.seeded(null);
     final endDateSubject = BehaviorSubject<DateTime>.seeded(null);
     final endTimeSubject = BehaviorSubject<DateTime>.seeded(null);
-    final imageSubject = BehaviorSubject<String>.seeded('');
+    final imagesSubject = BehaviorSubject<List<String>>.seeded([]);
     final webAddressSubject = BehaviorSubject<String>.seeded('');
     final costSubject = BehaviorSubject<String>.seeded(null);
     final venueSubject = BehaviorSubject<String>.seeded('');
     final budgetSubject = BehaviorSubject<String>.seeded(null);
+    final isSponsoredSubject = BehaviorSubject<bool>.seeded(false);
     final saveEventSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
@@ -199,8 +217,8 @@ class EventEditBloc implements BaseBloc {
       return const EventEndTimeError();
     }).share();
 
-    final imageError$ = imageSubject.map((image) {
-      if (_isValidImage(image)) return null;
+    final imageError$ = imagesSubject.map((images) {
+      if (_isValidImage(images)) return null;
       return const EventImageError();
     }).share();
 
@@ -261,11 +279,12 @@ class EventEditBloc implements BaseBloc {
           startTimeSubject.value,
           endDateSubject.value,
           endTimeSubject.value,
-          imageSubject.value,
+          imagesSubject.value,
           webAddressSubject.value,
           double.parse(costSubject.value),
           venueSubject.value,
           double.parse(budgetSubject.value),
+          isSponsoredSubject.value,
           isLoadingSubject,
         )
       ).publish();
@@ -291,7 +310,7 @@ class EventEditBloc implements BaseBloc {
       startTimeSubject,
       endDateSubject,
       endTimeSubject,
-      imageSubject,
+      imagesSubject,
       webAddressSubject,
       costSubject,
       venueSubject,
@@ -306,11 +325,19 @@ class EventEditBloc implements BaseBloc {
       startTimeChanged: startTimeSubject.add,
       endDateChanged: endDateSubject.add,
       endTimeChanged: endTimeSubject.add,
-      imageChanged: imageSubject.add,
+      imagesChanged: imagesSubject.add,
       webAddressChanged: webAddressSubject.add,
       costChanged: costSubject.add,
       venueChanged: venueSubject.add,
       budgetChanged: budgetSubject.add,
+      isSponsoredChanged: isSponsoredSubject.add,
+      startDate$: startDateSubject.stream,
+      startTime$: startTimeSubject.stream,
+      endDate$: endDateSubject.stream,
+      endTime$: endTimeSubject.stream,
+      isSponsored$: isSponsoredSubject.stream,
+      images$: imagesSubject.stream,
+      cost$: costSubject.stream,
       titleError$: titleError$,
       startDateError$: startDateError$,
       startTimeError$: startTimeError$,
@@ -394,9 +421,10 @@ class EventEditBloc implements BaseBloc {
       startTime: DateTime.fromMillisecondsSinceEpoch(entity.eventStartTime),
       endDate: DateTime.fromMillisecondsSinceEpoch(entity.eventEndDate),
       endTime: DateTime.fromMillisecondsSinceEpoch(entity.eventEndTime),
-      image: entity.image,
+      media: _getEventMedia(entity),
       eventCost: entity.eventPrice,
       venue: entity.location,
+      isSponsored: entity.isSponsored,
     );
   }
 
@@ -414,6 +442,17 @@ class EventEditBloc implements BaseBloc {
     });
   }
 
+  static List<EventMediaItem> _getEventMedia(
+    EventEntity entity,
+  ) {
+    return (entity.eventData ?? []).map((data) {
+      return EventMediaItem(
+        type: EventMediaType.values[data.type],
+        url: data.imageUrl,
+      );
+    }).toList();
+  }
+
   static Stream<EventEditedMessage> performSave(
     String eventId,
     UserBloc userBloc,
@@ -423,11 +462,12 @@ class EventEditBloc implements BaseBloc {
     DateTime startTime,
     DateTime endDate,
     DateTime endTime,
-    String image,
+    List<String> images,
     String webAddress,
     double cost,
     String venue,
     double budget,
+    bool isSponsored,
     Sink<bool> isLoading,
   ) async* {
     print('[DEBUG] saveEvent');
@@ -443,11 +483,12 @@ class EventEditBloc implements BaseBloc {
           startTime,
           endDate,
           endTime,
-          image,
+          images,
           webAddress,
           cost,
           venue,
           budget,
+          isSponsored,
         );
         yield EventEditedMessageSuccess(eventTitle);
       } catch (e) {

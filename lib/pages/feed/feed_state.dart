@@ -5,6 +5,8 @@ import 'package:meta/meta.dart';
 /// Enums
 /// 
 enum PostType { feed, quiz, poll, group, ad, user }
+enum PostOption { edit, delete, unconnect, report }
+enum ShareOption { withComment, withoutComment }
 
 ///
 /// Message
@@ -24,6 +26,19 @@ class FeedItemAddedMessageSuccess implements FeedItemAddedMessage {
 class FeetItemAddedMessageError implements FeedItemAddedMessage {
   final Object error;
   const FeetItemAddedMessageError(this.error);
+}
+
+class FeedItemLikeMessage implements FeedMessage {
+  const FeedItemLikeMessage();
+}
+
+class FeedItemLikeSuccess implements FeedItemLikeMessage {
+  const FeedItemLikeSuccess();
+}
+
+class FeedItemLikeError implements FeedItemLikeMessage {
+  final Object error;
+  const FeedItemLikeError(this.error);
 }
 
 ///
@@ -78,6 +93,9 @@ class FeedItem extends Equatable {
   final String userId;
   final bool isPoll;
   final List<String> postImages;
+  final bool isMine;
+  final bool isLiked;
+  final String abbreviatedPost;
 
   const FeedItem({
     @required this.id,
@@ -90,6 +108,9 @@ class FeedItem extends Equatable {
     @required this.userId,
     @required this.isPoll,
     @required this.postImages,
+    @required this.isMine,
+    @required this.isLiked,
+    @required this.abbreviatedPost,
   });
 
   @override
@@ -104,6 +125,9 @@ class FeedItem extends Equatable {
     userId,
     isPoll,
     postImages,
+    isMine,
+    isLiked,
+    abbreviatedPost,
   ];
 
   @override
