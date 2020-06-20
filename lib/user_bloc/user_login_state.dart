@@ -34,8 +34,8 @@ class LoggedInUser extends Equatable implements LoginState {
   List get props {
     return [
       uid, 
-      email, 
-      fullName, 
+      email,
+      fullName,
       chatList,
       image,
       connections,

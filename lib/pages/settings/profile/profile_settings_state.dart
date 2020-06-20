@@ -4,8 +4,12 @@ import 'package:meta/meta.dart';
 ///
 /// Message
 ///
-abstract class ProfileMessage {
-  const ProfileMessage();
+abstract class ProfileSettingsMessage {
+  const ProfileSettingsMessage();
+}
+
+class SettingsMessageSuccess implements ProfileSettingsMessage {
+  const SettingsMessageSuccess();
 }
 
 ///
@@ -26,6 +30,10 @@ class ProfileSettingsState extends Equatable {
   final String firstName;
   final String lastName;
   final String phoneNo;
+  final String relationship;
+  final bool isPublic;
+  final String title;
+  final String bio;
   final int type;
 
   const ProfileSettingsState({
@@ -35,10 +43,14 @@ class ProfileSettingsState extends Equatable {
     @required this.firstName,
     @required this.lastName,
     @required this.phoneNo,
+    @required this.relationship,
+    @required this.isPublic,
+    @required this.title,
+    @required this.bio,
     @required this.type,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, type}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, type}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -46,6 +58,10 @@ class ProfileSettingsState extends Equatable {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       phoneNo: phoneNo ?? this.phoneNo,
+      relationship: relationship ?? this.relationship,
+      isPublic: isPublic ?? this.isPublic,
+      title: title ?? this.title,
+      bio: bio ?? this.bio,
       type: type ?? this.type,
     );
   }
@@ -58,6 +74,10 @@ class ProfileSettingsState extends Equatable {
     firstName,
     lastName,
     phoneNo,
+    relationship,
+    isPublic,
+    title,
+    bio,
     type
   ];
 

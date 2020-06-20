@@ -17,6 +17,10 @@ const _kInitialProfileSettingsState = ProfileSettingsState(
   firstName: null,
   lastName: null,
   phoneNo: null,
+  relationship: null,
+  isPublic: false,
+  title: null,
+  bio: null,
   type: 0
 );
 
@@ -27,12 +31,17 @@ class ProfileSettingsBloc implements BaseBloc{
   final void Function(String string) setFirstName;
   final void Function(String string) setLastName;
   final void Function(String string) setPhoneNumber;
+  final void Function(String string) setRelationship;
+  final void Function(bool value) setIsPublic;
+  final void Function(String string) setTitle;
+  final void Function(String string) setBio;
   final void Function() saveChanges;
 
   ///
   /// Output streams
   ///
   final ValueStream<ProfileSettingsState> settingState$;
+  final Stream<ProfileSettingsMessage> message$;
 
   ///
   /// Clean up
@@ -43,8 +52,13 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setFirstName,
     @required this.setLastName,
     @required this.setPhoneNumber,
+    @required this.setRelationship,
+    @required this.setIsPublic,
+    @required this.setTitle,
+    @required this.setBio,
     @required this.saveChanges,
     @required this.settingState$,
+    @required this.message$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -66,13 +80,22 @@ class ProfileSettingsBloc implements BaseBloc{
     final setFirstNameController = BehaviorSubject<String>();
     final setLastNameController = BehaviorSubject<String>();
     final setPhoneNumberController = BehaviorSubject<String>();
+    final setRelationshipController = BehaviorSubject<String>();
+    final setIsPublicController = BehaviorSubject<bool>();
+    final setTitleController = BehaviorSubject<String>();
+    final setBioController = BehaviorSubject<String>();
     final saveChangesController = PublishSubject<void>();
 
-    saveChangesController.exhaustMap(
+    final message$ = saveChangesController.exhaustMap(
       (_) => saveProfileChanges(
+        userBloc,
         setFirstNameController.value,
         setLastNameController.value,
         setPhoneNumberController.value,
+        setRelationshipController.value,
+        setIsPublicController.value,
+        setTitleController.value,
+        setBioController.value,
         userRepository,
       )
     ).publish();
@@ -89,6 +112,7 @@ class ProfileSettingsBloc implements BaseBloc{
     /// Subscriptions and controllers
     ///
     final subscriptions = <StreamSubscription>[
+      message$.connect(),
       settingState$.connect(),
     ];
 
@@ -96,14 +120,23 @@ class ProfileSettingsBloc implements BaseBloc{
       setFirstNameController,
       setLastNameController,
       setPhoneNumberController,
+      setRelationshipController,
+      setIsPublicController,
+      setTitleController,
+      setBioController,
       saveChangesController
     ];
 
     return ProfileSettingsBloc._(
       settingState$: settingState$,
+      message$: message$,
       setFirstName: setFirstNameController.add,
       setLastName: setLastNameController.add,
       setPhoneNumber: setPhoneNumberController.add,
+      setRelationship: setRelationshipController.add,
+      setIsPublic: setIsPublicController.add,
+      setTitle: setTitleController.add,
+      setBio: setBioController.add,
       saveChanges: () => saveChangesController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -135,7 +168,12 @@ class ProfileSettingsBloc implements BaseBloc{
           firstName: user.firstName,
           lastName: user.lastName,
           phoneNo: user.phoneNo,
-          type: user.type
+          relationship: user.relationStatus,
+          type: user.type,
+          isPublic: user.isPublic,
+          title: user.title,
+          bio: user.aboutMe,
+          isLoading: false
         );
       })
       .startWith(_kInitialProfileSettingsState)
@@ -167,12 +205,38 @@ class ProfileSettingsBloc implements BaseBloc{
     });
   }
 
-  static saveProfileChanges(
+  static Stream<ProfileSettingsMessage> saveProfileChanges(
+    UserBloc userBloc,
     String firstName,
     String lastName,
     String phoneNo,
+    String relationship,
+    bool isPublic,
+    String title,
+    String aboutMe,
     FirestoreUserRepository userRepository
-  ){
+  ) async* {
+    Map<String, dynamic> data = {
+      'firstName': firstName,
+      'lastName': lastName,
+      'fullName': '$firstName $lastName',
+      'phoneNo': phoneNo,
+      'relationStatus': relationship,
+      'isPublic': isPublic,
+      'title': title,
+      'aboutMe': aboutMe
+    };
 
+    if(isPublic != null && isPublic){
+      data['status'] = 0;
+    }
+
+    LoginState state = userBloc.loginState$.value;
+    if(state is LoggedInUser){
+      print('saving $data');
+      await userRepository.updateUserData(state.uid, data);
+    }
+
+    yield SettingsMessageSuccess();
   }
 }

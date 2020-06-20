@@ -341,7 +341,7 @@ class ProfileBloc implements BaseBloc {
     return ProfileItem(
       id: entity.documentId,
       uid: entity.uid,
-      photo: entity.image,
+      photo: entity.image ?? "",
       isChurch: entity.isChurch ?? false,
       isVerified: entity.isVerified ?? false,
       fullName: entity.fullName,

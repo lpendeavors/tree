@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../bloc/bloc_provider.dart';
 import '../data/user/firestore_user_repository.dart';
 import '../models/old/user_entity.dart';

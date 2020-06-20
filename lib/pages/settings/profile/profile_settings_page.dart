@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -26,11 +27,24 @@ class ProfileSettingsPage extends StatefulWidget {
 class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
 
   ProfileSettingsBloc _profileSettingsBloc;
+  List<StreamSubscription> _subscriptions;
 
   @override
   void initState() {
     _profileSettingsBloc = widget.initProfileSettingsBloc();
+
+    _subscriptions = [
+      _profileSettingsBloc.message$.listen(_showSettingsMessage)
+    ];
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _subscriptions.forEach((s) => s.cancel());
+    _profileSettingsBloc.dispose();
+    super.dispose();
   }
 
   @override
@@ -80,9 +94,167 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
 
   TextEditingController firstName = TextEditingController();
   TextEditingController lastName = TextEditingController();
+  TextEditingController aboutMe = TextEditingController();
   TextEditingController phoneNumber = MaskedTextController(mask: "(000) 000-0000");
   TextEditingController pass1 = TextEditingController();
   String countryCode = "+1";
+
+  List<DropdownMenuItem<String>> statusList = <DropdownMenuItem<String>>[
+    DropdownMenuItem(
+      child: Text(
+        "Single",
+        style: TextStyle(
+          fontSize: 18.0,
+          color: Colors.black,
+          fontFamily: 'Nirmala',
+          fontWeight: FontWeight.normal
+        )
+      ),
+      value: "Single"
+    ),
+    DropdownMenuItem(
+      child: Text(
+        "Dating",
+        style: TextStyle(
+          fontSize: 18.0,
+          color: Colors.black,
+          fontFamily: 'Nirmala',
+          fontWeight: FontWeight.normal
+        )
+      ),
+      value: "Dating",
+    ),
+    DropdownMenuItem(
+      child: Text(
+        "Married",
+          style: TextStyle(
+            fontSize: 18.0,
+            color: Colors.black,
+            fontFamily: 'Nirmala',
+            fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Married",
+    )
+  ];
+
+  List<DropdownMenuItem<String>> titleList = <DropdownMenuItem<String>>[
+    DropdownMenuItem(
+      child: Text(
+          "Author",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Author",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Speaker",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Speaker",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Blogger",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Blogger",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Actor",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Actor",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Actress",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Actress",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Comedian",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Comedian",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Public Figure",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Public Figure",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Musician",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Musician",
+    ),
+    DropdownMenuItem(
+      child: Text(
+          "Pastor",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
+      ),
+      value: "Pastor",
+    )
+  ];
+
+  bool isPublic = false;
+
+  String city = "";
+  String address = "";
+  String relationship;
+  String title;
 
   _personal(){
     return CurvedScaffold(
@@ -95,8 +267,22 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
           initialData: _profileSettingsBloc.settingState$.value,
           builder: (context, data){
             ProfileSettingsState state = data.data;
+
+            if(state.isLoading){
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
             firstName.text = state.firstName;
             lastName.text = state.lastName;
+            phoneNumber.text = state.phoneNo.substring(state.phoneNo.length - 10);
+            aboutMe.text = state.bio;
+
+            _profileSettingsBloc.setFirstName(state.firstName);
+            _profileSettingsBloc.setLastName(state.lastName);
+            _profileSettingsBloc.setPhoneNumber(state.phoneNo);
+            _profileSettingsBloc.setBio(state.bio);
 
             if(state.isChurch){
               return SingleChildScrollView(
@@ -155,6 +341,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 maxLines: 1,
                                 keyboardType: TextInputType.text,
                                 controller: firstName,
+                                onChanged: _profileSettingsBloc.setFirstName,
                               ),
                             ),
                           ],
@@ -217,6 +404,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 maxLines: 1,
                                 keyboardType: TextInputType.text,
                                 controller: lastName,
+                                onChanged: _profileSettingsBloc.setLastName,
                               ),
                             ),
                           ],
@@ -235,7 +423,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       width: double.infinity,
                       child: RaisedButton(
                         onPressed: (){
-                          //TODO: Save Personal
+                          _profileSettingsBloc.saveChanges();
                         },
                         color: Theme.of(context).primaryColor,
                         textColor: Colors.white,
@@ -255,9 +443,490 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                   ],
                 ),
               );
-            }else {
-              //TODO: Regular Users
-              return Container();
+            } else {
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                            "FIRST NAME",
+                            style: TextStyle(
+                                fontFamily: 'NirmalaB',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.0,
+                                color: Colors.black38
+                            )
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                              child: Icon(
+                                Icons.person,
+                                size: 23,
+                                color: Colors.black45,
+                              ),
+                            ),
+                            SizedBox(width: 10.0),
+                            Flexible(
+                              child: TextField(
+                                textInputAction: TextInputAction.done,
+                                textCapitalization: TextCapitalization.none,
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Enter Contact First Name",
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'Nirmala',
+                                      fontSize: 17.0,
+                                      color: Colors.black26,
+                                      fontWeight: FontWeight.normal,
+                                    )
+                                ),
+                                style: TextStyle(
+                                  fontFamily: 'Nirmala',
+                                  fontSize: 20.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                                cursorColor: Colors.black,
+                                cursorWidth: 1,
+                                maxLines: 1,
+                                keyboardType: TextInputType.text,
+                                controller: firstName,
+                                onChanged: _profileSettingsBloc.setFirstName,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black12,
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                            "LAST NAME",
+                            style: TextStyle(
+                                fontFamily: 'NirmalaB',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.0,
+                                color: Colors.black38
+                            )
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                              child: Icon(
+                                Icons.person,
+                                size: 23,
+                                color: Colors.black45,
+                              ),
+                            ),
+                            SizedBox(width: 10.0),
+                            Flexible(
+                              child: TextField(
+                                textInputAction: TextInputAction.done,
+                                textCapitalization: TextCapitalization.none,
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Enter Contact Last Name",
+                                    hintStyle: TextStyle(
+                                      fontFamily: 'Nirmala',
+                                      fontSize: 17.0,
+                                      color: Colors.black26,
+                                      fontWeight: FontWeight.normal,
+                                    )
+                                ),
+                                style: TextStyle(
+                                  fontFamily: 'Nirmala',
+                                  fontSize: 20.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                                cursorColor: Colors.black,
+                                cursorWidth: 1,
+                                maxLines: 1,
+                                keyboardType: TextInputType.text,
+                                controller: lastName,
+                                onChanged: _profileSettingsBloc.setLastName,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black12,
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset(
+                              dating_icon,
+                              height: 20,
+                              width: 20,
+                              color: Colors.black.withOpacity(.4),
+                            ),
+                            SizedBox(width: 10.0),
+                            Flexible(
+                              child: DropdownButton(
+                                value: relationship ?? state.relationship,
+                                isExpanded: true,
+                                style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
+                                items: statusList,
+                                onChanged: (s){
+                                  print(s);
+                                  _profileSettingsBloc.setRelationship(s);
+                                  setState(() {
+                                    relationship = s;
+                                  });
+                                },
+                                hint: Text(
+                                  "Select your relationship status",
+                                  style: TextStyle(fontSize: 17.0, color: Colors.black.withOpacity(.2), fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
+                                ),
+                                underline: Container(),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black.withOpacity(.1),
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        )
+                      ],
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                            "CITY",
+                            style: TextStyle(fontSize: 12.0, color: Colors.black.withOpacity(.4), fontFamily: 'Nirmala', fontWeight: FontWeight.normal)
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.home,
+                              size: 25,
+                              color: Colors.black.withOpacity(.4),
+                            ),
+                            SizedBox(width: 10),
+                            Flexible(
+                              child: InkWell(
+                                onTap: (){
+                                  //TODO: Open location picker
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: double.infinity,
+                                  child: Row(
+                                    children: <Widget>[
+                                      Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.tight,
+                                        child: Text(
+                                            city.isEmpty ? "Where do you live?" : city,
+                                            style: TextStyle(fontSize: 17.0, color: Colors.black.withOpacity(city.isEmpty ? (.2) : 1), fontFamily: 'Nirmala', fontWeight: FontWeight.normal)
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Icon(
+                              Icons.search,
+                              size: 25,
+                              color: Colors.black.withOpacity(.4),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black.withOpacity(.1),
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10.0),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              height: 25,
+                              width: 25,
+                              padding: EdgeInsets.all(5),
+                              child: Container(
+                                height: 20,
+                                width: 20,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isPublic ? Theme.of(context).primaryColor : Colors.transparent,
+                                    border: Border.all(color: isPublic ? Theme.of(context).primaryColor : Colors.transparent)
+                                ),
+                              ),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  border: Border.all(width: 2, color: isPublic ? Theme.of(context).primaryColor : Colors.grey)
+                              ),
+                            ),
+                            SizedBox(width: 10.0),
+                            Flexible(
+                              child: InkWell(
+                                onTap: (){
+                                  _profileSettingsBloc.setIsPublic(!isPublic);
+                                  setState(() {
+                                    isPublic = !isPublic;
+                                  });
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: double.infinity,
+                                  child: Row(
+                                    children: <Widget>[
+                                      Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.tight,
+                                        child: Text(
+                                          "Request profile to be a public figure",
+                                          style: TextStyle(
+                                              fontSize: 17,
+                                              color: Colors.black.withOpacity(isPublic ? 1 : .2)),
+                                        ),
+                                      ),
+                                      SizedBox(width: 10.0)
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black.withOpacity(.1),
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        )
+                      ],
+                    ),
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 5),
+                      child: isPublic ? Column(
+                        children: <Widget>[
+                          SizedBox(height: 10.0),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.person,
+                                    size: 18,
+                                    color: Colors.black.withOpacity(.4),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Flexible(
+                                    child: DropdownButton(
+                                      value: title ?? state.title,
+                                      isExpanded: true,
+                                      style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
+                                      items: titleList,
+                                      onChanged: (s){
+                                        _profileSettingsBloc.setTitle(s);
+                                        setState(() {
+                                          title = s;
+                                        });
+                                      },
+                                      hint: Text(
+                                        "How may we address you?",
+                                        style: TextStyle(fontSize: 17.0, color: Colors.black.withOpacity(.2), fontFamily: 'Nirmala', fontWeight: FontWeight.normal)
+                                      ),
+                                      underline: Container(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1.0,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(.1),
+                                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                              )
+                            ],
+                          ),
+                          SizedBox(height: 10.0),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "ADDRESS",
+                                style: TextStyle(fontSize: 12.0, color: Colors.black.withOpacity(.4), fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.business,
+                                    size: 25,
+                                    color: Colors.black.withOpacity(.4),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Flexible(
+                                    child: InkWell(
+                                      onTap: (){
+                                        //TODO: Open location picker
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: double.infinity,
+                                        child: Row(
+                                          children: <Widget>[
+                                            Flexible(
+                                              flex: 1,
+                                              fit: FlexFit.tight,
+                                              child: Text(
+                                                  address.isEmpty ? "Enter your business address" : address,
+                                                  style: TextStyle(fontSize: 17.0, color: Colors.black.withOpacity(address.isEmpty ? (.2) : 1), fontFamily: 'Nirmala', fontWeight: FontWeight.normal)
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.0),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Icon(
+                                    Icons.search,
+                                    size: 25,
+                                    color: Colors.black.withOpacity(.4),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                height: 1.0,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(.1),
+                                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                              )
+                            ],
+                          )
+                        ],
+                      ) : null,
+                      curve: Curves.easeOut,
+                    ),
+                    SizedBox(height: 15.0),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          "BIO",
+                          style: TextStyle(fontSize: 12.0, color: Colors.black.withOpacity(.4), fontFamily: 'NirmalaB', fontWeight: FontWeight.bold)
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                              child: Icon(
+                                Icons.edit,
+                                size: 23,
+                                color: Colors.black.withOpacity(.4),
+                              ),
+                            ),
+                            SizedBox(width: 15.0),
+                            Flexible(
+                              child: TextField(
+                                textInputAction: TextInputAction.done,
+                                textCapitalization: TextCapitalization.none,
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Describe yourself (Optional)",
+                                    hintStyle: TextStyle(fontSize: 17.0, color: Colors.black.withOpacity(.2), fontFamily: 'Nirmala', fontWeight: FontWeight.normal)
+                                ),
+                                style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
+                                cursorColor: Colors.black,
+                                cursorWidth: 1,
+                                maxLines: 3,
+                                controller: aboutMe,
+                                onChanged: _profileSettingsBloc.setBio,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black.withOpacity(.1),
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10.0),
+                    Container(
+                      height: 50,
+                      width: double.infinity,
+                      child: RaisedButton(
+                        onPressed: (){
+                          _profileSettingsBloc.saveChanges();
+                        },
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.white,
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                              fontFamily: 'NirmalaB',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22.0,
+                              color: Colors.white
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      ),
+                    ),
+                    SizedBox(height: 50.0),
+                  ],
+                ),
+              );
             }
           },
         )
@@ -301,7 +970,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                         ),
                         FlatButton(
                             onPressed: (){
-                              print('click2985y28745y');
+
                             },
                             color: Colors.black.withOpacity(0.06),
                             padding: EdgeInsets.all(16),
@@ -438,7 +1107,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                               children: <Widget>[
                                 Container(
                                   height: 50,
-                                  child: new TextField(
+                                  child: TextField(
                                     textInputAction: TextInputAction.done,
                                     textCapitalization: TextCapitalization.sentences,
                                     autofocus: true,
@@ -583,5 +1252,20 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
         ),
       ),
     );
+  }
+
+  void _showSnackBar(message) {
+    Scaffold.of(context, nullOk: true)?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  _showSettingsMessage(ProfileSettingsMessage message){
+    if (message is SettingsMessageSuccess) {
+      _showSnackBar("Changes saved!");
+    }
   }
 }
