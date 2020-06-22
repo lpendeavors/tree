@@ -5,20 +5,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
-import 'package:treeapp/pages/settings/profile/profile_settings_bloc.dart';
-import 'package:treeapp/pages/settings/profile/profile_settings_state.dart';
-import 'package:treeapp/util/asset_utils.dart';
-import 'package:treeapp/widgets/curved_scaffold.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/pages/login/email_login_bloc.dart';
+import '../../../pages/login/login_state.dart';
+import '../../../pages/phone_verification/phone_verification_state.dart';
+import '../../../models/country.dart';
+import '../../../data/user/firestore_user_repository.dart';
+import '../../../widgets/modals/country_code_modal.dart';
+import '../../../pages/login/phone_login_bloc.dart';
+import '../../../pages/settings/profile/profile_settings_bloc.dart';
+import '../../../pages/settings/profile/profile_settings_state.dart';
+import '../../../util/asset_utils.dart';
+import '../../../widgets/curved_scaffold.dart';
+import '../../../generated/l10n.dart';
 
 class ProfileSettingsPage extends StatefulWidget {
 
+  final FirestoreUserRepository userRepository;
   final int index;
   final ProfileSettingsBloc Function() initProfileSettingsBloc;
 
   const ProfileSettingsPage({
     Key key,
     this.index,
-    this.initProfileSettingsBloc
+    this.initProfileSettingsBloc,
+    @required this.userRepository,
   }) : super(key: key);
 
   @override
@@ -28,15 +39,39 @@ class ProfileSettingsPage extends StatefulWidget {
 class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
 
   ProfileSettingsBloc _profileSettingsBloc;
+  PhoneLoginBloc _phoneLoginBloc;
+  EmailLoginBloc _emailLoginBloc;
   List<StreamSubscription> _subscriptions;
+
+  TextEditingController firstName = TextEditingController();
+  TextEditingController lastName = TextEditingController();
+  TextEditingController aboutMe = TextEditingController();
+  TextEditingController phoneNumber = MaskedTextController(mask: "(000) 000-0000");
+  TextEditingController pass1 = TextEditingController();
 
   @override
   void initState() {
     _profileSettingsBloc = widget.initProfileSettingsBloc();
+    _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
+    _emailLoginBloc = EmailLoginBloc(widget.userRepository);
 
     _subscriptions = [
-      _profileSettingsBloc.message$.listen(_showSettingsMessage)
+      Rx.merge([
+        _profileSettingsBloc.message$,
+        _phoneLoginBloc.message$,
+        _emailLoginBloc.message$
+      ]).listen(_showSettingsMessage)
     ];
+
+    _profileSettingsBloc.settingState$.listen((event) {
+      firstName.text = event.firstName;
+      lastName.text = event.lastName;
+      phoneNumber.text = event.phoneNo.substring(event.phoneNo.length - 10);
+      _phoneLoginBloc.phoneNumberChanged(event.phoneNo.substring(event.phoneNo.length - 10));
+      _profileSettingsBloc.setPhoneNumber(event.phoneNo.substring(event.phoneNo.length - 10));
+      aboutMe.text = event.bio;
+      _emailLoginBloc.emailChanged(event.emailAddress);
+    });
 
     super.initState();
   }
@@ -45,6 +80,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _profileSettingsBloc.dispose();
+    _phoneLoginBloc.dispose();
+    _emailLoginBloc.dispose();
     super.dispose();
   }
 
@@ -92,13 +129,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
       ),
     );
   }
-
-  TextEditingController firstName = TextEditingController();
-  TextEditingController lastName = TextEditingController();
-  TextEditingController aboutMe = TextEditingController();
-  TextEditingController phoneNumber = MaskedTextController(mask: "(000) 000-0000");
-  TextEditingController pass1 = TextEditingController();
-  String countryCode = "+1";
 
   List<DropdownMenuItem<String>> statusList = <DropdownMenuItem<String>>[
     DropdownMenuItem(
@@ -274,14 +304,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
               );
             }
 
-            firstName.text = state.firstName;
-            lastName.text = state.lastName;
-            phoneNumber.text = state.phoneNo.substring(state.phoneNo.length - 10);
-            aboutMe.text = state.bio;
-
             _profileSettingsBloc.setFirstName(state.firstName);
             _profileSettingsBloc.setLastName(state.lastName);
-            _profileSettingsBloc.setPhoneNumber(state.phoneNo);
             _profileSettingsBloc.setBio(state.bio);
             _profileSettingsBloc.setRelationship(relationship ?? state.relationship);
             _profileSettingsBloc.setTitle(title ?? state.title);
@@ -613,7 +637,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
                                 items: statusList,
                                 onChanged: (s){
-                                  print(s);
                                   _profileSettingsBloc.setRelationship(s);
                                   setState(() {
                                     relationship = s;
@@ -1088,143 +1111,81 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
           builder: (context, data){
             ProfileSettingsState state = data.data;
 
-            if(state.isChurch){
-              return SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        "Enter your mobile number",
-                        style: TextStyle(
-                          fontFamily: 'Nirmala',
-                          fontSize: 14.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.normal
-                        )
-                      ),
-                      SizedBox(height: 10.0),
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          GestureDetector(
-                            onTap: () {
-                              //TODO: Country code picker
-                            },
-                            child: Container(
-                              height: 30,
-                              width: 60,
-                              decoration: BoxDecoration(
+            return SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      "Enter your mobile number",
+                      style: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 14.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal
+                      )
+                    ),
+                    SizedBox(height: 10.0),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CountryCodeModal();
+                              },
+                            ).then((country) {
+                              if (country != null) {
+                                var selectedCountry = country as Country;
+                                _profileSettingsBloc.countryCodeChanged(selectedCountry.phoneCode);
+                                _phoneLoginBloc.countryCodeChanged(selectedCountry.phoneCode);
+                              }
+                            });
+                          },
+                          child: Container(
+                            height: 30,
+                            width: 60,
+                            decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(.1),
                                 borderRadius: BorderRadius.circular(25)
-                              ),
-                              child: Center(
-                                child: Text(
-                                  countryCode,
-                                  style: TextStyle(
-                                    fontFamily: 'NirmalaB',
-                                    fontSize: 14.0,
-                                    color: Colors.black.withOpacity(0.7),
-                                    fontWeight: FontWeight.bold
-                                  )
-                                ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "+1",
+                                style: TextStyle(
+                                  fontFamily: 'NirmalaB',
+                                  fontSize: 14.0,
+                                  color: Colors.black.withOpacity(0.7),
+                                  fontWeight: FontWeight.bold
+                                )
                               ),
                             ),
                           ),
-                          SizedBox(width: 10.0),
-                          Flexible(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.max,
-                              children: <Widget>[
-                                Container(
-                                  height: 50,
-                                  child: TextField(
-                                    textInputAction: TextInputAction.done,
-                                    textCapitalization: TextCapitalization.sentences,
-                                    autofocus: true,
-                                    decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: "(678) 324-4041",
-                                      hintStyle: TextStyle(
-                                        fontFamily: 'Nirmala',
-                                        fontSize: 20.0,
-                                        color: Colors.black.withOpacity(0.2),
-                                        fontWeight: FontWeight.normal
-                                      )
-                                    ),
-                                    style: TextStyle(
-                                      fontFamily: 'Nirmala',
-                                      fontSize: 20.0,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.normal
-                                    ),
-                                    controller: phoneNumber,
-                                    cursorColor: Colors.black,
-                                    cursorWidth: 1,
-                                    maxLines: 1,
-                                    keyboardType: TextInputType.phone,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        height: 2.0,
-                        width: double.infinity,
-                        color: Colors.black.withOpacity(.2),
-                        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                      ),
-                      Text(
-                        "We'll send you a text verification code.",
-                        style: TextStyle(
-                          fontFamily: 'NirmalaB',
-                          fontSize: 12.0,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold
                         ),
-                      ),
-                      SizedBox(height: 10.0),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "PASSWORD",
-                            style: TextStyle(
-                              fontFamily: 'NirmalaB',
-                              fontSize: 12.0,
-                              color: Colors.black38,
-                              fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                        SizedBox(width: 10.0),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
                             children: <Widget>[
                               Container(
-                                child: Icon(
-                                  Icons.lock,
-                                  size: 23,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Flexible(
+                                height: 50,
                                 child: TextField(
                                   textInputAction: TextInputAction.done,
-                                  textCapitalization: TextCapitalization.none,
+                                  textCapitalization: TextCapitalization.sentences,
+                                  autofocus: true,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
-                                    hintText: "Enter Password",
+                                    hintText: "(678) 324-4041",
                                     hintStyle: TextStyle(
                                       fontFamily: 'Nirmala',
-                                      fontSize: 17.0,
+                                      fontSize: 20.0,
                                       color: Colors.black.withOpacity(0.2),
                                       fontWeight: FontWeight.normal
-                                    ),
+                                    )
                                   ),
                                   style: TextStyle(
                                     fontFamily: 'Nirmala',
@@ -1232,55 +1193,129 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                     color: Colors.black,
                                     fontWeight: FontWeight.normal
                                   ),
+                                  controller: phoneNumber,
+                                  onChanged: (number){
+                                    var cleaned = number.replaceAll(" ", "").replaceAll("(", "").replaceAll(")", "").replaceAll("-", "");
+                                    _phoneLoginBloc.phoneNumberChanged(number);
+                                    _profileSettingsBloc.setPhoneNumber(cleaned);
+                                  },
                                   cursorColor: Colors.black,
                                   cursorWidth: 1,
                                   maxLines: 1,
-                                  keyboardType: TextInputType.text,
-                                  obscureText: true,
-                                  controller: pass1,
+                                  keyboardType: TextInputType.phone,
                                 ),
                               ),
                             ],
                           ),
-                          Container(
-                            height: 1.0,
-                            width: double.infinity,
-                            color: Colors.black.withOpacity(.1),
-                            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 40.0),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        child: RaisedButton(
-                          onPressed: (){
-                            //TODO: Save Phone
-                          },
-                          color: Theme.of(context).primaryColor,
-                          textColor: Colors.white,
-                          child: Text(
-                            "Save",
-                            style: TextStyle(
-                              fontFamily: 'NirmalaB',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white
-                            ),
-                          ),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                         ),
+                      ],
+                    ),
+                    Container(
+                      height: 2.0,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(.2),
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                    ),
+                    Text(
+                      "We'll send you a text verification code.",
+                      style: TextStyle(
+                        fontFamily: 'NirmalaB',
+                        fontSize: 12.0,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold
                       ),
-                      SizedBox(height: 10.0),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          "PASSWORD",
+                          style: TextStyle(
+                            fontFamily: 'NirmalaB',
+                            fontSize: 12.0,
+                            color: Colors.black38,
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              child: Icon(
+                                Icons.lock,
+                                size: 23,
+                                color: Colors.black38,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Flexible(
+                              child: TextField(
+                                textInputAction: TextInputAction.done,
+                                textCapitalization: TextCapitalization.none,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: "Enter Password",
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Nirmala',
+                                    fontSize: 17.0,
+                                    color: Colors.black.withOpacity(0.2),
+                                    fontWeight: FontWeight.normal
+                                  ),
+                                ),
+                                style: TextStyle(
+                                  fontFamily: 'Nirmala',
+                                  fontSize: 20.0,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.normal
+                                ),
+                                cursorColor: Colors.black,
+                                cursorWidth: 1,
+                                maxLines: 1,
+                                keyboardType: TextInputType.text,
+                                obscureText: true,
+                                controller: pass1,
+                                onChanged: _emailLoginBloc.passwordChanged,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          height: 1.0,
+                          width: double.infinity,
+                          color: Colors.black.withOpacity(.1),
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 40.0),
+                    Container(
+                      height: 50,
+                      width: double.infinity,
+                      child: RaisedButton(
+                        onPressed: (){
+                          _emailLoginBloc.submitLogin();
+                        },
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.white,
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                            fontFamily: 'NirmalaB',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                  ],
                 ),
-              );
-            }else{
-              //TODO: Regular Users
-              return Container();
-            }
+              ),
+            );
           },
         ),
       ),
@@ -1296,9 +1331,57 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     );
   }
 
-  _showSettingsMessage(ProfileSettingsMessage message){
+  void _returnedFromVerification(Object message){
+    if(message is PhoneVerificationSuccess){
+      _profileSettingsBloc.saveChanges();
+    }else{
+      _showSnackBar("There was a problem verifying your phone number");
+    }
+  }
+
+  void _showSettingsMessage(dynamic message){
+    final s = S.of(context);
+
     if (message is SettingsMessageSuccess) {
       _showSnackBar("Changes saved!");
+    }
+
+    if (message is LoginMessageSuccess) {
+      _phoneLoginBloc.submitLogin();
+    }
+
+    if(message is LoginPhoneSuccess){
+      Navigator.of(context).pushNamed(
+        '/phone_verification',
+        arguments: [message.verificationId, true],
+      ).then(_returnedFromVerification);
+    }
+
+    if (message is LoginMessageError) {
+      final error = message.error;
+      print('[DEBUG] error=$error');
+
+      if (error is NetworkError) {
+        _showSnackBar(s.network_error);
+      }
+      if (error is TooManyRequestsError) {
+        _showSnackBar(s.too_many_requests_error);
+      }
+      if (error is UserNotFoundError) {
+        _showSnackBar(s.user_not_found_error);
+      }
+      if (error is WrongPasswordError) {
+        _showSnackBar(s.wrong_password_error);
+      }
+      if (error is InvalidEmailError) {
+        _showSnackBar(s.invalid_email_error);
+      }
+      if (error is WeakPasswordError) {
+        _showSnackBar(s.weak_password_error);
+      }
+      if (error is UnknownLoginError) {
+        _showSnackBar(s.error_occurred);
+      }
     }
   }
 }

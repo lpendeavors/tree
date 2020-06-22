@@ -3,10 +3,9 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:treeapp/data/user/firestore_user_repository.dart';
-import 'package:treeapp/user_bloc/user_bloc.dart';
-import 'package:treeapp/user_bloc/user_login_state.dart';
-
+import '../../../data/user/firestore_user_repository.dart';
+import '../../../user_bloc/user_bloc.dart';
+import '../../../user_bloc/user_login_state.dart';
 import '../../../bloc/bloc_provider.dart';
 import '../../../pages/settings/profile/profile_settings_state.dart';
 
@@ -24,7 +23,8 @@ const _kInitialProfileSettingsState = ProfileSettingsState(
   city: "",
   address: "",
   type: 0,
-  status: 0
+  status: 0,
+  emailAddress: ""
 );
 
 class ProfileSettingsBloc implements BaseBloc{
@@ -40,6 +40,7 @@ class ProfileSettingsBloc implements BaseBloc{
   final void Function(String string) setBio;
   final void Function(String string) setCity;
   final void Function(String string) setAddress;
+  final void Function(String string) countryCodeChanged;
   final void Function() saveChanges;
 
   ///
@@ -64,6 +65,7 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setCity,
     @required this.setAddress,
     @required this.saveChanges,
+    @required this.countryCodeChanged,
     @required this.settingState$,
     @required this.message$,
     @required void Function() dispose,
@@ -94,6 +96,7 @@ class ProfileSettingsBloc implements BaseBloc{
     final setCityController = BehaviorSubject<String>();
     final setAddressController = BehaviorSubject<String>();
     final saveChangesController = PublishSubject<void>();
+    final countryCodeController = BehaviorSubject<String>.seeded('+1');
 
     final message$ = saveChangesController.exhaustMap(
       (_) => saveProfileChanges(
@@ -107,6 +110,7 @@ class ProfileSettingsBloc implements BaseBloc{
         setBioController.value,
         setCityController.value,
         setAddressController.value,
+        countryCodeController.value,
         userRepository,
       )
     ).publish();
@@ -137,7 +141,8 @@ class ProfileSettingsBloc implements BaseBloc{
       setBioController,
       setCityController,
       setAddressController,
-      saveChangesController
+      saveChangesController,
+      countryCodeController
     ];
 
     return ProfileSettingsBloc._(
@@ -152,6 +157,7 @@ class ProfileSettingsBloc implements BaseBloc{
       setBio: setBioController.add,
       setCity: setCityController.add,
       setAddress: setAddressController.add,
+      countryCodeChanged: countryCodeController.add,
       saveChanges: () => saveChangesController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -178,7 +184,6 @@ class ProfileSettingsBloc implements BaseBloc{
 
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((user){
-        print('public ${user.isPublic} ${user.status}');
         return _kInitialProfileSettingsState.copyWith(
           isChurch: user.isChurch,
           firstName: user.firstName,
@@ -192,7 +197,8 @@ class ProfileSettingsBloc implements BaseBloc{
           city: user.city,
           address: user.businessAddress,
           status: user.status,
-          isLoading: false
+          isLoading: false,
+          emailAddress: user.email
         );
       })
       .startWith(_kInitialProfileSettingsState)
@@ -235,13 +241,14 @@ class ProfileSettingsBloc implements BaseBloc{
     String aboutMe,
     String city,
     String address,
+    String countryCode,
     FirestoreUserRepository userRepository
   ) async* {
     Map<String, dynamic> data = {
       'firstName': firstName,
       'lastName': lastName,
       'fullName': '$firstName $lastName',
-      'phoneNo': phoneNo,
+      'phoneNo': '$countryCode$phoneNo',
       'relationStatus': relationship,
       'title': title,
       'aboutMe': aboutMe,
@@ -256,7 +263,6 @@ class ProfileSettingsBloc implements BaseBloc{
 
     LoginState state = userBloc.loginState$.value;
     if(state is LoggedInUser){
-      print('saving $data');
       await userRepository.updateUserData(state.uid, data);
     }
 

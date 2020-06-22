@@ -38,6 +38,7 @@ class ProfileSettingsState extends Equatable {
   final String address;
   final int type;
   final int status;
+  final String emailAddress;
 
   const ProfileSettingsState({
     @required this.isLoading,
@@ -54,9 +55,10 @@ class ProfileSettingsState extends Equatable {
     @required this.address,
     @required this.type,
     @required this.status,
+    @required this.emailAddress,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status, emailAddress}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -72,6 +74,7 @@ class ProfileSettingsState extends Equatable {
       address: address ?? this.address,
       type: type ?? this.type,
       status: status ?? this.status,
+      emailAddress: emailAddress ?? this.emailAddress,
     );
   }
 
@@ -90,7 +93,8 @@ class ProfileSettingsState extends Equatable {
     city,
     address,
     type,
-    status
+    status,
+    emailAddress
   ];
 
   @override

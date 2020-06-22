@@ -311,4 +311,14 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       .snapshots()
       .map(_toEntities);
   }
+
+  @override
+  Future<void> updateUserPhone(
+      FirebaseUser user,
+      String smsCode,
+      String verificationId
+  ) async {
+    var credential = PhoneAuthProvider.getCredential(verificationId: verificationId, smsCode: smsCode);
+    return await user.updatePhoneNumberCredential(credential);
+  }
 }

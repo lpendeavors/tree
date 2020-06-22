@@ -6,7 +6,7 @@ import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:treeapp/util/permission_utils.dart';
+import '../../util/permission_utils.dart';
 import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
 import '../../widgets/modals/disconnect_modal.dart';

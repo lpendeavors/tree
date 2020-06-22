@@ -56,6 +56,12 @@ abstract class FirestoreUserRepository {
 
   Future<void> updateUserData(String uid, [Map<String, dynamic> addition]);
 
+  Future<void> updateUserPhone(
+    @required FirebaseUser user,
+    String smsCode,
+    String verificationId
+  );
+
   Future<void> sendPasswordResetEmail(String email);
 
   Stream<UserEntity> getUserById({

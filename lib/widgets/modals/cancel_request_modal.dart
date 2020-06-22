@@ -7,7 +7,7 @@ class CancelRequestModal extends StatelessWidget {
       title: Text(
         'Cancel Request?',
       ),
-      content: new Text("Are you sure you want to delete your connection request?"),
+      content: Text("Are you sure you want to delete your connection request?"),
       actions: <Widget>[
         FlatButton(
           child: Text('NO', style: TextStyle(color: Theme.of(context).primaryColor)),
