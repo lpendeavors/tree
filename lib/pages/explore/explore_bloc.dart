@@ -76,10 +76,12 @@ class ExploreBloc implements BaseBloc {
     /// Streams
     ///
     final addConnectionMessage$ = addConnectionSubject
-      .map((connection) => saveAddConnection(connection));
+      .exhaustMap((connection) => saveAddConnection(connection))
+      .publish();
     
     final removeConnectionMessage$ = removeConnectionSubject
-      .map((connection) => saveRemoveConnection(connection));
+      .exhaustMap((connection) => saveRemoveConnection(connection))
+      .publish();
 
     final exploreState$ = _getExploreList(
       userBloc,

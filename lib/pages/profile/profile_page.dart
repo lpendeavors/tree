@@ -145,27 +145,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       children: <Widget>[
         InkWell(
           onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context){
-                return ProfileImageModal(
-                  options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
-                );
-              }
-            ).then((result) async {
-              if (result == "Add Photo" || result == "Update Picture") {
-                bool hasPermission = await checkMediaPermission();
-                if (hasPermission) {
-                  var file = await ImagePicker.pickImage(
-                    source: ImageSource.gallery,
-                  );
-                  var cropped = await ImageCropper.cropImage(
-                    sourcePath: file.path,
-                  );
-                  _profileBloc.setPhoto(cropped);
-                }
-                return;
-              }
+            // showDialog(
+            //   context: context,
+            //   builder: (BuildContext context){
+            //     return ProfileImageModal(
+            //       options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
+            //     );
+            //   }
+            // ).then((result){
+            //   if (result == "Add Photo" || result == "Update Picture") {
+            //     ImagePickers.pickerPaths(
+            //       galleryMode: GalleryMode.image,
+            //       selectCount: 1,
+            //       showCamera: true,
+            //       compressSize: 300,
+            //       uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
+            //       cropConfig: CropConfig(enableCrop: true, width: 10, height: 10)
+            //     ).then((media) => media[0].path).then((path) => File(path)).then((file) => _profileBloc.setPhoto(file));
+            //     return;
+            //   }
 
             //   if (result == "View Picture") {
             //     Navigator.of(context).pushNamed(
