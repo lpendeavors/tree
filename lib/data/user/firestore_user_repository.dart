@@ -54,6 +54,8 @@ abstract class FirestoreUserRepository {
     @required String password
   });
 
+  Future<void> updateUserData(String uid, [Map<String, dynamic> addition]);
+
   Future<void> sendPasswordResetEmail(String email);
 
   Stream<UserEntity> getUserById({

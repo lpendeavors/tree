@@ -4,8 +4,12 @@ import 'package:meta/meta.dart';
 ///
 /// Message
 ///
-abstract class ProfileMessage {
-  const ProfileMessage();
+abstract class ProfileSettingsMessage {
+  const ProfileSettingsMessage();
+}
+
+class SettingsMessageSuccess implements ProfileSettingsMessage {
+  const SettingsMessageSuccess();
 }
 
 ///
@@ -26,7 +30,14 @@ class ProfileSettingsState extends Equatable {
   final String firstName;
   final String lastName;
   final String phoneNo;
+  final String relationship;
+  final bool isPublic;
+  final String title;
+  final String bio;
+  final String city;
+  final String address;
   final int type;
+  final int status;
 
   const ProfileSettingsState({
     @required this.isLoading,
@@ -35,10 +46,17 @@ class ProfileSettingsState extends Equatable {
     @required this.firstName,
     @required this.lastName,
     @required this.phoneNo,
+    @required this.relationship,
+    @required this.isPublic,
+    @required this.title,
+    @required this.bio,
+    @required this.city,
+    @required this.address,
     @required this.type,
+    @required this.status,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, type}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -46,7 +64,14 @@ class ProfileSettingsState extends Equatable {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       phoneNo: phoneNo ?? this.phoneNo,
+      relationship: relationship ?? this.relationship,
+      isPublic: isPublic ?? this.isPublic,
+      title: title ?? this.title,
+      bio: bio ?? this.bio,
+      city: city ?? this.city,
+      address: address ?? this.address,
       type: type ?? this.type,
+      status: status ?? this.status,
     );
   }
 
@@ -58,7 +83,14 @@ class ProfileSettingsState extends Equatable {
     firstName,
     lastName,
     phoneNo,
-    type
+    relationship,
+    isPublic,
+    title,
+    bio,
+    city,
+    address,
+    type,
+    status
   ];
 
   @override

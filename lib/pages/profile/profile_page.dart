@@ -4,6 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
+<<<<<<< HEAD
+=======
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:treeapp/util/permission_utils.dart';
+>>>>>>> 30629a29bad47210943dc0db6d09875d1d5da6db
 import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
 import '../../widgets/modals/disconnect_modal.dart';
@@ -142,6 +148,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       children: <Widget>[
         InkWell(
           onTap: () {
+<<<<<<< HEAD
             // showDialog(
             //   context: context,
             //   builder: (BuildContext context){
@@ -161,6 +168,29 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             //     ).then((media) => media[0].path).then((path) => File(path)).then((file) => _profileBloc.setPhoto(file));
             //     return;
             //   }
+=======
+            showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return ProfileImageModal(
+                  options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
+                );
+              }
+            ).then((result) async {
+              if (result == "Add Photo" || result == "Update Picture") {
+                bool hasPermission = await checkMediaPermission();
+                if (hasPermission) {
+                  var file = await ImagePicker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  var cropped = await ImageCropper.cropImage(
+                    sourcePath: file.path,
+                  );
+                  _profileBloc.setPhoto(cropped);
+                }
+                return;
+              }
+>>>>>>> 30629a29bad47210943dc0db6d09875d1d5da6db
 
             //   if (result == "View Picture") {
             //     Navigator.of(context).pushNamed(
@@ -217,18 +247,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-                if (data.profile.photo != null) ...[
-                  Align(
-                    alignment: Alignment.center,
-                    child: Image(
-                      image: CacheImage(data.profile.photo),
-                      height: 300,
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ],
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
