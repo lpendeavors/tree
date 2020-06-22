@@ -1,11 +1,25 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
+/// 
+/// Enum
+/// 
+enum PostType { other, image, video }
+
 ///
 /// Message
 ///
 @immutable
 abstract class ExploreMessage {}
+
+class ConnectionAddedSuccess implements ExploreMessage {
+  const ConnectionAddedSuccess();
+}
+
+class ConnectionAddedError implements ExploreMessage {
+  final Object error;
+  const ConnectionAddedError(this.error);
+}
 
 ///
 /// Error
@@ -22,20 +36,23 @@ class NotLoggedInError {
 ///
 @immutable
 class ExploreState extends Equatable {
+  final List<ConnectionItem> requestItems;
   final List<ConnectionItem> connectionItems;
   final List<PostItem> postItems;
   final bool isLoading;
   final Object error;
 
   const ExploreState({
+    this.requestItems,
     this.connectionItems,
     this.postItems,
     this.isLoading,
     this.error,
   });
 
-  ExploreState copyWith({connectionItems, postItems, isLoading, error}) {
+  ExploreState copyWith({requestItems, connectionItems, postItems, isLoading, error}) {
     return ExploreState(
+      requestItems: requestItems ?? this.requestItems,
       connectionItems: connectionItems ?? this.connectionItems,
       postItems: postItems ?? this.postItems,
       isLoading: isLoading ?? this.isLoading,
@@ -45,44 +62,11 @@ class ExploreState extends Equatable {
 
   @override
   List get props => [
+    requestItems,
     connectionItems, 
     postItems, 
     isLoading, 
     error
-  ];
-
-  @override
-  bool get stringify => true;
-}
-
-@immutable
-class RequestItem extends Equatable {
-  final String id;
-
-  const RequestItem({
-    @required this.id,
-  });
-  
-  @override
-  List get props => [
-    id,
-  ];
-
-  @override
-  bool get stringify => true;
-}
-
-@immutable
-class SuggestionItem extends Equatable {
-  final String id;
-
-  const SuggestionItem({
-    @required this.id,
-  });
-
-  @override
-  List get props => [
-    id,
   ];
 
   @override

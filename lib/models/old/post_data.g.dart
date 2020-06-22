@@ -13,6 +13,7 @@ PostData _$PostDataFromJson(Map<String, dynamic> json) {
     docId: json['docId'] as String,
     imagePath: json['imagePath'] as String,
     imageUrl: json['imageUrl'] as String,
+    thumbUrl: json['thumbUrl'] as String,
     type: json['type'] as int,
   );
 }
@@ -23,5 +24,6 @@ Map<String, dynamic> _$PostDataToJson(PostData instance) => <String, dynamic>{
       'docId': instance.docId,
       'imagePath': instance.imagePath,
       'imageUrl': instance.imageUrl,
+      'thumbUrl': instance.thumbUrl,
       'type': instance.type,
     };

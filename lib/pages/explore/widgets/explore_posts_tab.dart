@@ -54,27 +54,6 @@ class ExplorePostsTab extends StatelessWidget {
             );
           }
 
-          // return ListView.separated(
-          //   itemCount: data.postItems.length,
-          //   physics: BouncingScrollPhysics(),
-          //   shrinkWrap: true,
-          //   itemBuilder: (context, index) {
-          //     return PostListItem(
-          //       postItem: data.postItems[index],
-          //     );
-          //   },
-          //   separatorBuilder: (context, index) {
-          //     return Align(
-          //       alignment: Alignment.centerRight,
-          //       child: Container(
-          //         height: 0.5,
-          //         width: MediaQuery.of(context).size.width,
-          //         child: Divider(),
-          //       ),
-          //     );
-          //   },
-          // );
-
           return StaggeredGridView.countBuilder(
             shrinkWrap: true,
             crossAxisCount: 3,

@@ -6,6 +6,7 @@ import './data/event/firestore_event_repository.dart';
 import './data/chat/firestore_chat_repository.dart';
 import './data/group/firestore_group_repository.dart';
 import './data/comment/firestore_comment_repository.dart';
+import './data/request/firestore_request_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 
@@ -18,6 +19,7 @@ class Injector extends InheritedWidget {
   final FirestoreChatRepository chatRepository;
   final FirestoreGroupRepository groupRepository;
   final FirestoreCommentRepository commentRepository;
+  final FirestoreRequestRepository requestRepository;
 
   Injector({
     Key key,
@@ -29,6 +31,7 @@ class Injector extends InheritedWidget {
     @required this.chatRepository,
     @required this.groupRepository,
     @required this.commentRepository,
+    @required this.requestRepository,
     @required Widget child,
   }) : super(key: key, child: child);
 
@@ -44,5 +47,6 @@ class Injector extends InheritedWidget {
     eventRepository != oldWidget.eventRepository &&
     chatRepository != oldWidget.chatRepository &&
     groupRepository != oldWidget.groupRepository &&
-    commentRepository != oldWidget.commentRepository;
+    commentRepository != oldWidget.commentRepository &&
+    requestRepository != oldWidget.requestRepository;
 }
