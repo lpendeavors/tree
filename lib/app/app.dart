@@ -74,6 +74,7 @@ class MyApp extends StatelessWidget {
         userRepository: Injector.of(context).userRepository,
         chatRepository: Injector.of(context).chatRepository,
         groupRepository: Injector.of(context).groupRepository,
+        requestRepository: Injector.of(context).requestRepository,
       );
     },
     '/splash': (context) {

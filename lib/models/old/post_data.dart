@@ -12,6 +12,7 @@ class PostData extends Equatable {
   final String docId;
   final String imagePath;
   final String imageUrl;
+  final String thumbUrl;
   final int type;
 
   const PostData({
@@ -20,6 +21,7 @@ class PostData extends Equatable {
     this.docId,
     this.imagePath,
     this.imageUrl,
+    this.thumbUrl,
     this.type,
   });
 
@@ -34,6 +36,7 @@ class PostData extends Equatable {
       docId,
       imagePath,
       imageUrl,
+      thumbUrl,
       type,
     ];
   }

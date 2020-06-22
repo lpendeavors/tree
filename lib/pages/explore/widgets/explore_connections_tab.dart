@@ -54,13 +54,80 @@ class ExploreConnectionsTab extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: <Widget>[
-                Container(),
+                if (data.requestItems.isNotEmpty) ...[
+                  Container(
+                    color: Colors.grey[50],
+                    padding: EdgeInsets.all(10),
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Requests",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 1,
+                    width: double.infinity,
+                    color: Colors.grey[50],
+                    margin: EdgeInsets.only(
+                      right: 5,
+                      left: 5,
+                    ),
+                  ),
+                  ListView.separated(
+                    itemCount: data.connectionItems.length,
+                    physics: BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return ConnectionListItem(
+                        isRequest: true,
+                        connectionItem: data.requestItems[index],
+                        onRemove: (connection) => print('remove ${connection.name}'),
+                        onConnect: (connection) => print('connect with ${connection.name}'),
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          height: 0.5,
+                          width: MediaQuery.of(context).size.width,
+                          child: Divider(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                Container(
+                  color: Colors.grey[50],
+                  padding: EdgeInsets.all(10),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Suggestions",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: Colors.grey[50],
+                  margin: EdgeInsets.only(
+                    right: 5,
+                    left: 5,
+                  ),
+                ),
                 ListView.separated(
                   itemCount: data.connectionItems.length,
                   physics: BouncingScrollPhysics(),
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
                     return ConnectionListItem(
+                      isRequest: false,
                       connectionItem: data.connectionItems[index],
                       onRemove: (connection) => print('remove ${connection.name}'),
                       onConnect: (connection) => print('connect with ${connection.name}'),

@@ -16,6 +16,7 @@ import './data/event/firestore_event_repository_impl.dart';
 import './data/group/firestore_group_repository_impl.dart';
 import './data/chat/firestore_chat_repository_impl.dart';
 import './data/comment/firestore_comment_repository_impl.dart';
+import './data/request/firestore_request_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -30,7 +31,7 @@ Future<void> main() async {
   ///
   /// Setup firestore
   ///
-  await firestore.settings(persistenceEnabled: true);
+  await firestore.settings(persistenceEnabled: false);
 
   ///
   /// Setup crashlytics
@@ -45,6 +46,7 @@ Future<void> main() async {
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
   final groupRepository = FirestoreGroupRepositoryImpl(firestore);
   final commentRepository = FirestoreCommentRepositoryImpl(firestore);
+  final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   // runZoned(() {
@@ -58,6 +60,7 @@ Future<void> main() async {
         chatRepository: chatRepository,
         groupRepository: groupRepository,
         commentRepository: commentRepository,
+        requestRepository: requestReposirory,
         child: BlocProvider<UserBloc>(
           bloc: userBloc,
           child: BlocProvider<LocaleBloc>(
