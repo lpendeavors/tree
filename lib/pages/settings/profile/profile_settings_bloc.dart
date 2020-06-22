@@ -21,7 +21,10 @@ const _kInitialProfileSettingsState = ProfileSettingsState(
   isPublic: false,
   title: null,
   bio: null,
-  type: 0
+  city: "",
+  address: "",
+  type: 0,
+  status: 0
 );
 
 class ProfileSettingsBloc implements BaseBloc{
@@ -35,6 +38,8 @@ class ProfileSettingsBloc implements BaseBloc{
   final void Function(bool value) setIsPublic;
   final void Function(String string) setTitle;
   final void Function(String string) setBio;
+  final void Function(String string) setCity;
+  final void Function(String string) setAddress;
   final void Function() saveChanges;
 
   ///
@@ -56,6 +61,8 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setIsPublic,
     @required this.setTitle,
     @required this.setBio,
+    @required this.setCity,
+    @required this.setAddress,
     @required this.saveChanges,
     @required this.settingState$,
     @required this.message$,
@@ -84,6 +91,8 @@ class ProfileSettingsBloc implements BaseBloc{
     final setIsPublicController = BehaviorSubject<bool>();
     final setTitleController = BehaviorSubject<String>();
     final setBioController = BehaviorSubject<String>();
+    final setCityController = BehaviorSubject<String>();
+    final setAddressController = BehaviorSubject<String>();
     final saveChangesController = PublishSubject<void>();
 
     final message$ = saveChangesController.exhaustMap(
@@ -96,6 +105,8 @@ class ProfileSettingsBloc implements BaseBloc{
         setIsPublicController.value,
         setTitleController.value,
         setBioController.value,
+        setCityController.value,
+        setAddressController.value,
         userRepository,
       )
     ).publish();
@@ -124,6 +135,8 @@ class ProfileSettingsBloc implements BaseBloc{
       setIsPublicController,
       setTitleController,
       setBioController,
+      setCityController,
+      setAddressController,
       saveChangesController
     ];
 
@@ -137,6 +150,8 @@ class ProfileSettingsBloc implements BaseBloc{
       setIsPublic: setIsPublicController.add,
       setTitle: setTitleController.add,
       setBio: setBioController.add,
+      setCity: setCityController.add,
+      setAddress: setAddressController.add,
       saveChanges: () => saveChangesController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -163,6 +178,7 @@ class ProfileSettingsBloc implements BaseBloc{
 
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((user){
+        print('public ${user.isPublic} ${user.status}');
         return _kInitialProfileSettingsState.copyWith(
           isChurch: user.isChurch,
           firstName: user.firstName,
@@ -170,9 +186,12 @@ class ProfileSettingsBloc implements BaseBloc{
           phoneNo: user.phoneNo,
           relationship: user.relationStatus,
           type: user.type,
-          isPublic: user.isPublic,
+          isPublic: user.isPublic && user.status == 0,
           title: user.title,
           bio: user.aboutMe,
+          city: user.city,
+          address: user.businessAddress,
+          status: user.status,
           isLoading: false
         );
       })
@@ -214,6 +233,8 @@ class ProfileSettingsBloc implements BaseBloc{
     bool isPublic,
     String title,
     String aboutMe,
+    String city,
+    String address,
     FirestoreUserRepository userRepository
   ) async* {
     Map<String, dynamic> data = {
@@ -222,12 +243,14 @@ class ProfileSettingsBloc implements BaseBloc{
       'fullName': '$firstName $lastName',
       'phoneNo': phoneNo,
       'relationStatus': relationship,
-      'isPublic': isPublic,
       'title': title,
-      'aboutMe': aboutMe
+      'aboutMe': aboutMe,
+      'city': city,
+      'businessAddress': address
     };
 
     if(isPublic != null && isPublic){
+      data['isPublic'] = isPublic;
       data['status'] = 0;
     }
 

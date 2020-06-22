@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:treeapp/pages/settings/profile/profile_settings_bloc.dart';
 import 'package:treeapp/pages/settings/profile/profile_settings_state.dart';
 import 'package:treeapp/util/asset_utils.dart';
@@ -249,10 +250,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     )
   ];
 
-  bool isPublic = false;
-
-  String city = "";
-  String address = "";
+  bool isPublic;
+  String city;
+  String address;
   String relationship;
   String title;
 
@@ -283,6 +283,22 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
             _profileSettingsBloc.setLastName(state.lastName);
             _profileSettingsBloc.setPhoneNumber(state.phoneNo);
             _profileSettingsBloc.setBio(state.bio);
+            _profileSettingsBloc.setRelationship(relationship ?? state.relationship);
+            _profileSettingsBloc.setTitle(title ?? state.title);
+            _profileSettingsBloc.setCity(city ?? state.city);
+            _profileSettingsBloc.setAddress(address ?? state.address);
+
+            if(isPublic == null){
+              isPublic = state.isPublic;
+            }
+
+            if(city == null){
+              city = state.city;
+            }
+
+            if(address == null){
+              address = state.address;
+            }
 
             if(state.isChurch){
               return SingleChildScrollView(
@@ -639,8 +655,17 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                             SizedBox(width: 10),
                             Flexible(
                               child: InkWell(
-                                onTap: (){
-                                  //TODO: Open location picker
+                                onTap: () async {
+                                  LocationResult result = await showLocationPicker(
+                                      context,
+                                      'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ'
+                                  );
+                                  var cityString = '${result.toString().split(", ")[1]}, ${result.toString().split(", ")[2]}';
+
+                                  _profileSettingsBloc.setCity(cityString);
+                                  setState(() {
+                                    city = cityString;
+                                  });
                                 },
                                 child: Container(
                                   height: 50,
@@ -811,8 +836,16 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                   SizedBox(width: 10.0),
                                   Flexible(
                                     child: InkWell(
-                                      onTap: (){
-                                        //TODO: Open location picker
+                                      onTap: () async {
+                                        LocationResult result = await showLocationPicker(
+                                            context,
+                                            'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ'
+                                        );
+
+                                        _profileSettingsBloc.setAddress(result.address);
+                                        setState(() {
+                                          address = result.address;
+                                        });
                                       },
                                       child: Container(
                                         height: 50,

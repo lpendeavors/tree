@@ -34,7 +34,10 @@ class ProfileSettingsState extends Equatable {
   final bool isPublic;
   final String title;
   final String bio;
+  final String city;
+  final String address;
   final int type;
+  final int status;
 
   const ProfileSettingsState({
     @required this.isLoading,
@@ -47,10 +50,13 @@ class ProfileSettingsState extends Equatable {
     @required this.isPublic,
     @required this.title,
     @required this.bio,
+    @required this.city,
+    @required this.address,
     @required this.type,
+    @required this.status,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, type}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -62,7 +68,10 @@ class ProfileSettingsState extends Equatable {
       isPublic: isPublic ?? this.isPublic,
       title: title ?? this.title,
       bio: bio ?? this.bio,
+      city: city ?? this.city,
+      address: address ?? this.address,
       type: type ?? this.type,
+      status: status ?? this.status,
     );
   }
 
@@ -78,7 +87,10 @@ class ProfileSettingsState extends Equatable {
     isPublic,
     title,
     bio,
-    type
+    city,
+    address,
+    type,
+    status
   ];
 
   @override
