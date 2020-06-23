@@ -76,7 +76,11 @@ class ExploreBloc implements BaseBloc {
     /// Streams
     ///
     final addConnectionMessage$ = addConnectionSubject
-      .exhaustMap((connection) => saveAddConnection(connection))
+      .exhaustMap((connection) => saveAddConnection(
+        requestRepository,
+        connection,
+        userBloc.loginState$.value,
+      ))
       .publish();
     
     final removeConnectionMessage$ = removeConnectionSubject
@@ -244,10 +248,20 @@ class ExploreBloc implements BaseBloc {
   }
 
   static Stream<ExploreMessage> saveAddConnection(
+    FirestoreRequestRepository requestRepository,
     ConnectionItem connection,
+    LoginState loginState,
   ) async* {
     try {
-      
+      requestRepository.saveRequest(
+        to: connection.name,
+        toUser: connection.id,
+        image: connection.image,
+        from: (loginState as LoggedInUser).uid,
+        fromUser: (loginState as LoggedInUser).fullName,
+        token: (loginState as LoggedInUser).token,
+      );
+      yield ConnectionAddedSuccess();
     } catch (e) {
       yield ConnectionAddedError(e);
     }
