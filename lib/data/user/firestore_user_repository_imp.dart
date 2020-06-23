@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
@@ -320,5 +321,17 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   ) async {
     var credential = PhoneAuthProvider.getCredential(verificationId: verificationId, smsCode: smsCode);
     return await user.updatePhoneNumberCredential(credential);
+  }
+
+  @override
+  Future<List<UserEntity>> runSearchQuery(String query) {
+    print('impl');
+    return _firestore
+        .collection('userBase')
+        .where('searchData', arrayContains: query)
+        .where('isChurch', isEqualTo: true)
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
   }
 }

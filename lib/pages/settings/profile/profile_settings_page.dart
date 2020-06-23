@@ -7,6 +7,8 @@ import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/pages/login/email_login_bloc.dart';
+import 'package:treeapp/pages/perform_search/perform_search_state.dart';
+import 'package:treeapp/widgets/modals/list_dialog.dart';
 import '../../../pages/login/login_state.dart';
 import '../../../pages/phone_verification/phone_verification_state.dart';
 import '../../../models/country.dart';
@@ -48,121 +50,43 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   TextEditingController aboutMe = TextEditingController();
   TextEditingController phoneNumber = MaskedTextController(mask: "(000) 000-0000");
   TextEditingController pass1 = TextEditingController();
+  TextEditingController churchID = TextEditingController();
+  TextEditingController churchName = TextEditingController();
 
-  @override
-  void initState() {
-    _profileSettingsBloc = widget.initProfileSettingsBloc();
-    _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
-    _emailLoginBloc = EmailLoginBloc(widget.userRepository);
-
-    _subscriptions = [
-      Rx.merge([
-        _profileSettingsBloc.message$,
-        _phoneLoginBloc.message$,
-        _emailLoginBloc.message$
-      ]).listen(_showSettingsMessage)
-    ];
-
-    _profileSettingsBloc.settingState$.listen((event) {
-      firstName.text = event.firstName;
-      lastName.text = event.lastName;
-      phoneNumber.text = event.phoneNo.substring(event.phoneNo.length - 10);
-      _phoneLoginBloc.phoneNumberChanged(event.phoneNo.substring(event.phoneNo.length - 10));
-      _profileSettingsBloc.setPhoneNumber(event.phoneNo.substring(event.phoneNo.length - 10));
-      aboutMe.text = event.bio;
-      _emailLoginBloc.emailChanged(event.emailAddress);
-    });
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _subscriptions.forEach((s) => s.cancel());
-    _profileSettingsBloc.dispose();
-    _phoneLoginBloc.dispose();
-    _emailLoginBloc.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return IndexedStack(
-      children: <Widget>[
-        _personal(),
-        _church(),
-        _phone()
-      ],
-      index: widget.index,
-    );
-  }
-
-  _buildAppBar(title) {
-    return Padding(
-      padding: EdgeInsets.only(left: 0, top: 10, bottom: 10),
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              if (Platform.isIOS)
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   List<DropdownMenuItem<String>> statusList = <DropdownMenuItem<String>>[
     DropdownMenuItem(
-      child: Text(
-        "Single",
-        style: TextStyle(
-          fontSize: 18.0,
-          color: Colors.black,
-          fontFamily: 'Nirmala',
-          fontWeight: FontWeight.normal
-        )
-      ),
-      value: "Single"
+        child: Text(
+            "Single",
+            style: TextStyle(
+                fontSize: 18.0,
+                color: Colors.black,
+                fontFamily: 'Nirmala',
+                fontWeight: FontWeight.normal
+            )
+        ),
+        value: "Single"
     ),
     DropdownMenuItem(
       child: Text(
-        "Dating",
-        style: TextStyle(
-          fontSize: 18.0,
-          color: Colors.black,
-          fontFamily: 'Nirmala',
-          fontWeight: FontWeight.normal
-        )
+          "Dating",
+          style: TextStyle(
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
+          )
       ),
       value: "Dating",
     ),
     DropdownMenuItem(
       child: Text(
-        "Married",
+          "Married",
           style: TextStyle(
-            fontSize: 18.0,
-            color: Colors.black,
-            fontFamily: 'Nirmala',
-            fontWeight: FontWeight.normal
+              fontSize: 18.0,
+              color: Colors.black,
+              fontFamily: 'Nirmala',
+              fontWeight: FontWeight.normal
           )
       ),
       value: "Married",
@@ -280,11 +204,100 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     )
   ];
 
+  List treeChurchAvailability = [
+    "Yes, I have a home church",
+    "No, I don't have a home church"
+  ];
+
   bool isPublic;
+  bool churchNotFound = false;
+  bool hasChurch = true;
   String city;
   String address;
   String relationship;
   String title;
+  String churchSelected;
+
+  @override
+  void initState() {
+    _profileSettingsBloc = widget.initProfileSettingsBloc();
+    _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
+    _emailLoginBloc = EmailLoginBloc(widget.userRepository);
+
+    _subscriptions = [
+      Rx.merge([
+        _profileSettingsBloc.message$,
+        _phoneLoginBloc.message$,
+        _emailLoginBloc.message$
+      ]).listen(_showSettingsMessage)
+    ];
+
+    _profileSettingsBloc.settingState$.listen((event) {
+      firstName.text = event.firstName;
+      lastName.text = event.lastName;
+      phoneNumber.text = event.phoneNo.substring(event.phoneNo.length - 10);
+      _phoneLoginBloc.phoneNumberChanged(event.phoneNo.substring(event.phoneNo.length - 10));
+      _profileSettingsBloc.setPhoneNumber(event.phoneNo.substring(event.phoneNo.length - 10));
+      aboutMe.text = event.bio;
+      _emailLoginBloc.emailChanged(event.emailAddress);
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _subscriptions.forEach((s) => s.cancel());
+    _profileSettingsBloc.dispose();
+    _phoneLoginBloc.dispose();
+    _emailLoginBloc.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      children: <Widget>[
+        _personal(),
+        _church(),
+        _phone()
+      ],
+      index: widget.index,
+    );
+  }
+
+  _buildAppBar(title) {
+    return Padding(
+      padding: EdgeInsets.only(left: 0, top: 10, bottom: 10),
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              if (Platform.isIOS)
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   _personal(){
     return CurvedScaffold(
@@ -1090,8 +1103,412 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                 ),
               );
             }else{
-              //TODO: Regular Users
-              return Container();
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 30.0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        FlatButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  opaque: false,
+                                  pageBuilder: (context, _, __) {
+                                    return ListDialog(
+                                      treeChurchAvailability,
+                                    );
+                                  }
+                                )
+                              ).then((result) {
+                                if (result != null) {
+                                  setState(() {
+                                    churchSelected = treeChurchAvailability[result];
+                                    hasChurch = result == 0;
+                                  });
+                                }
+                              });
+                            },
+                            color: Colors.black.withOpacity(.09),
+                            padding: EdgeInsets.all(16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.help,
+                                    color: Colors.black.withOpacity(.4),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Text(
+                                    churchSelected ?? "Do you have a home church?",
+                                    style: TextStyle(
+                                      fontFamily: 'Nirmala',
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.black.withOpacity(churchSelected != null ? 1 : .6)
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          )
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10.0),
+                    if (hasChurch) ...[
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "CHURCH",
+                            style: TextStyle(
+                              fontFamily: 'Nirmala',
+                              fontWeight: FontWeight.normal,
+                              fontSize: 12.0,
+                              color: Colors.black.withOpacity(.4)
+                            ),
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Image.asset(
+                                church_icon,
+                                height: 20,
+                                width: 20,
+                                color: Colors.black.withOpacity(.4),
+                              ),
+                              SizedBox(width: 10.0),
+                              Flexible(
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed('/search', arguments: "church").then((result){
+                                      var church = result as SearchResult;
+                                      print(church);
+                                      setState(() {
+                                        churchName.text = church.churchName;
+                                      });
+
+                                      print(church.churchName);
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 50,
+                                    width: double.infinity,
+                                    child: Row(
+                                      children: <Widget>[
+                                        Flexible(
+                                          flex: 1,
+                                          fit: FlexFit.tight,
+                                          child: Text(
+                                            churchNotFound || churchName.text.isEmpty ? "Search for your church" : churchName.text,
+                                            style: TextStyle(
+                                              fontFamily: 'Nirmala',
+                                              fontSize: 17.0,
+                                              color: Colors.black.withOpacity(churchNotFound || churchName.text.isEmpty ? .2 : 1),
+                                              fontWeight: FontWeight.normal
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10.0)
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10.0),
+                              Icon(
+                                Icons.search,
+                                size: 25,
+                                color: Colors.black.withOpacity(.4),
+                              )
+                            ],
+                          ),
+                          Container(
+                            height: 1.0,
+                            width: double.infinity,
+                            color: Colors.black.withOpacity(.1),
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                          )
+                        ],
+                      ),
+                      if (!churchNotFound && churchName.text.isNotEmpty) ...[
+                        TextField(
+                          controller: churchID,
+                          decoration: InputDecoration(
+                            fillColor: Colors.grey[50],
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide:
+                              BorderSide(color: Colors.black.withOpacity(.1))
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide:
+                              BorderSide(color: Colors.black.withOpacity(.1))
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide:
+                              BorderSide(color: Colors.black.withOpacity(.1))
+                            ),
+                            hintText: "Enter Church ID"
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.all(10),
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.warning,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 10.0),
+                              Flexible(
+                                child: Text.rich(
+                                  TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.white,
+                                      fontFamily: "Nirmala",
+                                      fontWeight: FontWeight.normal
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: "If you do not know the Church ID please visit your church and ask for their  "
+                                      ),
+                                      TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          color: Colors.white,
+                                          fontFamily: "Nirmala",
+                                          fontWeight: FontWeight.normal
+                                        ),
+                                        text: "Tree ID."
+                                      ),
+                                    ]
+                                  )
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                height: 25,
+                                width: 25,
+                                padding: EdgeInsets.all(5),
+                                child: Container(
+                                  height: 20,
+                                  width: 20,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: churchNotFound ? Theme.of(context).primaryColor : Colors.transparent,
+                                    border: Border.all(color: churchNotFound ? Theme.of(context).primaryColor : Colors.transparent)
+                                  ),
+                                ),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  border: Border.all(width: 2, color: churchNotFound ? Theme.of(context).primaryColor : Colors.grey)
+                                ),
+                              ),
+                              SizedBox(width: 10.0),
+                              Flexible(
+                                child: InkWell(
+                                  onTap: (){
+                                    setState(() {
+                                      churchName.clear();
+                                      churchNotFound = !churchNotFound;
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 50,
+                                    width: double.infinity,
+                                    child: Row(
+                                      children: <Widget>[
+                                        Flexible(
+                                          flex: 1,
+                                          fit: FlexFit.tight,
+                                          child: Text(
+                                            "Unable to find your church?",
+                                            style: TextStyle(
+                                              fontSize: 17,
+                                              color: Colors.black.withOpacity(churchNotFound ? 1 : .2)
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10.0),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            height: 1.0,
+                            width: double.infinity,
+                            color: Colors.black.withOpacity(.1),
+                            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                          )
+                        ],
+                      ),
+                      if (churchNotFound) ...[
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              "CHURCH NAME",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NirmalaB',
+                                fontSize: 12.0,
+                                color: Colors.black.withOpacity(.4)
+                              )
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                  child: Image.asset(
+                                    church_icon,
+                                    height: 18,
+                                    width: 18,
+                                    color: Colors.black.withOpacity(.4),
+                                  )
+                                ),
+                                SizedBox(width: 10.0),
+                                Flexible(
+                                  child: TextField(
+                                    textInputAction: TextInputAction.done,
+                                    textCapitalization: TextCapitalization.none,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Enter your home church name",
+                                      hintStyle: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontFamily: 'Nirmala',
+                                        fontSize: 17.0,
+                                        color: Colors.black.withOpacity(0.2)
+                                      )
+                                    ),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontFamily: 'Nirmala',
+                                      fontSize: 20.0,
+                                      color: Colors.black
+                                    ),
+                                    cursorColor: Colors.black,
+                                    cursorWidth: 1,
+                                    maxLines: 1,
+                                    controller: churchName,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              height: 1.0,
+                              width: double.infinity,
+                              color: Colors.black.withOpacity(.1),
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                            )
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.all(10),
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.warning,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 10.0),
+                              Flexible(
+                                child: Text.rich(
+                                  TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.white,
+                                      fontFamily: "Nirmala",
+                                      fontWeight: FontWeight.normal
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: "Please note: If you don't have a church name type "
+                                      ),
+                                      TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          color: Colors.white,
+                                          fontFamily: "Nirmala",
+                                          fontWeight: FontWeight.normal
+                                        ),
+                                        text: "NONE"
+                                      ),
+                                      TextSpan(
+                                        text: " instead of leaving it blank."
+                                      ),
+                                    ]
+                                  )
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ],
+                    SizedBox(height: 30.0),
+                    Container(
+                      height: 50,
+                      width: double.infinity,
+                      child: RaisedButton(
+                        onPressed: (){
+                          //TODO Save
+                        },
+                        color: Theme.of(context).primaryColor,
+                        textColor: Colors.white,
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                            fontSize: 22.0,
+                            color: Colors.white,
+                            fontFamily: 'NirmalaB',
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      ),
+                    ),
+                    SizedBox(height: 50.0),
+                  ],
+                ),
+              );
             }
           },
         ),
