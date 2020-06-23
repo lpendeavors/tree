@@ -84,6 +84,7 @@ class UserBloc implements BaseBloc {
         ? userEntity.churchInfo.churchName 
         : "",
       city: userEntity.city ?? "",
+      token: userEntity.pushNotificationToken,
     );
   }
 }

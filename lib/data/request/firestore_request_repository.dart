@@ -16,6 +16,11 @@ abstract class FirestoreRequestRepository {
   });
 
   Future<void> saveRequest({
-    RequestEntity request,
+    @required String to,
+    @required String toUser,
+    @required String from,
+    @required String fromUser,
+    @required String image,
+    @required String token,
   });
 }
