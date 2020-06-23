@@ -591,7 +591,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await Future.delayed(const Duration(seconds: 2));
       Navigator.of(context).pushNamed(
         '/phone_verification',
-        arguments: message.verificationId,
+        arguments: [message.verificationId, false],
       ).then(_returnedFromVerification);
     }
     if (message is RegisterMessageError) {
