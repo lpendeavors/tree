@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:treeapp/models/old/church_info.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 
 ///
 /// Message
@@ -14,7 +15,7 @@ abstract class ProfileMessage {
 ///
 @immutable
 class SearchState extends Equatable {
-  final List<SearchResult> results;
+  final List<UserEntity> results;
   final bool isLoading;
   final Object error;
 
@@ -37,46 +38,6 @@ class SearchState extends Equatable {
     results,
     isLoading,
     error
-  ];
-
-  @override
-  bool get stringify => true;
-}
-
-class SearchResult extends Equatable{
-  final String id;
-  final bool isChurch;
-  final String image;
-  final String churchName;
-  final String fullName;
-  final String churchDenomination;
-  final ChurchInfo churchInfo;
-  final String city;
-  final String churchAddress;
-
-  const SearchResult({
-    @required this.id,
-    @required this.isChurch,
-    @required this.image,
-    @required this.churchName,
-    @required this.fullName,
-    @required this.churchDenomination,
-    @required this.churchInfo,
-    @required this.city,
-    @required this.churchAddress,
-  });
-
-  @override
-  List get props => [
-    id,
-    isChurch,
-    image,
-    churchName,
-    fullName,
-    churchDenomination,
-    churchInfo,
-    city,
-    churchAddress
   ];
 
   @override

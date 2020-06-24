@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/pages/login/email_login_bloc.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:treeapp/widgets/modals/list_dialog.dart';
@@ -212,11 +213,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   bool isPublic;
   bool churchNotFound = false;
   bool hasChurch = true;
+
   String city;
   String address;
   String relationship;
   String title;
   String churchSelected;
+  String churchNameString;
+
+  UserEntity selectedChurch;
 
   @override
   void initState() {
@@ -235,9 +240,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     _profileSettingsBloc.settingState$.listen((event) {
       firstName.text = event.firstName;
       lastName.text = event.lastName;
-      phoneNumber.text = event.phoneNo.substring(event.phoneNo.length - 10);
-      _phoneLoginBloc.phoneNumberChanged(event.phoneNo.substring(event.phoneNo.length - 10));
-      _profileSettingsBloc.setPhoneNumber(event.phoneNo.substring(event.phoneNo.length - 10));
+      phoneNumber.text = event.phoneNo?.substring(event.phoneNo.length - 10);
+      _phoneLoginBloc.phoneNumberChanged(event.phoneNo?.substring(event.phoneNo.length - 10));
+      _profileSettingsBloc.setPhoneNumber(event.phoneNo?.substring(event.phoneNo.length - 10));
       aboutMe.text = event.bio;
       _emailLoginBloc.emailChanged(event.emailAddress);
     });
@@ -1016,6 +1021,16 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
             ProfileSettingsState state = data.data;
             int ministryType = state.type;
 
+            if(churchNameString == null){
+              churchNameString = state.churchInfo?.churchName;
+            }
+
+            if(state.churchInfo != null && state.churchInfo.churchName != null && churchSelected == null){
+              churchSelected = treeChurchAvailability[0];
+              _profileSettingsBloc.setNoChurch(false);
+              hasChurch = true;
+            }
+
             if(state.isChurch){
               return SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
@@ -1082,7 +1097,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       width: double.infinity,
                       child: RaisedButton(
                         onPressed: (){
-                          //TODO: Save Church
+                          _profileSettingsBloc.saveChanges();
                         },
                         color: Theme.of(context).primaryColor,
                         textColor: Colors.white,
@@ -1128,6 +1143,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                   setState(() {
                                     churchSelected = treeChurchAvailability[result];
                                     hasChurch = result == 0;
+                                    _profileSettingsBloc.setNoChurch(!hasChurch);
                                   });
                                 }
                               });
@@ -1188,13 +1204,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 child: InkWell(
                                   onTap: () {
                                     Navigator.of(context).pushNamed('/search', arguments: "church").then((result){
-                                      var church = result as SearchResult;
-                                      print(church);
+                                      var church = result as UserEntity;
+                                      _profileSettingsBloc.setChurch(church);
                                       setState(() {
+                                        selectedChurch = church;
+                                        churchNameString = church.churchName;
                                         churchName.text = church.churchName;
                                       });
-
-                                      print(church.churchName);
                                     });
                                   },
                                   child: Container(
@@ -1206,11 +1222,11 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                           flex: 1,
                                           fit: FlexFit.tight,
                                           child: Text(
-                                            churchNotFound || churchName.text.isEmpty ? "Search for your church" : churchName.text,
+                                            churchNotFound || (churchNameString ?? "").isEmpty ? "Search for your church" : churchNameString,
                                             style: TextStyle(
                                               fontFamily: 'Nirmala',
                                               fontSize: 17.0,
-                                              color: Colors.black.withOpacity(churchNotFound || churchName.text.isEmpty ? .2 : 1),
+                                              color: Colors.black.withOpacity(churchNotFound || (churchNameString ?? "").isEmpty ? .2 : 1),
                                               fontWeight: FontWeight.normal
                                             ),
                                           ),
@@ -1240,6 +1256,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       if (!churchNotFound && churchName.text.isNotEmpty) ...[
                         TextField(
                           controller: churchID,
+                          onChanged: (s){
+                            _profileSettingsBloc.setChurchId(s);
+                          },
                           decoration: InputDecoration(
                             fillColor: Colors.grey[50],
                             filled: true,
@@ -1423,6 +1442,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                     cursorWidth: 1,
                                     maxLines: 1,
                                     controller: churchName,
+                                    onChanged: (s){
+                                      _profileSettingsBloc.setUnknownChurch(s);
+                                    },
                                   ),
                                 ),
                               ],
@@ -1489,7 +1511,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       width: double.infinity,
                       child: RaisedButton(
                         onPressed: (){
-                          //TODO Save
+                          _profileSettingsBloc.saveChanges();
                         },
                         color: Theme.of(context).primaryColor,
                         textColor: Colors.white,

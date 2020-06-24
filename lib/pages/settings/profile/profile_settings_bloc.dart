@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 import '../../../data/user/firestore_user_repository.dart';
 import '../../../user_bloc/user_bloc.dart';
 import '../../../user_bloc/user_login_state.dart';
@@ -24,7 +25,8 @@ const _kInitialProfileSettingsState = ProfileSettingsState(
   address: "",
   type: 0,
   status: 0,
-  emailAddress: ""
+  emailAddress: "",
+  churchInfo: null
 );
 
 class ProfileSettingsBloc implements BaseBloc{
@@ -42,6 +44,10 @@ class ProfileSettingsBloc implements BaseBloc{
   final void Function(String string) setAddress;
   final void Function(String string) countryCodeChanged;
   final void Function() saveChanges;
+  final void Function(UserEntity entity) setChurch;
+  final void Function(String string) setUnknownChurch;
+  final void Function(bool church) setNoChurch;
+  final void Function(String churchId) setChurchId;
 
   ///
   /// Output streams
@@ -66,6 +72,10 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setAddress,
     @required this.saveChanges,
     @required this.countryCodeChanged,
+    @required this.setChurch,
+    @required this.setUnknownChurch,
+    @required this.setNoChurch,
+    @required this.setChurchId,
     @required this.settingState$,
     @required this.message$,
     @required void Function() dispose,
@@ -97,6 +107,10 @@ class ProfileSettingsBloc implements BaseBloc{
     final setAddressController = BehaviorSubject<String>();
     final saveChangesController = PublishSubject<void>();
     final countryCodeController = BehaviorSubject<String>.seeded('+1');
+    final setChurchController = BehaviorSubject<UserEntity>();
+    final setUnknownChurchController = BehaviorSubject<String>();
+    final setNoChurchController = BehaviorSubject<bool>();
+    final setChurchIdController = BehaviorSubject<String>();
 
     final message$ = saveChangesController.exhaustMap(
       (_) => saveProfileChanges(
@@ -111,6 +125,10 @@ class ProfileSettingsBloc implements BaseBloc{
         setCityController.value,
         setAddressController.value,
         countryCodeController.value,
+        setChurchController.value,
+        setUnknownChurchController.value,
+        setNoChurchController.value,
+        setChurchIdController.value,
         userRepository,
       )
     ).publish();
@@ -142,7 +160,11 @@ class ProfileSettingsBloc implements BaseBloc{
       setCityController,
       setAddressController,
       saveChangesController,
-      countryCodeController
+      countryCodeController,
+      setChurchController,
+      setUnknownChurchController,
+      setNoChurchController,
+      setChurchIdController
     ];
 
     return ProfileSettingsBloc._(
@@ -158,6 +180,10 @@ class ProfileSettingsBloc implements BaseBloc{
       setCity: setCityController.add,
       setAddress: setAddressController.add,
       countryCodeChanged: countryCodeController.add,
+      setChurch: setChurchController.add,
+      setUnknownChurch: setUnknownChurchController.add,
+      setNoChurch: setNoChurchController.add,
+      setChurchId: setChurchIdController.add,
       saveChanges: () => saveChangesController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -198,7 +224,8 @@ class ProfileSettingsBloc implements BaseBloc{
           address: user.businessAddress,
           status: user.status,
           isLoading: false,
-          emailAddress: user.email
+          emailAddress: user.email,
+          churchInfo: user.churchInfo
         );
       })
       .startWith(_kInitialProfileSettingsState)
@@ -242,6 +269,10 @@ class ProfileSettingsBloc implements BaseBloc{
     String city,
     String address,
     String countryCode,
+    UserEntity church,
+    String unknownChurch,
+    bool noChurch,
+    String churchId,
     FirestoreUserRepository userRepository
   ) async* {
     Map<String, dynamic> data = {
@@ -253,8 +284,26 @@ class ProfileSettingsBloc implements BaseBloc{
       'title': title,
       'aboutMe': aboutMe,
       'city': city,
-      'businessAddress': address
+      'businessAddress': address,
     };
+
+    print("${church.uid.substring(0, 7).toUpperCase()} ${churchId}");
+    if(church != null && church.uid.substring(0, 7).toUpperCase() == churchId){
+      data['churchInfo'] = {
+        'churchName': church.churchName,
+        'churchAddress': church.churchAddress,
+        'churchDenomination': church.churchDenomination
+      };
+    }else if(unknownChurch != null) {
+      data['churchInfo'] = {
+        'churchName': unknownChurch,
+        'churchAddress': null,
+        'churchDenomination': null
+      };
+    }else if(noChurch == true){
+      data['churchInfo'] = null;
+    }
+
 
     if(isPublic != null && isPublic){
       data['isPublic'] = isPublic;

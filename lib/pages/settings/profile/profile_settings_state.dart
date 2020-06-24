@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/church_info.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 
 ///
 /// Message
@@ -39,6 +41,7 @@ class ProfileSettingsState extends Equatable {
   final int type;
   final int status;
   final String emailAddress;
+  final ChurchInfo churchInfo;
 
   const ProfileSettingsState({
     @required this.isLoading,
@@ -56,9 +59,10 @@ class ProfileSettingsState extends Equatable {
     @required this.type,
     @required this.status,
     @required this.emailAddress,
+    @required this.churchInfo,
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status, emailAddress}) {
+  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, relationship, isPublic, title, bio, city, address, type, status, emailAddress, churchInfo}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -75,6 +79,7 @@ class ProfileSettingsState extends Equatable {
       type: type ?? this.type,
       status: status ?? this.status,
       emailAddress: emailAddress ?? this.emailAddress,
+      churchInfo: churchInfo ?? this.churchInfo,
     );
   }
 
@@ -94,7 +99,8 @@ class ProfileSettingsState extends Equatable {
     address,
     type,
     status,
-    emailAddress
+    emailAddress,
+    churchInfo
   ];
 
   @override

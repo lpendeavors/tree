@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_bloc.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:treeapp/util/asset_utils.dart';
@@ -382,7 +383,7 @@ class _PerformSearchState extends State<PerformSearch> {
                 shrinkWrap: true,
                 itemCount: state.results.length,
                 itemBuilder: (context, index) {
-                  SearchResult item = state.results[index];
+                  UserEntity item = state.results[index];
                   bool thisIsChurch = item.isChurch;
 
                   return InkWell(
@@ -434,7 +435,7 @@ class _PerformSearchState extends State<PerformSearch> {
                                           CachedNetworkImage(
                                             width: 60,
                                             height: 60,
-                                            imageUrl: item.image,
+                                            imageUrl: item.image ?? "",
                                             fit: BoxFit.cover,
                                           ),
                                         ],
@@ -538,7 +539,7 @@ class _PerformSearchState extends State<PerformSearch> {
                                         ),
                                         SizedBox(width: 5.0),
                                         Text(
-                                          thisIsChurch ? item.churchDenomination : item.churchInfo?.churchDenomination ?? "",
+                                          thisIsChurch ? item.churchDenomination ?? "" : item.churchInfo?.churchDenomination ?? "",
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: 12,
@@ -596,7 +597,7 @@ class _PerformSearchState extends State<PerformSearch> {
                                         SizedBox(width: 5.0),
                                         Flexible(
                                           child: Text(
-                                            thisIsChurch ? item.churchAddress : item.city,
+                                            thisIsChurch ? item.churchAddress ?? "" : item.city ?? "",
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 12,

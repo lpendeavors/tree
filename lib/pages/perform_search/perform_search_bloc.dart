@@ -112,29 +112,10 @@ class SearchBloc implements BaseBloc {
     }
   }
 
-  static Future<List<SearchResult>> _runSearch(
+  static Future<List<UserEntity>> _runSearch(
     String query,
     FirestoreUserRepository userRepository,
   ) {
-    return userRepository.runSearchQuery(query)
-      .then((event){
-        List<SearchResult> results = [];
-        for(var e in event){
-          results.add(
-            SearchResult(
-              id: e.id,
-              isChurch: e.isChurch ?? false,
-              image: e.image ?? "",
-              churchName: e.churchName ?? "",
-              fullName: e.fullName ?? "",
-              churchDenomination: e.churchDenomination ?? "",
-              churchInfo: e.churchInfo,
-              city: e.city ?? "",
-              churchAddress: e.churchAddress ?? ""
-            )
-          );
-        }
-        return results;
-      });
+    return userRepository.runSearchQuery(query);
   }
 }
