@@ -130,7 +130,7 @@ class ExploreConnectionsTab extends StatelessWidget {
                       isRequest: false,
                       connectionItem: data.connectionItems[index],
                       onRemove: (connection) => print('remove ${connection.name}'),
-                      onConnect: (connection) => print('connect with ${connection.name}'),
+                      onConnect: (connection) => bloc.addConnection(connection),
                     );
                   },
                   separatorBuilder: (context, index) {
