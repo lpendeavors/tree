@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import '../pages/settings/profile/profile_settings_bloc.dart';
 import '../pages/settings/profile/profile_settings_page.dart';
 import '../pages/preview_image/preivew_image_page.dart';
@@ -426,6 +427,17 @@ class MyApp extends StatelessWidget {
                 postId: routerSettings.arguments as String,
               );
             },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/search') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return PerformSearch(
+            userRepository: Injector.of(context).userRepository,
+            searchBy: routerSettings.arguments as String,
           );
         }
       );
