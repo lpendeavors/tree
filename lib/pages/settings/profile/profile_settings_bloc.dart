@@ -287,7 +287,6 @@ class ProfileSettingsBloc implements BaseBloc{
       'businessAddress': address,
     };
 
-    print("${church.uid.substring(0, 7).toUpperCase()} ${churchId}");
     if(church != null && church.uid.substring(0, 7).toUpperCase() == churchId){
       data['churchInfo'] = {
         'churchName': church.churchName,

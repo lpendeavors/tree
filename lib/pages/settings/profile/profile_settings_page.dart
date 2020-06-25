@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -240,9 +241,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     _profileSettingsBloc.settingState$.listen((event) {
       firstName.text = event.firstName;
       lastName.text = event.lastName;
-      phoneNumber.text = event.phoneNo?.substring(event.phoneNo.length - 10);
-      _phoneLoginBloc.phoneNumberChanged(event.phoneNo?.substring(event.phoneNo.length - 10));
-      _profileSettingsBloc.setPhoneNumber(event.phoneNo?.substring(event.phoneNo.length - 10));
+
+      if(event.phoneNo != null){
+        phoneNumber.text = event.phoneNo.substring(event.phoneNo.length - 10);
+        _phoneLoginBloc.phoneNumberChanged(event.phoneNo.substring(event.phoneNo.length - 10));
+        _profileSettingsBloc.setPhoneNumber(event.phoneNo.substring(event.phoneNo.length - 10));
+      }
+
       aboutMe.text = event.bio;
       _emailLoginBloc.emailChanged(event.emailAddress);
     });
