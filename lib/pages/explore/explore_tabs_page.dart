@@ -6,6 +6,7 @@ import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
 import './widgets/explore_connections_tab.dart';
 import './explore_bloc.dart';
+import './explore_state.dart';
 import 'package:flutter/material.dart';
 
 class ExploreTabsPage extends StatefulWidget {
@@ -38,7 +39,13 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
       widget.userBloc.loginState$
         .where((state) => state is Unauthenticated)
         .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+      widget.exploreBloc.addConnectionMessage$
+        .listen((message) => showMessage(message)),
     ];
+  }
+  
+  void showMessage(ExploreMessage message) {
+    print(message);
   }
 
   @override
