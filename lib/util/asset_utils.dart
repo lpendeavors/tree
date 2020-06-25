@@ -87,3 +87,26 @@ List<int> chatRoomColors = [
   Colors.yellow.value,
   Colors.brown.value,
 ];
+
+List treeChurchAvailability = [
+  "Yes, I have a home church",
+  "No, I don't have a home church"
+];
+
+List treeChurchMinistries = [
+  "Adult Ministry",
+  "Youth Ministry"
+];
+
+List treeDenominations = [
+  "Baptist",
+  "Non Denominational",
+  "Adventist",
+  "Methodist",
+  "Pentecostal",
+  "Catholic",
+  "Lutheran",
+  "Presbyterian/Reformed",
+  "Anglican",
+  "Others"
+];
