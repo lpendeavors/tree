@@ -1148,7 +1148,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       height: 50,
                       width: double.infinity,
                       child: RaisedButton(
-                        onPressed: (){},
+                        onPressed: (){
+                          _profileSettingsBloc.saveChanges();
+                        },
                         color: Theme.of(context).primaryColor,
                         textColor: Colors.white,
                         child: Text(

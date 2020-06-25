@@ -306,22 +306,43 @@ class ProfileSettingsBloc implements BaseBloc{
       'businessAddress': address,
     };
 
+    if(ministryType != null){
+      data['type'] = ministryType;
+    }
+
+    if(churchDenomination != null){
+      data['churchDenomination'] = churchDenomination;
+    }
+
+    if(locationData != null){
+      data['churchAddress'] = locationData[0];
+      data['churchLat'] = locationData[1];
+      data['churchLong'] = locationData[2];
+    }
+
+    if(churchWebsite != null){
+      data['churchWebsite'] = churchWebsite;
+    }
+
+    if(churchParent != null){
+      data['parentChurch'] = churchParent;
+    }
+
     if(church != null && church.uid.substring(0, 7).toUpperCase() == churchId){
       data['churchInfo'] = {
         'churchName': church.churchName,
         'churchAddress': church.churchAddress,
         'churchDenomination': church.churchDenomination
       };
-    }else if(unknownChurch != null) {
+    } else if(unknownChurch != null) {
       data['churchInfo'] = {
         'churchName': unknownChurch,
         'churchAddress': null,
         'churchDenomination': null
       };
-    }else if(noChurch == true){
+    } else if(noChurch == true){
       data['churchInfo'] = null;
     }
-
 
     if(isPublic != null && isPublic){
       data['isPublic'] = isPublic;
@@ -332,8 +353,6 @@ class ProfileSettingsBloc implements BaseBloc{
     if(state is LoggedInUser){
       await userRepository.updateUserData(state.uid, data);
     }
-
-    //TODO: Save data!!!
 
     yield SettingsMessageSuccess();
   }
