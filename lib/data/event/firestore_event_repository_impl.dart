@@ -54,16 +54,6 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     double budget,
     bool isSponsored,
   ) {
-    if (ownerId == null) {
-      return Future.error('ownerId cannot be null');
-    }
-    if (title == null) {
-      return Future.error('title cannot be null');
-    }
-    if (startDate == null) {
-      return Future.error('startDate cannot be null');
-    }
-
     final TransactionHandler transactionHandler = (transaction) async {
       final event = <String, dynamic>{
 

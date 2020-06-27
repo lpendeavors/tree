@@ -31,7 +31,7 @@ Future<void> main() async {
   ///
   /// Setup firestore
   ///
-  await firestore.settings(persistenceEnabled: false);
+  await firestore.settings(persistenceEnabled: true);
 
   ///
   /// Setup crashlytics

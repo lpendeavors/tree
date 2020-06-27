@@ -62,6 +62,7 @@ dependencies:
   google_map_location_picker: ^3.3.1
   cached_network_image: ^2.2.0+1
   video_player: ^0.10.11+1
+  geolocator: 5.3.2+2
 
 dev_dependencies:
   flutter_test:
