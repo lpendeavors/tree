@@ -13,20 +13,7 @@ import '../../../pages/settings/profile/profile_settings_state.dart';
 const _kInitialProfileSettingsState = ProfileSettingsState(
   isLoading: true,
   error: false,
-  isChurch: false,
-  firstName: null,
-  lastName: null,
-  phoneNo: null,
-  relationship: null,
-  isPublic: false,
-  title: null,
-  bio: null,
-  city: "",
-  address: "",
-  type: 0,
-  status: 0,
-  emailAddress: "",
-  churchInfo: null
+  userEntity: null,
 );
 
 class ProfileSettingsBloc implements BaseBloc{
@@ -48,6 +35,13 @@ class ProfileSettingsBloc implements BaseBloc{
   final void Function(String string) setUnknownChurch;
   final void Function(bool church) setNoChurch;
   final void Function(String churchId) setChurchId;
+
+  final void Function(String churchName) setChurchName;
+  final void Function(int type) setMinistryType;
+  final void Function(String denomination) setChurchDenomination;
+  final void Function(List<dynamic>) setLocationData;
+  final void Function(String website) setChurchWebsite;
+  final void Function(String parent) setParentChurch;
 
   ///
   /// Output streams
@@ -76,6 +70,12 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setUnknownChurch,
     @required this.setNoChurch,
     @required this.setChurchId,
+    @required this.setChurchName,
+    @required this.setMinistryType,
+    @required this.setChurchDenomination,
+    @required this.setLocationData,
+    @required this.setChurchWebsite,
+    @required this.setParentChurch,
     @required this.settingState$,
     @required this.message$,
     @required void Function() dispose,
@@ -112,6 +112,14 @@ class ProfileSettingsBloc implements BaseBloc{
     final setNoChurchController = BehaviorSubject<bool>();
     final setChurchIdController = BehaviorSubject<String>();
 
+    final setChurchNameController = BehaviorSubject<String>();
+    final setMinistryTypeController = BehaviorSubject<int>();
+    final setChurchDenominationController = BehaviorSubject<String>();
+    final setLocationDataController = BehaviorSubject<List<dynamic>>();
+    final setChurchWebsiteController = BehaviorSubject<String>();
+    final setParentChurchController = BehaviorSubject<String>();
+
+
     final message$ = saveChangesController.exhaustMap(
       (_) => saveProfileChanges(
         userBloc,
@@ -129,6 +137,12 @@ class ProfileSettingsBloc implements BaseBloc{
         setUnknownChurchController.value,
         setNoChurchController.value,
         setChurchIdController.value,
+        setChurchNameController.value,
+        setMinistryTypeController.value,
+        setChurchDenominationController.value,
+        setLocationDataController.value,
+        setChurchWebsiteController.value,
+        setParentChurchController.value,
         userRepository,
       )
     ).publish();
@@ -164,7 +178,13 @@ class ProfileSettingsBloc implements BaseBloc{
       setChurchController,
       setUnknownChurchController,
       setNoChurchController,
-      setChurchIdController
+      setChurchIdController,
+      setChurchNameController,
+      setMinistryTypeController,
+      setChurchDenominationController,
+      setLocationDataController,
+      setChurchWebsiteController,
+      setParentChurchController
     ];
 
     return ProfileSettingsBloc._(
@@ -184,6 +204,12 @@ class ProfileSettingsBloc implements BaseBloc{
       setUnknownChurch: setUnknownChurchController.add,
       setNoChurch: setNoChurchController.add,
       setChurchId: setChurchIdController.add,
+      setChurchName: setChurchNameController.add,
+      setMinistryType: setMinistryTypeController.add,
+      setChurchDenomination: setChurchDenominationController.add,
+      setLocationData: setLocationDataController.add,
+      setChurchWebsite: setChurchWebsiteController.add,
+      setParentChurch: setParentChurchController.add,
       saveChanges: () => saveChangesController.add(null),
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -211,21 +237,8 @@ class ProfileSettingsBloc implements BaseBloc{
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((user){
         return _kInitialProfileSettingsState.copyWith(
-          isChurch: user.isChurch,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNo: user.phoneNo,
-          relationship: user.relationStatus,
-          type: user.type,
-          isPublic: user.isPublic && user.status == 0,
-          title: user.title,
-          bio: user.aboutMe,
-          city: user.city,
-          address: user.businessAddress,
-          status: user.status,
-          isLoading: false,
-          emailAddress: user.email,
-          churchInfo: user.churchInfo
+          userEntity: user,
+          isLoading: false
         );
       })
       .startWith(_kInitialProfileSettingsState)
@@ -273,6 +286,12 @@ class ProfileSettingsBloc implements BaseBloc{
     String unknownChurch,
     bool noChurch,
     String churchId,
+    String churchName,
+    int ministryType,
+    String churchDenomination,
+    List<dynamic> locationData,
+    String churchWebsite,
+    String churchParent,
     FirestoreUserRepository userRepository
   ) async* {
     Map<String, dynamic> data = {
@@ -287,23 +306,43 @@ class ProfileSettingsBloc implements BaseBloc{
       'businessAddress': address,
     };
 
-    print("${church.uid.substring(0, 7).toUpperCase()} ${churchId}");
+    if(ministryType != null){
+      data['type'] = ministryType;
+    }
+
+    if(churchDenomination != null){
+      data['churchDenomination'] = churchDenomination;
+    }
+
+    if(locationData != null){
+      data['churchAddress'] = locationData[0];
+      data['churchLat'] = locationData[1];
+      data['churchLong'] = locationData[2];
+    }
+
+    if(churchWebsite != null){
+      data['churchWebsite'] = churchWebsite;
+    }
+
+    if(churchParent != null){
+      data['parentChurch'] = churchParent;
+    }
+
     if(church != null && church.uid.substring(0, 7).toUpperCase() == churchId){
       data['churchInfo'] = {
         'churchName': church.churchName,
         'churchAddress': church.churchAddress,
         'churchDenomination': church.churchDenomination
       };
-    }else if(unknownChurch != null) {
+    } else if(unknownChurch != null) {
       data['churchInfo'] = {
         'churchName': unknownChurch,
         'churchAddress': null,
         'churchDenomination': null
       };
-    }else if(noChurch == true){
+    } else if(noChurch == true){
       data['churchInfo'] = null;
     }
-
 
     if(isPublic != null && isPublic){
       data['isPublic'] = isPublic;

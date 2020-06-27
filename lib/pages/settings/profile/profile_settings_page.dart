@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -54,6 +55,12 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   TextEditingController churchID = TextEditingController();
   TextEditingController churchName = TextEditingController();
 
+  TextEditingController aboutChurch = TextEditingController();
+  String aboutChurchString;
+  TextEditingController churchWebsite = TextEditingController();
+  String churchWebsiteString;
+  TextEditingController parentChurch = TextEditingController();
+  String parentChurchString;
 
   List<DropdownMenuItem<String>> statusList = <DropdownMenuItem<String>>[
     DropdownMenuItem(
@@ -205,11 +212,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     )
   ];
 
-  List treeChurchAvailability = [
-    "Yes, I have a home church",
-    "No, I don't have a home church"
-  ];
-
   bool isPublic;
   bool churchNotFound = false;
   bool hasChurch = true;
@@ -220,8 +222,13 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   String title;
   String churchSelected;
   String churchNameString;
-
   UserEntity selectedChurch;
+
+  int ministrySelected;
+  int denominationSelected;
+  String churchAddress;
+  double churchLat;
+  double churchLong;
 
   @override
   void initState() {
@@ -238,13 +245,19 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     ];
 
     _profileSettingsBloc.settingState$.listen((event) {
-      firstName.text = event.firstName;
-      lastName.text = event.lastName;
-      phoneNumber.text = event.phoneNo?.substring(event.phoneNo.length - 10);
-      _phoneLoginBloc.phoneNumberChanged(event.phoneNo?.substring(event.phoneNo.length - 10));
-      _profileSettingsBloc.setPhoneNumber(event.phoneNo?.substring(event.phoneNo.length - 10));
-      aboutMe.text = event.bio;
-      _emailLoginBloc.emailChanged(event.emailAddress);
+      if(event.userEntity != null){
+        firstName.text = event.userEntity.firstName;
+        lastName.text = event.userEntity.lastName;
+
+        if(event.userEntity.phoneNo != null){
+          phoneNumber.text = event.userEntity.phoneNo.substring(event.userEntity.phoneNo.length - 10);
+          _phoneLoginBloc.phoneNumberChanged(event.userEntity.phoneNo.substring(event.userEntity.phoneNo.length - 10));
+          _profileSettingsBloc.setPhoneNumber(event.userEntity.phoneNo.substring(event.userEntity.phoneNo.length - 10));
+        }
+
+        aboutMe.text = event.userEntity.aboutMe;
+        _emailLoginBloc.emailChanged(event.userEntity.email);
+      }
     });
 
     super.initState();
@@ -315,6 +328,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
           initialData: _profileSettingsBloc.settingState$.value,
           builder: (context, data){
             ProfileSettingsState state = data.data;
+            UserEntity user = state.userEntity;
 
             if(state.isLoading){
               return Center(
@@ -322,27 +336,27 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
               );
             }
 
-            _profileSettingsBloc.setFirstName(state.firstName);
-            _profileSettingsBloc.setLastName(state.lastName);
-            _profileSettingsBloc.setBio(state.bio);
-            _profileSettingsBloc.setRelationship(relationship ?? state.relationship);
-            _profileSettingsBloc.setTitle(title ?? state.title);
-            _profileSettingsBloc.setCity(city ?? state.city);
-            _profileSettingsBloc.setAddress(address ?? state.address);
+            _profileSettingsBloc.setFirstName(user.firstName);
+            _profileSettingsBloc.setLastName(user.lastName);
+            _profileSettingsBloc.setBio(user.aboutMe);
+            _profileSettingsBloc.setRelationship(relationship ?? user.relationStatus);
+            _profileSettingsBloc.setTitle(title ?? user.title);
+            _profileSettingsBloc.setCity(city ?? user.city);
+            _profileSettingsBloc.setAddress(address ?? user.businessAddress);
 
             if(isPublic == null){
-              isPublic = state.isPublic;
+              isPublic = user.isPublic && user.status == 0;
             }
 
             if(city == null){
-              city = state.city;
+              city = user.city;
             }
 
             if(address == null){
-              address = state.address;
+              address = user.businessAddress;
             }
 
-            if(state.isChurch){
+            if(user.isChurch){
               return SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                 child: Column(
@@ -650,7 +664,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                             SizedBox(width: 10.0),
                             Flexible(
                               child: DropdownButton(
-                                value: relationship ?? state.relationship,
+                                value: relationship ?? user.relationStatus,
                                 isExpanded: true,
                                 style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
                                 items: statusList,
@@ -830,7 +844,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                   SizedBox(width: 10.0),
                                   Flexible(
                                     child: DropdownButton(
-                                      value: title ?? state.title,
+                                      value: title ?? user.title,
                                       isExpanded: true,
                                       style: TextStyle(fontSize: 20.0, color: Colors.black, fontFamily: 'Nirmala', fontWeight: FontWeight.normal),
                                       items: titleList,
@@ -1019,19 +1033,53 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
           initialData: _profileSettingsBloc.settingState$.value,
           builder: (context, data){
             ProfileSettingsState state = data.data;
-            int ministryType = state.type;
+            UserEntity user = state.userEntity;
 
-            if(churchNameString == null){
-              churchNameString = state.churchInfo?.churchName;
+            if(state.isLoading){
+              return Container();
             }
 
-            if(state.churchInfo != null && state.churchInfo.churchName != null && churchSelected == null){
-              churchSelected = treeChurchAvailability[0];
-              _profileSettingsBloc.setNoChurch(false);
-              hasChurch = true;
-            }
+            if(user.isChurch){
 
-            if(state.isChurch){
+              if(churchNameString == null){
+                churchNameString = user.churchName;
+                churchName.text = user.churchName;
+                _profileSettingsBloc.setChurchName(churchNameString);
+              }
+
+              if(ministrySelected == null){
+                ministrySelected = user.type;
+                _profileSettingsBloc.setMinistryType(ministrySelected);
+              }
+
+              if(denominationSelected == null){
+                denominationSelected = treeDenominations.indexOf(user.churchDenomination);
+                _profileSettingsBloc.setChurchDenomination(user.churchDenomination);
+              }
+
+              if(churchAddress == null){
+                churchAddress = user.churchAddress;
+                _profileSettingsBloc.setLocationData([user.churchAddress, user.churchLat, user.churchLong]);
+              }
+
+              if(churchWebsiteString == null){
+                churchWebsite.text = user.churchWebsite;
+                churchWebsiteString = user.churchWebsite;
+                _profileSettingsBloc.setChurchWebsite(user.churchWebsite);
+              }
+
+              if(parentChurchString == null){
+                parentChurch.text = user.parentChurch;
+                parentChurchString = user.parentChurch;
+                _profileSettingsBloc.setParentChurch(user.parentChurch);
+              }
+
+              if(aboutChurchString == null){
+                aboutChurch.text = user.aboutMe;
+                aboutChurchString = user.aboutMe;
+                _profileSettingsBloc.setBio(user.aboutMe);
+              }
+
               return SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                 child: Column(
@@ -1040,23 +1088,28 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                            "Ministry",
-                            style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.black54,
-                              fontFamily: 'Nirmala',
-                              fontWeight: FontWeight.normal,
-                            )
-                        ),
-                        SizedBox(
-                          height: 10.0,
-                        ),
                         FlatButton(
-                            onPressed: (){
-
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                      opaque: false,
+                                      pageBuilder: (context, _, __) {
+                                        return ListDialog(
+                                          treeChurchMinistries,
+                                        );
+                                      }
+                                  )
+                              ).then((result) {
+                                if (result != null) {
+                                  setState(() {
+                                    _profileSettingsBloc.setMinistryType(result);
+                                    ministrySelected = result;
+                                  });
+                                }
+                              });
                             },
-                            color: Colors.black.withOpacity(0.06),
+                            color: Colors.black.withOpacity(.09),
                             padding: EdgeInsets.all(16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                             child: Center(
@@ -1065,22 +1118,19 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 children: <Widget>[
                                   Image.asset(
                                     church_icon,
-                                    height: 18,
-                                    width: 18,
-                                    color: Colors.black38,
+                                    height: 24.0,
+                                    width: 24.0,
+                                    color: Colors.black.withOpacity(.4),
                                   ),
-                                  SizedBox(
-                                    width: 10.0,
-                                  ),
-
+                                  SizedBox(width: 10.0),
                                   Text(
-                                      ministryType == 0 ? "Adult Ministry" : "Youth Ministry",
-                                      style: TextStyle(
-                                        fontSize: 14.0,
-                                        fontFamily: 'Nirmala',
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.normal,
-                                      )
+                                    ministrySelected != null && ministrySelected != -1 ? treeChurchMinistries[ministrySelected] : "What is your Ministry type?",
+                                    style: TextStyle(
+                                      fontFamily: 'Nirmala',
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.black.withOpacity(ministrySelected != null ? 1 : .6)
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1089,9 +1139,11 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                       ],
                     ),
                     SizedBox(height: 10.0),
-                    SizedBox(
-                      height: 10.0,
-                    ),
+                    if (ministrySelected == 0)
+                      adultMinistry()
+                    else if (ministrySelected == 1)
+                      youthMinistry(),
+                    SizedBox(height: 10.0),
                     Container(
                       height: 50,
                       width: double.infinity,
@@ -1104,20 +1156,30 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                         child: Text(
                           "Save",
                           style: TextStyle(
-                            fontFamily: 'NirmalaB',
+                            fontFamily: "NirmalaB",
                             fontWeight: FontWeight.bold,
                             fontSize: 22.0,
                             color: Colors.white
-                          ),
+                          )
                         ),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                       ),
                     ),
-                    SizedBox(height: 50.0)
+                    SizedBox(height: 50.0),
                   ],
                 ),
               );
             }else{
+              if(churchNameString == null){
+                churchNameString = user.churchInfo?.churchName;
+              }
+
+              if(user.churchInfo != null && user.churchInfo.churchName != null && churchSelected == null){
+                churchSelected = treeChurchAvailability[0];
+                _profileSettingsBloc.setNoChurch(false);
+                hasChurch = true;
+              }
+
               return SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
                 child: Column(
@@ -1538,6 +1600,834 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
     );
   }
 
+  youthMinistry() {
+    return Column(
+      children: <Widget>[
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "CHURCH NAME",
+              style: TextStyle(
+                fontFamily: 'NirmalaB',
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Image.asset(
+                    church_icon,
+                    width: 23.0,
+                    height: 23.0,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Enter Youth Ministry Name",
+                      hintStyle: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 17.0,
+                        color: Colors.black.withOpacity(.2),
+                        fontWeight: FontWeight.normal
+                      )
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'Nirmala',
+                      fontSize: 20.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setChurchName(value);
+                        churchNameString = value;
+                      });
+                    },
+                    controller: churchName,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "DENOMINATION",
+              style: TextStyle(
+                fontFamily: "NirmalaB",
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 10.0),
+            FlatButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                          opaque: false,
+                          pageBuilder: (context, _, __) {
+                            return ListDialog(
+                              treeDenominations,
+                            );
+                          }
+                      )
+                  ).then((result) {
+                    if (result != null) {
+                      setState(() {
+                        _profileSettingsBloc.setChurchDenomination(treeDenominations[result]);
+                        denominationSelected = result;
+                      });
+                    }
+                  });
+                },
+                color: Colors.black.withOpacity(.09),
+                padding: EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Image.asset(
+                        church_icon,
+                        height: 24.0,
+                        width: 24.0,
+                        color: Colors.black.withOpacity(.4),
+                      ),
+                      SizedBox(width: 10.0),
+                      Text(
+                        denominationSelected != null ? treeDenominations[denominationSelected] : "What is your denomination?",
+                        style: TextStyle(
+                          fontFamily: 'Nirmala',
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black.withOpacity(denominationSelected != null ? 1 : .6)
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+            ),
+            SizedBox(height: 10.0),
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "LOCATION",
+              style: TextStyle(
+                fontFamily: "NirmalaB",
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  Icons.location_on,
+                  size: 25,
+                  color: Colors.black.withOpacity(.4),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: InkWell(
+                    onTap: () async {
+                      LocationResult result = await showLocationPicker(
+                        context,
+                        'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ'
+                      );
+
+                      setState(() {
+                        churchAddress = result.address;
+                        churchLat = result.latLng.latitude;
+                        churchLong = result.latLng.longitude;
+                        _profileSettingsBloc.setLocationData([churchAddress, churchLat, churchLong]);
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            flex: 1,
+                            fit: FlexFit.tight,
+                            child: Text(
+                              churchAddress == null ? "Where is your church located?" : churchAddress,
+                              style: TextStyle(
+                                fontFamily: 'Nirmala',
+                                fontSize: 17.0,
+                                color: Colors.black.withOpacity(churchAddress == null ? (.2) : 1),
+                                fontWeight: FontWeight.normal
+                              )
+                            ),
+                          ),
+                          SizedBox(width: 10.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "MINISTRY BIO",
+              style: TextStyle(
+                fontFamily: 'NirmalaB',
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                  child: Icon(
+                    Icons.edit,
+                    size: 23,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Describe your ministry (Optional)",
+                      hintStyle: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 17.0,
+                        color: Colors.black.withOpacity(.2),
+                        fontWeight: FontWeight.normal
+                      )
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'Nirmala',
+                      fontSize: 20.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 3,
+                    onChanged: (value){
+                      _profileSettingsBloc.setBio(value);
+                      aboutChurchString = value;
+                    },
+                    controller: aboutChurch,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "WEBSITE",
+              style: TextStyle(
+                fontFamily: 'NirmalaB',
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Icon(
+                    Icons.vpn_lock,
+                    size: 23,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Enter Website Address",
+                      hintStyle: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 17.0,
+                        color: Colors.black.withOpacity(.2),
+                        fontWeight: FontWeight.normal
+                      )
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'Nirmala',
+                      fontSize: 20.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setChurchWebsite(value);
+                        churchWebsiteString = value;
+                      });
+                    },
+                    controller: churchWebsite,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "PARENT CHURCH",
+              style: TextStyle(
+                fontFamily: 'NirmalaB',
+                fontSize: 12.0,
+                color: Colors.black.withOpacity(.4),
+                fontWeight: FontWeight.bold
+              )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Image.asset(
+                    church_icon,
+                    width: 23.0,
+                    height: 23.0,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Enter Parent Church",
+                      hintStyle: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 17.0,
+                        color: Colors.black.withOpacity(.2),
+                        fontWeight: FontWeight.normal
+                      )
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'Nirmala',
+                      fontSize: 20.0,
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setParentChurch(value);
+                        parentChurchString = value;
+                      });
+                    },
+                    controller: parentChurch,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+      ],
+    );
+  }
+
+  adultMinistry() {
+    return Column(
+      children: <Widget>[
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                "CHURCH NAME",
+                style: TextStyle(
+                    fontFamily: 'NirmalaB',
+                    fontSize: 12.0,
+                    color: Colors.black.withOpacity(.4),
+                    fontWeight: FontWeight.bold
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Image.asset(
+                    church_icon,
+                    width: 23.0,
+                    height: 23.0,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Enter Youth Ministry Name",
+                        hintStyle: TextStyle(
+                            fontFamily: 'Nirmala',
+                            fontSize: 17.0,
+                            color: Colors.black.withOpacity(.2),
+                            fontWeight: FontWeight.normal
+                        )
+                    ),
+                    style: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setChurchName(value);
+                        churchNameString = value;
+                      });
+                    },
+                    controller: churchName,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "DENOMINATION",
+              style: TextStyle(
+                  fontFamily: "NirmalaB",
+                  fontSize: 12.0,
+                  color: Colors.black.withOpacity(.4),
+                  fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 10.0),
+            FlatButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                          opaque: false,
+                          pageBuilder: (context, _, __) {
+                            return ListDialog(
+                              treeDenominations,
+                            );
+                          }
+                      )
+                  ).then((result) {
+                    if (result != null) {
+                      setState(() {
+                        _profileSettingsBloc.setChurchDenomination(treeDenominations[result]);
+                        denominationSelected = result;
+                      });
+                    }
+                  });
+                },
+                color: Colors.black.withOpacity(.09),
+                padding: EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Image.asset(
+                        church_icon,
+                        height: 24.0,
+                        width: 24.0,
+                        color: Colors.black.withOpacity(.4),
+                      ),
+                      SizedBox(width: 10.0),
+                      Text(
+                        denominationSelected != null ? treeDenominations[denominationSelected] : "What is your denomination?",
+                        style: TextStyle(
+                            fontFamily: 'Nirmala',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black.withOpacity(denominationSelected != null ? 1 : .6)
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+            ),
+            SizedBox(height: 10.0),
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                "LOCATION",
+                style: TextStyle(
+                    fontFamily: "NirmalaB",
+                    fontSize: 12.0,
+                    color: Colors.black.withOpacity(.4),
+                    fontWeight: FontWeight.bold
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  Icons.location_on,
+                  size: 25,
+                  color: Colors.black.withOpacity(.4),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: InkWell(
+                    onTap: () async {
+                      LocationResult result = await showLocationPicker(
+                          context,
+                          'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ'
+                      );
+
+                      setState(() {
+                        churchAddress = result.address;
+                        churchLat = result.latLng.latitude;
+                        churchLong = result.latLng.longitude;
+                        _profileSettingsBloc.setLocationData([churchAddress, churchLat, churchLong]);
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            flex: 1,
+                            fit: FlexFit.tight,
+                            child: Text(
+                                churchAddress == null ? "Where is your church located?" : churchAddress,
+                                style: TextStyle(
+                                    fontFamily: 'Nirmala',
+                                    fontSize: 17.0,
+                                    color: Colors.black.withOpacity(churchAddress == null ? (.2) : 1),
+                                    fontWeight: FontWeight.normal
+                                )
+                            ),
+                          ),
+                          SizedBox(width: 10.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        SizedBox(height: 10.0),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                "MINISTRY BIO",
+                style: TextStyle(
+                    fontFamily: 'NirmalaB',
+                    fontSize: 12.0,
+                    color: Colors.black.withOpacity(.4),
+                    fontWeight: FontWeight.bold
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                  child: Icon(
+                    Icons.edit,
+                    size: 23,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Describe your ministry (Optional)",
+                        hintStyle: TextStyle(
+                            fontFamily: 'Nirmala',
+                            fontSize: 17.0,
+                            color: Colors.black.withOpacity(.2),
+                            fontWeight: FontWeight.normal
+                        )
+                    ),
+                    style: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 3,
+                    onChanged: (value){
+                      _profileSettingsBloc.setBio(value);
+                      aboutChurchString = value;
+                    },
+                    controller: aboutChurch,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                "WEBSITE",
+                style: TextStyle(
+                    fontFamily: 'NirmalaB',
+                    fontSize: 12.0,
+                    color: Colors.black.withOpacity(.4),
+                    fontWeight: FontWeight.bold
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Icon(
+                    Icons.vpn_lock,
+                    size: 23,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Enter Website Address",
+                        hintStyle: TextStyle(
+                            fontFamily: 'Nirmala',
+                            fontSize: 17.0,
+                            color: Colors.black.withOpacity(.2),
+                            fontWeight: FontWeight.normal
+                        )
+                    ),
+                    style: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setChurchWebsite(value);
+                        churchWebsiteString = value;
+                      });
+                    },
+                    controller: churchWebsite,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+                "PARENT CHURCH",
+                style: TextStyle(
+                    fontFamily: 'NirmalaB',
+                    fontSize: 12.0,
+                    color: Colors.black.withOpacity(.4),
+                    fontWeight: FontWeight.bold
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Image.asset(
+                    church_icon,
+                    width: 23.0,
+                    height: 23.0,
+                    color: Colors.black.withOpacity(.4),
+                  ),
+                ),
+                SizedBox(width: 10.0),
+                Flexible(
+                  child: TextField(
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Enter Parent Church",
+                        hintStyle: TextStyle(
+                            fontFamily: 'Nirmala',
+                            fontSize: 17.0,
+                            color: Colors.black.withOpacity(.2),
+                            fontWeight: FontWeight.normal
+                        )
+                    ),
+                    style: TextStyle(
+                        fontFamily: 'Nirmala',
+                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontWeight: FontWeight.normal
+                    ),
+                    cursorColor: Colors.black,
+                    cursorWidth: 1,
+                    maxLines: 1,
+                    onChanged: (value){
+                      setState(() {
+                        _profileSettingsBloc.setParentChurch(value);
+                        parentChurchString = value;
+                      });
+                    },
+                    controller: parentChurch,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.black.withOpacity(.1),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            )
+          ],
+        ),
+      ],
+    );
+  }
+
   _phone(){
     return CurvedScaffold(
       curveRadius: 25,
@@ -1615,7 +2505,6 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                                 child: TextField(
                                   textInputAction: TextInputAction.done,
                                   textCapitalization: TextCapitalization.sentences,
-                                  autofocus: true,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: "(678) 324-4041",

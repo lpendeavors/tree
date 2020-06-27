@@ -59,6 +59,10 @@ class UserEntity extends Equatable implements FirebaseModel {
   final bool isAdmin;
   final String businessAddress;
   final int status;
+  final String churchWebsite;
+  final String parentChurch;
+  final double churchLat;
+  final double churchLong;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -120,7 +124,11 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.messageNotification,
     this.isAdmin,
     this.businessAddress,
-    this.status
+    this.status,
+    this.churchWebsite,
+    this.parentChurch,
+    this.churchLat,
+    this.churchLong
   });
 
   String get id => this.documentId;
@@ -179,7 +187,11 @@ class UserEntity extends Equatable implements FirebaseModel {
       messageNotification,
       isAdmin,
       businessAddress,
-      status
+      status,
+      churchWebsite,
+      parentChurch,
+      churchLat,
+      churchLong
     ];
   }
 
