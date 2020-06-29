@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:treeapp/user_bloc/user_login_state.dart';
+import '../../user_bloc/user_bloc.dart';
 import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../util/validation_utils.dart';
 import '../../bloc/bloc_provider.dart';
@@ -47,12 +49,14 @@ class PhoneVerificationBloc implements BaseBloc {
   factory PhoneVerificationBloc({
     @required FirestoreUserRepository userRepository,
     @required String verificationId,
+    @required bool update,
   }) {
     ///
     /// Assert
     ///
     assert(userRepository != null, 'userRepository cannot be null');
     assert(verificationId != null, 'verificationId cannot be null');
+    assert(update != null, 'update cannot be null');
 
     ///
     /// Controllers
@@ -82,12 +86,17 @@ class PhoneVerificationBloc implements BaseBloc {
       .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
       .where((isValid) => isValid)
       .exhaustMap(
-        (_) => sendConfirmationCode(
+        (_) => update ? sendConfirmationCodeUpdate(
           verificationCodeController.value,
           verificationId,
           userRepository,
           isLoadingController,
-        ),
+        ) : sendConfirmationCode(
+          verificationCodeController.value,
+          verificationId,
+          userRepository,
+          isLoadingController,
+        )
       ).publish();
 
     ///
@@ -135,6 +144,38 @@ class PhoneVerificationBloc implements BaseBloc {
       yield PhoneVerificationSuccess(result);
     } catch (e) {
       yield _getVerificationError(e);
+    } finally {
+      isLoadingController.add(false);
+    }
+  }
+
+  static Stream<VerificationMessage> sendConfirmationCodeUpdate(
+      String code,
+      String id,
+      FirestoreUserRepository userRepository,
+      Sink<bool> isLoadingController,
+  ) async* {
+    print('[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
+    try {
+      isLoadingController.add(true);
+      var error;
+      await FirebaseAuth.instance.currentUser().then((value) async {
+        try{
+          await userRepository.updateUserPhone(
+            value,
+            code,
+            id,
+          );
+        }catch(e){
+          error = _getVerificationError(e);
+        }
+      });
+
+      if(error == null){
+        yield PhoneVerificationSuccess(null);
+      }else{
+        yield error;
+      }
     } finally {
       isLoadingController.add(false);
     }

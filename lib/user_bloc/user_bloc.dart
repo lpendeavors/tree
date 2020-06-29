@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../bloc/bloc_provider.dart';
 import '../data/user/firestore_user_repository.dart';
 import '../models/old/user_entity.dart';
@@ -82,6 +84,7 @@ class UserBloc implements BaseBloc {
         ? userEntity.churchInfo.churchName 
         : "",
       city: userEntity.city ?? "",
+      token: userEntity.pushNotificationToken,
     );
   }
 }

@@ -8,11 +8,13 @@ class ConnectionListItem extends StatefulWidget {
   final ConnectionItem connectionItem;
   final Function(ConnectionItem) onRemove;
   final Function(ConnectionItem) onConnect;
+  final bool isRequest;
 
   const ConnectionListItem({
     @required this.connectionItem,
     @required this.onRemove,
     @required this.onConnect,
+    @required this.isRequest,
   });
 
   @override
@@ -162,7 +164,9 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             onPressed: () => widget.onConnect(widget.connectionItem),
                             child: Center(
                               child: Text(
-                                'Connect',
+                                widget.isRequest
+                                ? 'Accept'
+                                : 'Connect',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.white,
@@ -180,8 +184,10 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             onPressed: () => widget.onRemove(widget.connectionItem),
                             child: Center(
                               child: Text(
-                                'Remove',
-                                style: TextStyle(
+                                widget.isRequest
+                                ? 'Decline'
+                                : 'Remove',
+                                style: TextStyle( 
                                   fontSize: 12,
                                 ),
                               ),

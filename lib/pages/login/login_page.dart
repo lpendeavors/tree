@@ -316,7 +316,7 @@ class _LoginPageState extends State<LoginPage> {
       _showSnackBar(s.phone_login_success);
       Navigator.of(context).pushNamed(
         '/phone_verification',
-        arguments: message.verificationId,
+        arguments: [message.verificationId, false],
       ).then(_returnedFromVerification);
     }
     if (message is LoginMessageError) {
