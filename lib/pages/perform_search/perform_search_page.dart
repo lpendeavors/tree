@@ -8,16 +8,16 @@ import 'package:treeapp/pages/perform_search/perform_search_bloc.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:treeapp/util/asset_utils.dart';
 
-enum SearchType { church, city, none, update, event }
+enum SearchType { CHURCH, USERS, EVENT }
 
 class PerformSearch extends StatefulWidget {
-  final String searchBy;
   final SearchType searchType;
+  final String searchFilter;
   final FirestoreUserRepository userRepository;
 
   const PerformSearch({Key key,
-    this.searchBy = "",
-    this.searchType = SearchType.none,
+    this.searchType = SearchType.USERS,
+    this.searchFilter,
     @required this.userRepository
   }) : super(key: key);
 
@@ -37,7 +37,10 @@ class _PerformSearchState extends State<PerformSearch> {
   void initState() {
     super.initState();
 
-    _searchBloc = SearchBloc(userRepository: widget.userRepository);
+    _searchBloc = SearchBloc(
+      userRepository: widget.userRepository,
+      searchType: widget.searchType
+    );
 
     searchController.addListener(listener);
     scrollController.addListener(() {
@@ -157,13 +160,16 @@ class _PerformSearchState extends State<PerformSearch> {
         ),
         preferredSize: Size.fromHeight(10)
       ),
-      bottom: PreferredSize(
+      /*bottom: widget.searchType == SearchType.USERS ? PreferredSize(
         child: Container(
           color: Colors.white,
           child: filterLayout(),
         ),
         preferredSize: Size.fromHeight(45)
-      )
+      ) : PreferredSize(
+        child: Container(),
+        preferredSize: Size.fromHeight(0),
+      )*/
     );
   }
 
@@ -182,28 +188,28 @@ class _PerformSearchState extends State<PerformSearch> {
                   Navigator.pushReplacementNamed(
                     context,
                     '/search',
-                    arguments: "CITY"
+                    arguments: {'searchType': widget.searchType, 'filter': "CITY"}
                   );
                 }),
                 filterItem(Icons.home, 2, "STATE", onTap: () {
                   Navigator.pushReplacementNamed(
                     context,
                     '/search',
-                    arguments: "STATE"
+                    arguments: {'searchType': widget.searchType, 'filter': "STATE"}
                   );
                 }),
                 filterItem(church_icon, 3, "DENOMINATION", iconIsAsset: true, onTap: () {
                   Navigator.pushReplacementNamed(
                     context,
                     '/search',
-                    arguments: "CHURCH_DENOMINATION"
+                    arguments: {'searchType': widget.searchType, 'filter': "DENOMINATION"}
                   );
                 }),
                 filterItem(Icons.favorite, 4, "RELATIONSHIP", onTap: () {
                   Navigator.pushReplacementNamed(
                     context,
                     '/search',
-                    arguments: "RELATIONSHIP_STATUS"
+                    arguments: {'searchType': widget.searchType, 'filter': "RELATIONSHIP"}
                   );
                 }),
               ],
@@ -347,7 +353,7 @@ class _PerformSearchState extends State<PerformSearch> {
                     ),
                     SizedBox(height: 10.0),
                     Text(
-                      "User not found",
+                      "No results found",
                       style: TextStyle(
                           fontFamily: 'NirmalaB',
                           fontWeight: FontWeight.bold,
@@ -388,7 +394,14 @@ class _PerformSearchState extends State<PerformSearch> {
 
                   return InkWell(
                     onTap: (){
-                      Navigator.pop(context, item);
+                      if(widget.searchType == SearchType.CHURCH){
+                        Navigator.pop(context, item);
+                      }else{
+                        Navigator.of(context).pushNamed(
+                          '/profile',
+                          arguments: item.uid,
+                        );
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.all(15),

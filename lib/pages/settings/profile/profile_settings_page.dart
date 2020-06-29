@@ -9,6 +9,7 @@ import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/pages/login/email_login_bloc.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:treeapp/widgets/modals/list_dialog.dart';
 import '../../../pages/login/login_state.dart';
@@ -1265,7 +1266,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
                               Flexible(
                                 child: InkWell(
                                   onTap: () {
-                                    Navigator.of(context).pushNamed('/search', arguments: "church").then((result){
+                                    Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.CHURCH}).then((result){
                                       var church = result as UserEntity;
                                       _profileSettingsBloc.setChurch(church);
                                       setState(() {

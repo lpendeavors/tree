@@ -139,7 +139,7 @@ class ExploreBloc implements BaseBloc {
         requestRepository.requestsByUser(uid: loginState.uid),
         (churchUsers, cityUsers, publicFigures, newestUsers, posts, requests) {
           var filiteredPosts = (posts as List<PostEntity>).where((p) {
-            return p.postData != null;
+            return p.postData != null && p.postData.length > 0;
           }).toList();
 
           filiteredPosts.sort((a, b) => b.time.compareTo(a.time));
@@ -197,7 +197,7 @@ class ExploreBloc implements BaseBloc {
     return entities.map((entity) {
       return PostItem(
         id: entity.documentId,
-        image: _getPostMedia(entity),
+        image: _getPostMedia(entity) ?? "",
         type: _getPostType(entity),
       );
     }).toList();

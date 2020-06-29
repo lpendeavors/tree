@@ -31,7 +31,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     tokenID: json['tokenID'] as String,
     treeTrophies: (json['treeTrophies'] as List)
         ?.map((e) =>
-            e == null ? null : Trophy.fromJson(e as Map<String, dynamic>))
+    e == null ? null : Trophy.fromJson(e as Map<String, dynamic>))
         ?.toList(),
     trophyCreated: json['trophyCreated'] as bool,
     uid: json['uid'] as String,
@@ -39,19 +39,19 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     visibility: json['visibility'] as int,
     myChatsList13: (json['myChatsList13'] as List)
         ?.map((e) =>
-            e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
+    e == null ? null : ChatData.fromJson(e as Map<String, dynamic>))
         ?.toList(),
     receivedRequests:
-        (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
+    (json['receivedRequests'] as List)?.map((e) => e as String)?.toList(),
     sentRequests:
-        (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
+    (json['sentRequests'] as List)?.map((e) => e as String)?.toList(),
     churchInfo: json['churchInfo'] == null
         ? null
         : ChurchInfo.fromJson(json['churchInfo'] as Map<String, dynamic>),
     churchName: json['churchName'] as String,
     isVerified: json['isVerified'] as bool,
     connections:
-        (json['connections'] as List)?.map((e) => e as String)?.toList(),
+    (json['connections'] as List)?.map((e) => e as String)?.toList(),
     shares: (json['shares'] as List)?.map((e) => e as String)?.toList(),
     type: json['type'] as int,
     churchDenomination: json['churchDenomination'] as String,
@@ -103,7 +103,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'timeOnline': instance.timeOnline,
       'timeUpdated': instance.timeUpdated,
       'myChatsList13':
-          instance.myChatsList13?.map((e) => e?.toJson())?.toList(),
+      instance.myChatsList13?.map((e) => e?.toJson())?.toList(),
       'receivedRequests': instance.receivedRequests,
       'sentRequests': instance.sentRequests,
       'churchInfo': instance.churchInfo?.toJson(),
