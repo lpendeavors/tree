@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import './app/app_locale_bloc.dart';
 import './user_bloc/user_bloc.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
   final firestore = Firestore.instance;
   final crashlytics = Crashlytics.instance;
   final firebaseAuth = FirebaseAuth.instance;
+  final firebaseStorage = FirebaseStorage.instance;
   final sharedPrefUtil = SharedPrefUtil.instance;
 
   ///
@@ -42,9 +44,9 @@ Future<void> main() async {
   final postRepository = FirestorePostRepositoryImpl(firestore);
   final roomRepository = FirestoreRoomRepositoryImpl(firestore);
   final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
-  final eventRepository = FirestoreEventRepositoryImpl(firestore);
+  final eventRepository = FirestoreEventRepositoryImpl(firestore, firebaseStorage);
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
-  final groupRepository = FirestoreGroupRepositoryImpl(firestore);
+  final groupRepository = FirestoreGroupRepositoryImpl(firestore);  
   final commentRepository = FirestoreCommentRepositoryImpl(firestore);
   final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);

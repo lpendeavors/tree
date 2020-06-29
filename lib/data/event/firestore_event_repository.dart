@@ -10,8 +10,15 @@ abstract class FirestoreEventRepository {
 
   Future<Map<String, String>> save(
     String ownerId,
+    String ownerEmail,
+    String ownerName,
+    String ownerImage,
+    String token,
+    bool isChurch,
     String id,
     String title,
+    String description,
+    int type,
     DateTime startDate,
     DateTime startTime,
     DateTime endDate,
@@ -20,7 +27,11 @@ abstract class FirestoreEventRepository {
     String webAddress,
     double cost,
     String venue,
+    double latitude,
+    double longitude,
     double budget,
     bool isSponsored,
+    bool byAdmin,
+    bool isVerified,
   );
 }

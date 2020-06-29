@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-
 import '../bloc/bloc_provider.dart';
 import '../data/user/firestore_user_repository.dart';
 import '../models/old/user_entity.dart';
@@ -76,7 +75,7 @@ class UserBloc implements BaseBloc {
       fullName: "${userEntity.firstName} ${userEntity.lastName}",
       email: userEntity.email,
       uid: userEntity.id,
-      isAdmin: userEntity.isAdmin,
+      isAdmin: userEntity.isAdmin ?? false,
       chatList: userEntity.myChatsList13 ?? [],
       image: userEntity.image,
       connections: userEntity.connections ?? [],
@@ -85,6 +84,8 @@ class UserBloc implements BaseBloc {
         : "",
       city: userEntity.city ?? "",
       token: userEntity.pushNotificationToken,
+      isChurch: userEntity.isChurch ?? false,
+      isVerified: userEntity.isVerified ?? false,
     );
   }
 }

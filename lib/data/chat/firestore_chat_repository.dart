@@ -16,4 +16,20 @@ abstract class FirestoreChatRepository {
   });
 
   Stream<List<ChatEntity>> getByGroup(String roomId);
+
+  Future<Map<String,String>> send(
+    String message,
+    int messageType,
+    bool byAdmin,
+    String chatId,
+    String ownerName,
+    String ownerEmail,
+    String ownerImage,
+    bool isVerified,
+    bool isChurch,
+    bool isRoom,
+    List<String> parties,
+    String token,
+    bool showDate,
+  );
 }

@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tuple/tuple.dart';
 import '../../util/asset_utils.dart';
 import '../../util/event_utils.dart';
 import '../../util/permission_utils.dart';
@@ -617,7 +618,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           Divider(),
                           TextFormField(
                             onChanged: _eventEditBloc.costChanged,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -666,27 +669,64 @@ class _EventEditPageState extends State<EventEditPage> {
                             ],
                           ),
                           Divider(),
-                          ListTile(
-                            onTap: () async {
-                              Position location = await Geolocator().getCurrentPosition(
-                                desiredAccuracy: LocationAccuracy.high,
-                              );
+                          StreamBuilder(
+                            stream: _eventEditBloc.geoLoading$,
+                            initialData: _eventEditBloc.geoLoading$.value,
+                            builder: (context, snapshot) {
+                              var loading = snapshot.data;
 
-                              LocationResult result = await showLocationPicker(
-                                context, 
-                                'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ',
-                                initialCenter: LatLng(location.latitude, location.longitude),
+                              if (loading) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              return ListTile(
+                              onTap: () async {
+                                _eventEditBloc.geoLoadingChanged(true);
+
+                                Position location = await Geolocator().getCurrentPosition(
+                                  desiredAccuracy: LocationAccuracy.high,
+                                );
+
+                                LocationResult result = await showLocationPicker(
+                                  context, 
+                                  'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ',
+                                  initialCenter: LatLng(location.latitude, location.longitude),
+                                );
+
+                                _eventEditBloc.geoLoadingChanged(false);
+                                
+                                if (result != null) {
+                                  _eventEditBloc.venueChanged(result.address);
+                                  _eventEditBloc.venueGeoChanged(
+                                    Tuple2(
+                                      result.latLng.latitude, 
+                                        result.latLng.longitude,
+                                      ),
+                                    );
+                                  }
+                                },
+                                title: StreamBuilder(
+                                  stream: _eventEditBloc.venue$,
+                                  initialData: _eventEditBloc.venue$.value,
+                                  builder: (context, snapshot) {
+                                    var venue = snapshot.data ?? "";
+                                    return Text(
+                                      venue.isEmpty
+                                        ? s.event_venue_hint
+                                        : venue,
+                                      style: TextStyle(
+                                        color: venue.isEmpty 
+                                          ? Colors.grey
+                                          : null,
+                                        fontSize: 16,
+                                      ),
+                                    );
+                                  }
+                                ),
                               );
-                              
-                              print(result.toString());
                             },
-                            title: Text(
-                              s.event_venue_hint,
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                            ),
                           ),
                         ],
                       ),
@@ -738,48 +778,48 @@ class _EventEditPageState extends State<EventEditPage> {
                             ),
                           ),
                           SizedBox(height: 10),
-                          StreamBuilder<String>(
-                            stream: _eventEditBloc.cost$,
-                            initialData: _eventEditBloc.cost$.value,
-                            builder: (context, snapshot) {
-                              if ((snapshot.data ?? "").isEmpty) {
-                                return Container();
-                              } else {
-                                return Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Text(
-                                        s.event_estimate_label,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black.withOpacity(0.7),
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      Row(
-                                        children: <Widget>[
-                                          Text(
-                                            'sponsor reach',
-                                            style: TextStyle(
-                                              fontSize: 30,
-                                              color: Colors.blue,
-                                            ),
-                                          ),
-                                          SizedBox(width: 10),
-                                          Image.asset(friends, height: 25),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            },
-                          ),
+                          // StreamBuilder<String>(
+                          //   stream: _eventEditBloc.budget$,
+                          //   initialData: _eventEditBloc.budget$.value,
+                          //   builder: (context, snapshot) {
+                          //     if ((snapshot.data ?? "").isEmpty) {
+                          //       return Container();
+                          //     } else {
+                          //       return Container(
+                          //         padding: EdgeInsets.all(8),
+                          //         decoration: BoxDecoration(
+                          //           color: Colors.blue.withOpacity(0.1),
+                          //           borderRadius: BorderRadius.circular(10),
+                          //         ),
+                          //         child: Column(
+                          //           children: <Widget>[
+                          //             Text(
+                          //               s.event_estimate_label,
+                          //               style: TextStyle(
+                          //                 fontSize: 12,
+                          //                 color: Colors.black.withOpacity(0.7),
+                          //               ),
+                          //             ),
+                          //             SizedBox(height: 10),
+                          //             Row(
+                          //               children: <Widget>[
+                          //                 Text(
+                          //                   'sponsor reach',
+                          //                   style: TextStyle(
+                          //                     fontSize: 30,
+                          //                     color: Colors.blue,
+                          //                   ),
+                          //                 ),
+                          //                 SizedBox(width: 10),
+                          //                 Image.asset(friends, height: 25),
+                          //               ],
+                          //             ),
+                          //           ],
+                          //         ),
+                          //       );
+                          //     }
+                          //   },
+                          // ),
                           StreamBuilder<bool>(
                             stream: _eventEditBloc.isSponsored$,
                             initialData: _eventEditBloc.isSponsored$.value,
@@ -816,17 +856,19 @@ class _EventEditPageState extends State<EventEditPage> {
                                     ),
                                     Divider(),
                                     StreamBuilder<String>(
-                                      stream: _eventEditBloc.cost$,
-                                      initialData: _eventEditBloc.cost$.value,
+                                      stream: _eventEditBloc.budget$,
+                                      initialData: _eventEditBloc.budget$.value,
                                       builder: (context, snapshot) {
                                         var _cost = data.eventDetails == null
-                                          ? _eventEditBloc.cost$.value
-                                          : data.eventDetails.eventCost;
+                                          ? _eventEditBloc.budget$.value
+                                          : data.eventDetails.budget;
                                         
                                         return TextFormField(
                                           initialValue: _cost,
                                           onChanged: _eventEditBloc.budgetChanged,
-                                          keyboardType: TextInputType.number,
+                                          keyboardType: TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
                                           textInputAction: TextInputAction.done,
                                           style: TextStyle(
                                             fontSize: 18,

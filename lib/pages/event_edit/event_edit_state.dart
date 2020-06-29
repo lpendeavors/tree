@@ -139,6 +139,7 @@ class EventEditItem extends Equatable {
   final String venue;
   final List<EventMediaItem> media;
   final bool isSponsored;
+  final double budget;
 
   const EventEditItem({
     @required this.id,
@@ -151,6 +152,7 @@ class EventEditItem extends Equatable {
     @required this.venue,
     @required this.media,
     @required this.isSponsored,
+    @required this.budget,
   });
 
   @override
@@ -165,6 +167,7 @@ class EventEditItem extends Equatable {
     venue,
     media,
     isSponsored,
+    budget,
   ];
 
   @override

@@ -64,4 +64,35 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository{
       .snapshots()
       .map(_toEntities);
   }
+
+  @override
+  Future<Map<String, String>> send(
+    String message,
+    int messageType,
+    bool byAdmin,
+    String chatId,
+    String ownerName,
+    String ownerEmail,
+    String ownerImage,
+    bool isVerified,
+    bool isChurch,
+    bool isRoom,
+    List<String> parties,
+    String token,
+    bool showDate,
+  ) async {
+    print(message);
+    print(messageType);
+    print(byAdmin);
+    print(chatId);
+    print(ownerName);
+    print(ownerEmail);
+    print(ownerImage);
+    print(isVerified);
+    print(isChurch);
+    print(isRoom);
+    print(parties);
+    print(token);
+    print(showDate);
+  }
 }

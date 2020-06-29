@@ -129,7 +129,7 @@ class CreateGroupBloc implements BaseBloc {
 
   ) async* {
     try {
-      
+      yield GroupCreateSuccess('groupId');
     } catch (e) {
       yield GroupCreateError(e);
     }

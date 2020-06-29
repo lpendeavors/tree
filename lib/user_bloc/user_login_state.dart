@@ -18,6 +18,8 @@ class LoggedInUser extends Equatable implements LoginState {
   final String church;
   final String city;
   final String token;
+  final bool isChurch;
+  final bool isVerified;
 
   const LoggedInUser({
     @required this.uid,
@@ -30,6 +32,8 @@ class LoggedInUser extends Equatable implements LoginState {
     @required this.church,
     @required this.city,
     @required this.token,
+    @required this.isChurch,
+    @required this.isVerified,
   });
 
   @override
@@ -44,6 +48,8 @@ class LoggedInUser extends Equatable implements LoginState {
       church,
       city,
       token,
+      isChurch,
+      isVerified,
     ];
   }
 

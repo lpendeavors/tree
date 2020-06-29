@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
 import '../../models/old/event_entity.dart';
@@ -80,14 +81,17 @@ class EventEditBloc implements BaseBloc {
   final void Function(String) webAddressChanged;
   final void Function(String) costChanged;
   final void Function(String) venueChanged;
+  final void Function(Tuple2<double, double>) venueGeoChanged; 
   final void Function(String) budgetChanged;
   final void Function(bool) isSponsoredChanged;
+  final void Function(bool) geoLoadingChanged;
 
   ///
   /// Output streams
   ///
   final ValueStream<EventEditState> eventEditState$;
   final Stream<EventTitleError> titleError$;
+  final Stream<EventDescriptionError> descriptionError$;
   final Stream<EventStartDateError> startDateError$;
   final Stream<EventStartTimeError> startTimeError$;
   final Stream<EventEndDateError> endDateError$;
@@ -99,6 +103,7 @@ class EventEditBloc implements BaseBloc {
   final Stream<EventBudgetError> budgetError$;
   final Stream<EventEditedMessage> message$;
   final ValueStream<bool> isLoading$;
+  final ValueStream<bool> geoLoading$;
 
   final ValueStream<DateTime> startDate$;
   final ValueStream<DateTime> startTime$;
@@ -107,6 +112,8 @@ class EventEditBloc implements BaseBloc {
   final ValueStream<bool> isSponsored$;
   final ValueStream<List<String>> images$;
   final ValueStream<String> cost$;
+  final ValueStream<String> venue$;
+  final ValueStream<String> budget$;
 
   ///
   /// Clean up
@@ -125,8 +132,10 @@ class EventEditBloc implements BaseBloc {
     @required this.webAddressChanged,
     @required this.costChanged,
     @required this.venueChanged,
+    @required this.venueGeoChanged,
     @required this.budgetChanged,
     @required this.isSponsoredChanged,
+    @required this.geoLoadingChanged,
     @required this.startDate$,
     @required this.startTime$,
     @required this.endDate$,
@@ -134,8 +143,11 @@ class EventEditBloc implements BaseBloc {
     @required this.isSponsored$,
     @required this.images$,
     @required this.cost$,
+    @required this.venue$,
+    @required this.budget$,
     @required this.eventEditState$,
     @required this.titleError$,
+    @required this.descriptionError$,
     @required this.startDateError$,
     @required this.startTimeError$,
     @required this.endDateError$,
@@ -147,6 +159,7 @@ class EventEditBloc implements BaseBloc {
     @required this.budgetError$,
     @required this.message$,
     @required this.isLoading$,
+    @required this.geoLoading$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -179,10 +192,12 @@ class EventEditBloc implements BaseBloc {
     final webAddressSubject = BehaviorSubject<String>.seeded('');
     final costSubject = BehaviorSubject<String>.seeded(null);
     final venueSubject = BehaviorSubject<String>.seeded('');
+    final venueGeoSubject = BehaviorSubject<Tuple2<double, double>>.seeded(null);
     final budgetSubject = BehaviorSubject<String>.seeded(null);
     final isSponsoredSubject = BehaviorSubject<bool>.seeded(false);
     final saveEventSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
+    final geoLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     ///
     /// Streams
@@ -255,10 +270,10 @@ class EventEditBloc implements BaseBloc {
         endDateError$,
         endTimeError$,
         imageError$,
-        webAddressError$,
-        costError$,
+        //webAddressError$,
+        //costError$,
         venueError$,
-        budgetError$,
+        //budgetError$,
       ],
       (allError) => allError.every((error) {
         print(error);
@@ -275,6 +290,8 @@ class EventEditBloc implements BaseBloc {
           userBloc,
           eventRepository,
           titleSubject.value,
+          descriptionSubject.value,
+          eventType,
           startDateSubject.value,
           startTimeSubject.value,
           endDateSubject.value,
@@ -283,6 +300,7 @@ class EventEditBloc implements BaseBloc {
           webAddressSubject.value,
           double.parse(costSubject.value),
           venueSubject.value,
+          venueGeoSubject.value,
           double.parse(budgetSubject.value),
           isSponsoredSubject.value,
           isLoadingSubject,
@@ -316,6 +334,7 @@ class EventEditBloc implements BaseBloc {
       venueSubject,
       budgetSubject,
       isLoadingSubject,
+      geoLoadingSubject,
     ];
 
     return EventEditBloc._(
@@ -329,8 +348,10 @@ class EventEditBloc implements BaseBloc {
       webAddressChanged: webAddressSubject.add,
       costChanged: costSubject.add,
       venueChanged: venueSubject.add,
+      venueGeoChanged: venueGeoSubject.add,
       budgetChanged: budgetSubject.add,
       isSponsoredChanged: isSponsoredSubject.add,
+      geoLoadingChanged: geoLoadingSubject.add,
       startDate$: startDateSubject.stream,
       startTime$: startTimeSubject.stream,
       endDate$: endDateSubject.stream,
@@ -338,7 +359,10 @@ class EventEditBloc implements BaseBloc {
       isSponsored$: isSponsoredSubject.stream,
       images$: imagesSubject.stream,
       cost$: costSubject.stream,
+      venue$: venueSubject.stream,
+      budget$: budgetSubject.stream,
       titleError$: titleError$,
+      descriptionError$: descriptionError$,
       startDateError$: startDateError$,
       startTimeError$: startTimeError$,
       endDateError$: endDateError$,
@@ -350,6 +374,7 @@ class EventEditBloc implements BaseBloc {
       budgetError$: budgetError$,
       eventEditState$: eventEditState$,
       isLoading$: isLoadingSubject,
+      geoLoading$: geoLoadingSubject,
       saveEvent: () => saveEventSubject.add(null),
       message$: message$,
       dispose: () async {
@@ -425,6 +450,7 @@ class EventEditBloc implements BaseBloc {
       eventCost: entity.eventPrice,
       venue: entity.location,
       isSponsored: entity.isSponsored,
+      budget: entity.sponsorFee,
     );
   }
 
@@ -458,6 +484,8 @@ class EventEditBloc implements BaseBloc {
     UserBloc userBloc,
     FirestoreEventRepository eventRepository,
     String eventTitle,
+    String eventDescription,
+    int eventType,
     DateTime startDate,
     DateTime startTime,
     DateTime endDate,
@@ -466,6 +494,7 @@ class EventEditBloc implements BaseBloc {
     String webAddress,
     double cost,
     String venue,
+    Tuple2<double, double> venueGeo,
     double budget,
     bool isSponsored,
     Sink<bool> isLoading,
@@ -477,8 +506,15 @@ class EventEditBloc implements BaseBloc {
       try {
         await eventRepository.save(
           loginState.uid,
+          loginState.email,
+          loginState.fullName,
+          loginState.image,
+          loginState.token,
+          loginState.isChurch,
           eventId,
           eventTitle,
+          eventDescription,
+          eventType,
           startDate,
           startTime,
           endDate,
@@ -487,8 +523,12 @@ class EventEditBloc implements BaseBloc {
           webAddress,
           cost,
           venue,
+          venueGeo.item1,
+          venueGeo.item2,
           budget,
           isSponsored,
+          loginState.isAdmin,
+          loginState.isVerified,
         );
         yield EventEditedMessageSuccess(eventTitle);
       } catch (e) {

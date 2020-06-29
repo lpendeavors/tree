@@ -12,7 +12,8 @@ import 'package:equatable/equatable.dart';
 abstract class GroupCreateMessage {}
 
 class GroupCreateSuccess implements GroupCreateMessage {
-  const GroupCreateSuccess();
+  final String groupId;
+  const GroupCreateSuccess(this.groupId);
 }
 
 class GroupCreateError implements GroupCreateMessage {

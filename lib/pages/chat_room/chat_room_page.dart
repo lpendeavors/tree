@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cache_image/cache_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../widgets/empty_list_view.dart';
 import '../../widgets/image_holder.dart';
@@ -271,10 +272,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               child: Container(
                                 margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
                                 child: Text(
-                                  data.messages[index].sentDate.toString(),
+                                  '${DateFormat.MMM().add_d().add_jm().format(data.messages[index].sentDate)}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.bold,
                                     color: Colors.black.withOpacity(0.5),
                                   ),
                                 ),
@@ -328,11 +328,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             maxHeight: 120,
                           ),
                           child: TextField(
-                            onChanged: (text) {
-                              // TODO: set message in BLoC
-
-                              print(text);
-                            },
+                            onChanged: _chatRoomBloc.messageChanged,
                             cursorWidth: 1,
                             cursorColor: Colors.black,
                             keyboardType: TextInputType.multiline,
@@ -383,9 +379,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         width: 50,
                         child: FlatButton(
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          onPressed: () {
-                            // TODO: send message
-                          },
+                          onPressed: _chatRoomBloc.sendMessage,
                           child: Icon(
                             Icons.send,
                             size: 20,
