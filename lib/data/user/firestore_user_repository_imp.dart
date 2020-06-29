@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
@@ -59,7 +61,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     var result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
     var firebaseUser = result.user;
 
-    await _updateUserData(
+    await updateUserData(
       firebaseUser.uid,
       <String, dynamic>{
         'joined': FieldValue.serverTimestamp(),
@@ -86,11 +88,11 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
 
 
-    await _updateUserData(
+    await updateUserData(
       user.uid,
       UserEntity.createWith({
         'joined': FieldValue.serverTimestamp(),
-        'phone': user.phoneNumber,
+        'phoneNo': user.phoneNumber,
         'email': email,
         'firstName': firstName,
         'lastName': lastName,
@@ -103,7 +105,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     print('[USER_REPO] registerWithPhone firebaseUser=$user');
   }
 
-  Future<void> _updateUserData(String uid, [Map<String, dynamic> addition]) {
+  @override
+  Future<void> updateUserData(String uid, [Map<String, dynamic> addition]) {
     return _firestore.document('userBase/$uid').setData(addition, merge: true);
   }
 
@@ -309,5 +312,35 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       .where('isVerified', isEqualTo: true)
       .snapshots()
       .map(_toEntities);
+  }
+
+  @override
+  Future<void> updateUserPhone(
+      FirebaseUser user,
+      String smsCode,
+      String verificationId
+  ) async {
+    var credential = PhoneAuthProvider.getCredential(verificationId: verificationId, smsCode: smsCode);
+    return await user.updatePhoneNumberCredential(credential);
+  }
+
+  @override
+  Future<List<UserEntity>> runSearchQuery(String query, SearchType searchType) {
+    if(searchType == SearchType.CHURCH){
+      return _firestore
+        .collection('userBase')
+        .where('searchData', arrayContains: query)
+        .where('isChurch', isEqualTo: true)
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
+    }else if(searchType == SearchType.USERS){
+      return _firestore
+        .collection('userBase')
+        .where('searchData', arrayContains: query)
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
+    }
   }
 }

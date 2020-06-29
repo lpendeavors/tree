@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/util/asset_utils.dart';
 import '../../models/old/church_info.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
@@ -58,21 +57,24 @@ class UserEntity extends Equatable implements FirebaseModel {
   final bool groupNotification;
   final bool messageNotification;
   final bool isAdmin;
+  final String businessAddress;
+  final int status;
+  final String churchWebsite;
+  final String parentChurch;
+  final double churchLat;
+  final double churchLong;
 
-  @JsonKey(
-    fromJson: timestampFromJson,
-    toJson: timestampToJson
-  )
-  final Timestamp createdAt;
-  @JsonKey(
-    fromJson: timestampFromJson,
-    toJson: timestampToJson
-  )
-  final Timestamp updatedAt;
   @JsonKey(
       fromJson: timestampFromJson,
       toJson: timestampToJson
   )
+  final Timestamp createdAt;
+
+  @JsonKey(
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
+  )
+  final Timestamp updatedAt;
 
   const UserEntity({
     this.documentId,
@@ -120,13 +122,19 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.chatOnlineStatus,
     this.groupNotification,
     this.messageNotification,
-    this.isAdmin
+    this.isAdmin,
+    this.businessAddress,
+    this.status,
+    this.churchWebsite,
+    this.parentChurch,
+    this.churchLat,
+    this.churchLong
   });
 
   String get id => this.documentId;
 
   factory UserEntity.fromDocumentSnapshot(DocumentSnapshot doc) =>
-    _$UserEntityFromJson(withId(doc));
+      _$UserEntityFromJson(withId(doc));
 
   Map<String, dynamic> toJson() => _$UserEntityToJson(this);
 
@@ -177,7 +185,13 @@ class UserEntity extends Equatable implements FirebaseModel {
       chatOnlineStatus,
       groupNotification,
       messageNotification,
-      isAdmin
+      isAdmin,
+      businessAddress,
+      status,
+      churchWebsite,
+      parentChurch,
+      churchLat,
+      churchLong
     ];
   }
 

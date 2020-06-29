@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
-import 'package:image_pickers/CropConfig.dart';
-import 'package:image_pickers/UIConfig.dart';
-import 'package:image_pickers/image_pickers.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import '../../util/permission_utils.dart';
 import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
 import '../../widgets/modals/disconnect_modal.dart';
@@ -46,8 +46,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _profileBloc = widget.initProfileBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -57,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _profileBloc.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,27 +65,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         child: Column(
           children: <Widget>[
             StreamBuilder<ProfileState>(
-              stream: _profileBloc.profileState$,
-              initialData: _profileBloc.profileState$.value,
-              builder: (context, snapshot) {
-                var data = snapshot.data;
+                stream: _profileBloc.profileState$,
+                initialData: _profileBloc.profileState$.value,
+                builder: (context, snapshot) {
+                  var data = snapshot.data;
 
-                if(!data.isLoading){
-                  return Column(
-                    children: <Widget>[
-                      _appBar(data),
-                      _profile(data),
-                    ],
-                  );
-                } else {
-                  return Container(
-                    height: 800,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
+                  if(!data.isLoading){
+                    return Column(
+                      children: <Widget>[
+                        _appBar(data),
+                        _profile(data),
+                      ],
+                    );
+                  } else {
+                    return Container(
+                      height: 800,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
                 }
-              }
             ),
             StreamBuilder<RecentFeedState>(
                 stream: _profileBloc.recentFeedState$,
@@ -107,35 +107,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ],
         ),
       ),
-        // print(data.profile);
+      // print(data.profile);
 
-        // if (data.isLoading) {
-        //   return Center(
-        //     child: CircularProgressIndicator(),
-        //   );
-        // }
+      // if (data.isLoading) {
+      //   return Center(
+      //     child: CircularProgressIndicator(),
+      //   );
+      // }
 
-        // if (data.error != null) {
-        //   print(data.error);
-        //   return Center(
-        //     child: Text(
-        //       S.of(context).error_occurred,
-        //     ),
-        //   );
-        // }
+      // if (data.error != null) {
+      //   print(data.error);
+      //   return Center(
+      //     child: Text(
+      //       S.of(context).error_occurred,
+      //     ),
+      //   );
+      // }
 
-        // return Scaffold(
-        //   body: SingleChildScrollView(
-        //     physics: BouncingScrollPhysics(),
-        //     child: Column(
-        //       children: <Widget>[
-        //         _appBar(data),
-        //         _profile(data),
-        //         _recentPostList(data)
-        //       ],
-        //     ),
-        //   ),
-        // );
+      // return Scaffold(
+      //   body: SingleChildScrollView(
+      //     physics: BouncingScrollPhysics(),
+      //     child: Column(
+      //       children: <Widget>[
+      //         _appBar(data),
+      //         _profile(data),
+      //         _recentPostList(data)
+      //       ],
+      //     ),
+      //   ),
+      // );
       // }
     );
   }
@@ -146,22 +146,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         InkWell(
           onTap: () {
             showDialog(
-              context: context,
-              builder: (BuildContext context){
-                return ProfileImageModal(
-                  options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
-                );
-              }
-            ).then((result){
+                context: context,
+                builder: (BuildContext context){
+                  return ProfileImageModal(
+                      options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
+                  );
+                }
+            ).then((result) async {
               if (result == "Add Photo" || result == "Update Picture") {
-                ImagePickers.pickerPaths(
-                  galleryMode: GalleryMode.image,
-                  selectCount: 1,
-                  showCamera: true,
-                  compressSize: 300,
-                  uiConfig: UIConfig(uiThemeColor: Theme.of(context).primaryColor),
-                  cropConfig: CropConfig(enableCrop: true, width: 10, height: 10)
-                ).then((media) => media[0].path).then((path) => File(path)).then((file) => _profileBloc.setPhoto(file));
+                bool hasPermission = await checkMediaPermission();
+                if (hasPermission) {
+                  var file = await ImagePicker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  var cropped = await ImageCropper.cropImage(
+                    sourcePath: file.path,
+                  );
+                  _profileBloc.setPhoto(cropped);
+                }
                 return;
               }
 
@@ -187,11 +189,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   height: 300,
                   color: Theme.of(context).primaryColor,
                   child: Center(
-                    child: Icon(
-                      Icons.person,
-                      size: 100,
-                      color: Colors.white70,
-                    )
+                      child: Icon(
+                        Icons.person,
+                        size: 100,
+                        color: Colors.white70,
+                      )
                   ),
                 ),
                 if (data.profile.photo != null) ...[
@@ -220,18 +222,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-                if (data.profile.photo != null) ...[
-                  Align(
-                    alignment: Alignment.center,
-                    child: Image(
-                      image: CacheImage(data.profile.photo),
-                      height: 300,
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ],
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -267,12 +257,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               ),
                               onPressed: () {
                                 showDialog(
-                                  context: context,
-                                  builder: (BuildContext context){
-                                    return ProfileImageModal(
-                                      options: ["Report User", "Block User"]
-                                    );
-                                  }
+                                    context: context,
+                                    builder: (BuildContext context){
+                                      return ProfileImageModal(
+                                          options: ["Report User", "Block User"]
+                                      );
+                                    }
                                 ).then((value){
                                   //broken in original app too
                                 });
@@ -299,10 +289,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 23,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'NirmalaB'
+                                            color: Colors.white,
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'NirmalaB'
                                         ),
                                       ),
                                     ),
@@ -387,35 +377,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
         if(!data.profile.myProfile && data.profile.isFriend)
           RaisedButton(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(
-                      Icons.chat_bubble,
-                      color: Colors.white,
-                      size: 15,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      "Send Direct Message",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
-                Icon(
-                  Icons.navigate_next,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 15,
-                ),
-              ],
-            ),
-            color: Theme.of(context).primaryColor,
-            onPressed: () {
-              //TODO: Action
-            }
+              padding: EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.chat_bubble,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        "Send Direct Message",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
+                  Icon(
+                    Icons.navigate_next,
+                    color: Colors.white.withOpacity(0.7),
+                    size: 15,
+                  ),
+                ],
+              ),
+              color: Theme.of(context).primaryColor,
+              onPressed: () {
+                //TODO: Action
+              }
           ),
         Container(
           child: Column(
@@ -430,13 +420,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          "Achievements",
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NirmalaB'
-                          )
+                            "Achievements",
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NirmalaB'
+                            )
                         ),
                         Text(
                           "${data.profile.trophies.where((element) => element.trophyCount.length == element.trophyUnlockAt).length} Unlocked",
@@ -464,10 +454,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
               GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.3,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5
+                    crossAxisCount: 4,
+                    childAspectRatio: 1.3,
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 5
                 ),
                 itemBuilder: (c, index) {
                   Trophy trophy = data.profile.trophies[index];
@@ -500,32 +490,32 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           //if (!unlocked)
                           Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black.withOpacity(0.1),
-                                  Colors.black.withOpacity(unlocked ? 0.1 : 0.9)
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                //stops: [0.1, 0.1]
-                              )),
+                                color: Theme.of(context).primaryColor,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black.withOpacity(0.1),
+                                    Colors.black.withOpacity(unlocked ? 0.1 : 0.9)
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  //stops: [0.1, 0.1]
+                                )),
                           ),
                           Align(
                             alignment: Alignment.topLeft,
                             child: Container(
-                              margin: EdgeInsets.all(8),
-                              height: 25,
-                              width: 25,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: unlocked ? Colors.green : Colors.red
-                              ),
-                              child: Icon(
-                                unlocked ? Icons.lock_open : Icons.lock_outline,
-                                size: 18,
-                                color: Colors.white,
-                              )
+                                margin: EdgeInsets.all(8),
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: unlocked ? Colors.green : Colors.red
+                                ),
+                                child: Icon(
+                                  unlocked ? Icons.lock_open : Icons.lock_outline,
+                                  size: 18,
+                                  color: Colors.white,
+                                )
                             ),
                           ),
                         ],
@@ -566,9 +556,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Text(
               "Respond",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.white
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white
               ),
             ),
           ],
@@ -599,9 +589,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Text(
               "UnConnect",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.white
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white
               ),
             ),
           ],
@@ -634,9 +624,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Text(
               "Pending",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Theme.of(context).primaryColor
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Theme.of(context).primaryColor
               ),
             ),
           ],
@@ -659,9 +649,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Text(
             "Connect",
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.white
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white
             ),
           ),
         ],
@@ -703,12 +693,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           children: <Widget>[
                             Text.rich(TextSpan(children: [
                               TextSpan(
-                                text: "Church ID:  ",
-                                style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(.5))
+                                  text: "Church ID:  ",
+                                  style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(.5))
                               ),
                               TextSpan(
-                                text: data.profile.uid.substring(0, 7).toUpperCase(),
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                                  text: data.profile.uid.substring(0, 7).toUpperCase(),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
                               ),
                             ])),
                             //Flexible(child: Text(userModel.getString(TIME_UPDATED))),
@@ -822,8 +812,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           Text(
                             "Bio",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black.withOpacity(0.5)
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black.withOpacity(0.5)
                             ),
                           ),
                           if (data.profile.isVerified)
@@ -833,8 +823,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               child: Text(
                                 "Title: " + data.profile.title,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withOpacity(0.5)
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withOpacity(0.5)
                                 ),
                               ),
                             ),
@@ -899,12 +889,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         SizedBox(width: 5),
         Flexible(
           child: Text(
-            title,
-            style: TextStyle(
-              color: Colors.black.withOpacity(0.7),
-              fontSize: 13,
-              fontWeight: FontWeight.w300
-            )
+              title,
+              style: TextStyle(
+                  color: Colors.black.withOpacity(0.7),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300
+              )
           ),
         ),
       ],
@@ -928,20 +918,20 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               )
           ),
           ...List.generate(
-            data.feedItems.length,
-            (index) {
-              return FeedListItem(
-                context: context,
-                tickerProvider: this,
-                feedItem: data.feedItems[index],
-                likeFeedItem: (item) {
-                  // TODO: finish saving like
-                  // _feedBloc.postToLikeChanged(item);
-                  // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
-                  // _feedBloc.saveLikeValue();
-                },
-              );
-            }
+              data.feedItems.length,
+                  (index) {
+                return FeedListItem(
+                  context: context,
+                  tickerProvider: this,
+                  feedItem: data.feedItems[index],
+                  likeFeedItem: (item) {
+                    // TODO: finish saving like
+                    // _feedBloc.postToLikeChanged(item);
+                    // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
+                    // _feedBloc.saveLikeValue();
+                  },
+                );
+              }
           )
         ]
       ],
