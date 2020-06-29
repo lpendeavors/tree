@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:treeapp/pages/settings/profile/profile_settings_bloc.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+import '../pages/settings/profile/profile_settings_bloc.dart';
 import '../pages/settings/profile/profile_settings_page.dart';
 import '../pages/preview_image/preivew_image_page.dart';
 import '../pages/connections/connections_bloc.dart';
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
         userRepository: Injector.of(context).userRepository,
         chatRepository: Injector.of(context).chatRepository,
         groupRepository: Injector.of(context).groupRepository,
+        requestRepository: Injector.of(context).requestRepository,
       );
     },
     '/splash': (context) {
@@ -136,13 +138,15 @@ class MyApp extends StatelessWidget {
 
   final RouteFactory onGenerateRoute = (routerSettings) {
     if (routerSettings.name == '/phone_verification') {
+      var args = routerSettings.arguments as List<Object>;
       return MaterialPageRoute(
         builder: (context) {
           return PhoneVerificationPage(
             initPhoneVerificationBloc: () {
               return PhoneVerificationBloc(
                 userRepository: Injector.of(context).userRepository,
-                verificationId: routerSettings.arguments as String,
+                verificationId: args[0] as String,
+                update: args[1] as bool
               );
             },
           );
@@ -327,6 +331,7 @@ class MyApp extends StatelessWidget {
       return MaterialPageRoute(
         builder: (context) {
           return ProfileSettingsPage(
+            userRepository: Injector.of(context).userRepository,
             initProfileSettingsBloc: (){
               return ProfileSettingsBloc(
                 index: routerSettings.arguments as int,
@@ -422,6 +427,17 @@ class MyApp extends StatelessWidget {
                 postId: routerSettings.arguments as String,
               );
             },
+          );
+        }
+      );
+    }
+
+    if (routerSettings.name == '/search') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return PerformSearch(
+            userRepository: Injector.of(context).userRepository,
+            searchBy: routerSettings.arguments as String,
           );
         }
       );

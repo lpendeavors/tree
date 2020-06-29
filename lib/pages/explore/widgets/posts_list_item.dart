@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
-import '../../../widgets/image_holder.dart';
 import '../explore_state.dart';
 
 class PostListItem extends StatefulWidget {
@@ -31,6 +30,8 @@ class _PostListItemState extends State<PostListItem> {
           image: CacheImage(widget.postItem.image),
         ),
       );
+    } else {
+      return Container();
     }
   }
 }

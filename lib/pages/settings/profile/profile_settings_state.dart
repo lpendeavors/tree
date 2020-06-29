@@ -1,11 +1,17 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/church_info.dart';
+import 'package:treeapp/models/old/user_entity.dart';
 
 ///
 /// Message
 ///
-abstract class ProfileMessage {
-  const ProfileMessage();
+abstract class ProfileSettingsMessage {
+  const ProfileSettingsMessage();
+}
+
+class SettingsMessageSuccess implements ProfileSettingsMessage {
+  const SettingsMessageSuccess();
 }
 
 ///
@@ -22,31 +28,19 @@ class SettingsNotLoggedInError {
 class ProfileSettingsState extends Equatable {
   final bool isLoading;
   final Object error;
-  final bool isChurch;
-  final String firstName;
-  final String lastName;
-  final String phoneNo;
-  final int type;
+  final UserEntity userEntity;
 
   const ProfileSettingsState({
     @required this.isLoading,
     @required this.error,
-    @required this.isChurch,
-    @required this.firstName,
-    @required this.lastName,
-    @required this.phoneNo,
-    @required this.type,
+    @required this.userEntity
   });
 
-  ProfileSettingsState copyWith({isLoading, error, isChurch, firstName, lastName, phoneNo, type}) {
+  ProfileSettingsState copyWith({isLoading, error, userEntity}) {
     return ProfileSettingsState(
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
-      isChurch: isChurch ?? this.isChurch,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      phoneNo: phoneNo ?? this.phoneNo,
-      type: type ?? this.type,
+      userEntity: userEntity ?? this.userEntity
     );
   }
 
@@ -54,11 +48,7 @@ class ProfileSettingsState extends Equatable {
   List get props => [
     isLoading,
     error,
-    isChurch,
-    firstName,
-    lastName,
-    phoneNo,
-    type
+    userEntity
   ];
 
   @override

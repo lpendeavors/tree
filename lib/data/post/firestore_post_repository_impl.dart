@@ -57,6 +57,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     return _firestore
       .collection('postBase')
       .where('isVerified', isEqualTo: true)
+      //.where('postData', isNull: false)
       .snapshots()
       .map(_toEntities);
   }

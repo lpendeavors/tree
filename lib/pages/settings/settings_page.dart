@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:treeapp/user_bloc/user_login_state.dart';
-import 'package:treeapp/widgets/modals/profile_image_modal.dart';
-import 'package:treeapp/widgets/modals/sign_out_modal.dart';
+import '../../user_bloc/user_login_state.dart';
+import '../../widgets/modals/profile_image_modal.dart';
+import '../../widgets/modals/sign_out_modal.dart';
 import '../../user_bloc/user_bloc.dart';
 import './settings_state.dart';
 import 'package:url_launcher/url_launcher.dart';

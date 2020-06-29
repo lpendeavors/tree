@@ -17,6 +17,7 @@ class LoggedInUser extends Equatable implements LoginState {
   final List<String> connections;
   final String church;
   final String city;
+  final String token;
 
   const LoggedInUser({
     @required this.uid,
@@ -28,19 +29,21 @@ class LoggedInUser extends Equatable implements LoginState {
     @required this.connections,
     @required this.church,
     @required this.city,
+    @required this.token,
   });
 
   @override
   List get props {
     return [
       uid, 
-      email, 
-      fullName, 
+      email,
+      fullName,
       chatList,
       image,
       connections,
       church,
       city,
+      token,
     ];
   }
 

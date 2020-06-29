@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:popup_menu/popup_menu.dart';
+import '../../data/request/firestore_request_repository.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../data/room/firestore_room_repository.dart';
 import '../../data/user/firestore_user_repository.dart';
@@ -26,6 +27,7 @@ class HomeTabsPage extends StatefulWidget {
   final FirestoreRoomRepository roomRepository;
   final FirestoreGroupRepository groupRepository;
   final FirestoreChatRepository chatRepository;
+  final FirestoreRequestRepository requestRepository;
 
   const HomeTabsPage({
     Key key,
@@ -35,6 +37,7 @@ class HomeTabsPage extends StatefulWidget {
     @required this.userRepository,
     @required this.groupRepository,
     @required this.chatRepository,
+    @required this.requestRepository,
   }) : super(key: key);
 
   @override
@@ -80,6 +83,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               userBloc: widget.userBloc,
               postRepository: widget.postRepository,
               userRepository: widget.userRepository,
+              requestRepository: widget.requestRepository,
             ),
           ),
           ChatTabsPage(

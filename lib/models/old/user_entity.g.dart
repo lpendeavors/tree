@@ -65,6 +65,12 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     groupNotification: json['groupNotification'] as bool,
     messageNotification: json['messageNotification'] as bool,
     isAdmin: json['isAdmin'] as bool,
+    businessAddress: json['businessAddress'] as String,
+    status: json['status'] as int,
+    churchWebsite: json['churchWebsite'] as String,
+    parentChurch: json['parentChurch'] as String,
+    churchLat: json['churchLat'] as double,
+    churchLong: json['churchLong'] as double,
   );
 }
 
@@ -115,6 +121,12 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'groupNotification': instance.groupNotification,
       'messageNotification': instance.messageNotification,
       'isAdmin': instance.isAdmin,
+      'businessAddress': instance.businessAddress,
+      'status': instance.status,
+      'churchWebsite': instance.churchWebsite,
+      'parentChurch': instance.parentChurch,
+      'churchLat': instance.churchLat,
+      'churchLong': instance.churchLong,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

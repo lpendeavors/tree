@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cache_image/cache_image.dart';
@@ -666,9 +668,14 @@ class _EventEditPageState extends State<EventEditPage> {
                           Divider(),
                           ListTile(
                             onTap: () async {
+                              Position location = await Geolocator().getCurrentPosition(
+                                desiredAccuracy: LocationAccuracy.high,
+                              );
+
                               LocationResult result = await showLocationPicker(
                                 context, 
-                                'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ'
+                                'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ',
+                                initialCenter: LatLng(location.latitude, location.longitude),
                               );
                               
                               print(result.toString());
