@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
@@ -324,14 +325,22 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<List<UserEntity>> runSearchQuery(String query) {
-    print('impl');
-    return _firestore
+  Future<List<UserEntity>> runSearchQuery(String query, SearchType searchType) {
+    if(searchType == SearchType.CHURCH){
+      return _firestore
         .collection('userBase')
         .where('searchData', arrayContains: query)
         .where('isChurch', isEqualTo: true)
         .limit(30)
         .getDocuments()
         .then(_toEntities);
+    }else if(searchType == SearchType.USERS){
+      return _firestore
+        .collection('userBase')
+        .where('searchData', arrayContains: query)
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
+    }
   }
 }

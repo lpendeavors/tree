@@ -65,14 +65,14 @@ class UserEntity extends Equatable implements FirebaseModel {
   final double churchLong;
 
   @JsonKey(
-    fromJson: timestampFromJson,
-    toJson: timestampToJson
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
   )
   final Timestamp createdAt;
 
   @JsonKey(
-    fromJson: timestampFromJson,
-    toJson: timestampToJson
+      fromJson: timestampFromJson,
+      toJson: timestampToJson
   )
   final Timestamp updatedAt;
 
@@ -134,7 +134,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   String get id => this.documentId;
 
   factory UserEntity.fromDocumentSnapshot(DocumentSnapshot doc) =>
-    _$UserEntityFromJson(withId(doc));
+      _$UserEntityFromJson(withId(doc));
 
   Map<String, dynamic> toJson() => _$UserEntityToJson(this);
 

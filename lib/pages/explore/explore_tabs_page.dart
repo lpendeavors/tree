@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+
 import '../../pages/explore/widgets/explore_posts_tab.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -70,7 +72,7 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
               padding: EdgeInsets.only(left: 10, right: 10, bottom: 5),
               child: RaisedButton(
                 onPressed: () => {
-                  // TODO: search
+                  Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.USERS})
                 },
                 color: Colors.grey[50],
                 elevation: 0,

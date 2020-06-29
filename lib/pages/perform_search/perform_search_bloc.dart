@@ -6,6 +6,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/bloc/bloc_provider.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
 import 'package:treeapp/models/old/user_entity.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import '../../pages/perform_search/perform_search_state.dart';
 
 
@@ -39,11 +40,13 @@ class SearchBloc implements BaseBloc {
 
   factory SearchBloc({
     @required FirestoreUserRepository userRepository,
+    @required SearchType searchType
   }) {
     ///
     /// Assert
     ///
     assert(userRepository != null, 'userRepository cannot be null');
+    assert(searchType != null, 'searchType cannot be null');
 
     ///
     /// Controllers
@@ -55,10 +58,10 @@ class SearchBloc implements BaseBloc {
     ///
     final searchState$ = searchController
         .asyncMap((query){
-          print('hey $query');
           return _toState(
             query,
             userRepository,
+            searchType
           );
         }
       ).publishValueSeeded(_kInitialSearchState);
@@ -90,10 +93,10 @@ class SearchBloc implements BaseBloc {
   static Future<SearchState> _toState(
     String query,
     FirestoreUserRepository userRepository,
+    SearchType searchType
   ) {
-    print('running search $query');
     if(query.length > 0) {
-      return _runSearch(query, userRepository).then((results) {
+      return _runSearch(query, userRepository, searchType).then((results) {
         print('_toState ${results.length}');
         return _kInitialSearchState.copyWith(
           results: results,
@@ -115,7 +118,8 @@ class SearchBloc implements BaseBloc {
   static Future<List<UserEntity>> _runSearch(
     String query,
     FirestoreUserRepository userRepository,
+    SearchType searchType
   ) {
-    return userRepository.runSearchQuery(query);
+    return userRepository.runSearchQuery(query, searchType);
   }
 }

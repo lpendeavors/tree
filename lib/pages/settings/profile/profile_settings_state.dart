@@ -38,9 +38,9 @@ class ProfileSettingsState extends Equatable {
 
   ProfileSettingsState copyWith({isLoading, error, userEntity}) {
     return ProfileSettingsState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-      userEntity: userEntity ?? this.userEntity
+        isLoading: isLoading ?? this.isLoading,
+        error: error ?? this.error,
+        userEntity: userEntity ?? this.userEntity
     );
   }
 

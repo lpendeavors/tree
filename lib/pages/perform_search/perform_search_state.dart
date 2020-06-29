@@ -27,9 +27,9 @@ class SearchState extends Equatable {
 
   SearchState copyWith({results, isLoading, error}) {
     return SearchState(
-      results: results ?? this.results,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error
+        results: results ?? this.results,
+        isLoading: isLoading ?? this.isLoading,
+        error: error ?? this.error
     );
   }
 

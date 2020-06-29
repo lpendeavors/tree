@@ -121,30 +121,30 @@ class ProfileSettingsBloc implements BaseBloc{
 
 
     final message$ = saveChangesController.exhaustMap(
-      (_) => saveProfileChanges(
-        userBloc,
-        setFirstNameController.value,
-        setLastNameController.value,
-        setPhoneNumberController.value,
-        setRelationshipController.value,
-        setIsPublicController.value,
-        setTitleController.value,
-        setBioController.value,
-        setCityController.value,
-        setAddressController.value,
-        countryCodeController.value,
-        setChurchController.value,
-        setUnknownChurchController.value,
-        setNoChurchController.value,
-        setChurchIdController.value,
-        setChurchNameController.value,
-        setMinistryTypeController.value,
-        setChurchDenominationController.value,
-        setLocationDataController.value,
-        setChurchWebsiteController.value,
-        setParentChurchController.value,
-        userRepository,
-      )
+            (_) => saveProfileChanges(
+          userBloc,
+          setFirstNameController.value,
+          setLastNameController.value,
+          setPhoneNumberController.value,
+          setRelationshipController.value,
+          setIsPublicController.value,
+          setTitleController.value,
+          setBioController.value,
+          setCityController.value,
+          setAddressController.value,
+          countryCodeController.value,
+          setChurchController.value,
+          setUnknownChurchController.value,
+          setNoChurchController.value,
+          setChurchIdController.value,
+          setChurchNameController.value,
+          setMinistryTypeController.value,
+          setChurchDenominationController.value,
+          setLocationDataController.value,
+          setChurchWebsiteController.value,
+          setParentChurchController.value,
+          userRepository,
+        )
     ).publish();
 
     ///
@@ -188,33 +188,33 @@ class ProfileSettingsBloc implements BaseBloc{
     ];
 
     return ProfileSettingsBloc._(
-      settingState$: settingState$,
-      message$: message$,
-      setFirstName: setFirstNameController.add,
-      setLastName: setLastNameController.add,
-      setPhoneNumber: setPhoneNumberController.add,
-      setRelationship: setRelationshipController.add,
-      setIsPublic: setIsPublicController.add,
-      setTitle: setTitleController.add,
-      setBio: setBioController.add,
-      setCity: setCityController.add,
-      setAddress: setAddressController.add,
-      countryCodeChanged: countryCodeController.add,
-      setChurch: setChurchController.add,
-      setUnknownChurch: setUnknownChurchController.add,
-      setNoChurch: setNoChurchController.add,
-      setChurchId: setChurchIdController.add,
-      setChurchName: setChurchNameController.add,
-      setMinistryType: setMinistryTypeController.add,
-      setChurchDenomination: setChurchDenominationController.add,
-      setLocationData: setLocationDataController.add,
-      setChurchWebsite: setChurchWebsiteController.add,
-      setParentChurch: setParentChurchController.add,
-      saveChanges: () => saveChangesController.add(null),
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
+        settingState$: settingState$,
+        message$: message$,
+        setFirstName: setFirstNameController.add,
+        setLastName: setLastNameController.add,
+        setPhoneNumber: setPhoneNumberController.add,
+        setRelationship: setRelationshipController.add,
+        setIsPublic: setIsPublicController.add,
+        setTitle: setTitleController.add,
+        setBio: setBioController.add,
+        setCity: setCityController.add,
+        setAddress: setAddressController.add,
+        countryCodeChanged: countryCodeController.add,
+        setChurch: setChurchController.add,
+        setUnknownChurch: setUnknownChurchController.add,
+        setNoChurch: setNoChurchController.add,
+        setChurchId: setChurchIdController.add,
+        setChurchName: setChurchNameController.add,
+        setMinistryType: setMinistryTypeController.add,
+        setChurchDenomination: setChurchDenominationController.add,
+        setLocationData: setLocationDataController.add,
+        setChurchWebsite: setChurchWebsiteController.add,
+        setParentChurch: setParentChurchController.add,
+        saveChanges: () => saveChangesController.add(null),
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        }
     );
   }
 
@@ -237,15 +237,15 @@ class ProfileSettingsBloc implements BaseBloc{
     if (loginState is LoggedInUser) {
       return userRepository.getUserById(uid: loginState.uid).map((user){
         return _kInitialProfileSettingsState.copyWith(
-          userEntity: user,
-          isLoading: false
+            userEntity: user,
+            isLoading: false
         );
       })
-      .startWith(_kInitialProfileSettingsState)
-      .onErrorReturnWith((e) {
+          .startWith(_kInitialProfileSettingsState)
+          .onErrorReturnWith((e) {
         return _kInitialProfileSettingsState.copyWith(
-          error: e,
-          isLoading: false
+            error: e,
+            isLoading: false
         );
       });
     }
@@ -259,9 +259,9 @@ class ProfileSettingsBloc implements BaseBloc{
   }
 
   static Stream<ProfileSettingsState> _getSettings(
-    UserBloc userBloc,
-    FirestoreUserRepository userRepository,
-  ) {
+      UserBloc userBloc,
+      FirestoreUserRepository userRepository,
+      ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toSettingsState(
         loginState,
@@ -271,29 +271,29 @@ class ProfileSettingsBloc implements BaseBloc{
   }
 
   static Stream<ProfileSettingsMessage> saveProfileChanges(
-    UserBloc userBloc,
-    String firstName,
-    String lastName,
-    String phoneNo,
-    String relationship,
-    bool isPublic,
-    String title,
-    String aboutMe,
-    String city,
-    String address,
-    String countryCode,
-    UserEntity church,
-    String unknownChurch,
-    bool noChurch,
-    String churchId,
-    String churchName,
-    int ministryType,
-    String churchDenomination,
-    List<dynamic> locationData,
-    String churchWebsite,
-    String churchParent,
-    FirestoreUserRepository userRepository
-  ) async* {
+      UserBloc userBloc,
+      String firstName,
+      String lastName,
+      String phoneNo,
+      String relationship,
+      bool isPublic,
+      String title,
+      String aboutMe,
+      String city,
+      String address,
+      String countryCode,
+      UserEntity church,
+      String unknownChurch,
+      bool noChurch,
+      String churchId,
+      String churchName,
+      int ministryType,
+      String churchDenomination,
+      List<dynamic> locationData,
+      String churchWebsite,
+      String churchParent,
+      FirestoreUserRepository userRepository
+      ) async* {
     Map<String, dynamic> data = {
       'firstName': firstName,
       'lastName': lastName,

@@ -71,22 +71,22 @@ class ListDialog extends StatelessWidget {
                       Flexible(
                         flex: 1,
                         child: title == null
-                        ? Text(
-                          s.app_title,
-                          style: TextStyle(
-                            fontFamily: 'Nirmala',
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.black.withOpacity(.1)
-                          )
+                            ? Text(
+                            s.app_title,
+                            style: TextStyle(
+                                fontFamily: 'Nirmala',
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black.withOpacity(.1)
+                            )
                         ) : Text(
-                          title,
-                          style: TextStyle(
-                            fontFamily: 'NirmalaB',
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black
-                          )
+                            title,
+                            style: TextStyle(
+                                fontFamily: 'NirmalaB',
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black
+                            )
                         ),
                       ),
                       SizedBox(width: 15.0),
@@ -113,12 +113,12 @@ class ListDialog extends StatelessWidget {
                             mainAxisSize: MainAxisSize.max,
                             children: <Widget>[
                               position == 0
-                              ? Container()
-                              : Container(
-                                  height: 0.5,
-                                  width: double.infinity,
-                                  color: Colors.black.withOpacity(.1),
-                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                  ? Container()
+                                  : Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(.1),
+                                margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                               ),
                               GestureDetector(
                                 onTap: () {
@@ -147,13 +147,13 @@ class ListDialog extends StatelessWidget {
                                         ),
                                         images.isNotEmpty ? SizedBox(width: 10.0) : Container(),
                                         Text(
-                                          items[position],
-                                          style: TextStyle(
-                                            fontFamily: 'Nirmala',
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.normal,
-                                            color: Colors.black.withOpacity(.8)
-                                          )
+                                            items[position],
+                                            style: TextStyle(
+                                                fontFamily: 'Nirmala',
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.normal,
+                                                color: Colors.black.withOpacity(.8)
+                                            )
                                         ),
                                       ],
                                     ),
