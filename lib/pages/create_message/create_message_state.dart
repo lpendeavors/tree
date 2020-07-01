@@ -13,7 +13,8 @@ enum MessageType { group, conversation }
 abstract class MessageCreateMessage {}
 
 class MessageCreateSuccess implements MessageCreateMessage {
-  const MessageCreateSuccess();
+  final String groupId;
+  const MessageCreateSuccess(this.groupId);
 }
 
 class MessageCreateError implements MessageCreateMessage {
@@ -23,6 +24,10 @@ class MessageCreateError implements MessageCreateMessage {
 
 class NotLoggedInError {
   const NotLoggedInError();
+}
+
+class MembersError {
+  const MembersError();
 }
 
 @immutable

@@ -41,7 +41,12 @@ class _CreateMessagePageState extends State<CreateMessagePage> {
   }
 
   void _showMessageResult(MessageCreateMessage message) {
-    print('[DEBUG] MessageCreatedMessage=$message');
+    if (message is MessageCreateSuccess) {
+      Navigator.of(context).pushReplacementNamed(
+        '/chat_room',
+        arguments: message.groupId,
+      );
+    }
   }
 
   @override
@@ -288,30 +293,13 @@ class _CreateMessagePageState extends State<CreateMessagePage> {
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          List<MemberItem> members = _messageBloc.members$.value;
-                          bool isMember;
-                          
-                          members.forEach((m) {
-                            if (m.id == data.myConnections[index].id) {
-                              isMember = true;
-                            } else {
-                              isMember = false;
-                            }
-                          });
-                          
-                          if (isMember) {
-                            var m = members.singleWhere((m) => m.id == data.myConnections[index].id);
-                            members.remove(m);
-                          } else {
-                            members.add(
-                              MemberItem(
-                                id: data.myConnections[index].id,
-                                image: data.myConnections[index].image,
-                                name: data.myConnections[index].name,
-                              ),
-                            );
-                          }
-                          _messageBloc.membersChanged(members);
+                          _messageBloc.toggleMember(
+                            MemberItem(
+                              id: data.myConnections[index].id,
+                              image: data.myConnections[index].image,
+                              name: data.myConnections[index].name,
+                            ),
+                          );
                         },
                         child: Padding(
                           padding: EdgeInsets.all(10),
@@ -389,23 +377,13 @@ class _CreateMessagePageState extends State<CreateMessagePage> {
                                 stream: _messageBloc.members$,
                                 initialData: _messageBloc.members$.value,
                                 builder: (context, snapshot) {
-                                  print(snapshot.data);
-
                                   var members = snapshot.data ?? [];
-                                  var active;
-                                  
-                                  members.forEach((m) {
-                                    if (m.id == data.myConnections[index].id) {
-                                      active = true;
-                                    } else {
-                                      active = false;
-                                    }
-                                  });
+                                  var ids = members.map((m) => m.id).toList();
 
                                   return Container(
                                     height: 25,
                                     width: 25,
-                                    decoration: active
+                                    decoration: ids.contains(data.myConnections[index].id)
                                       ? BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [

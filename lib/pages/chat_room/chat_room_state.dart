@@ -23,7 +23,8 @@ class ChatMessageAddedSuccess implements ChatMessageAdded {
 }
 
 class ChatMessageAddedError implements ChatMessageAdded {
-  const ChatMessageAddedError();
+  final Object error;
+  const ChatMessageAddedError(this.error);
 }
 
 /// 
@@ -31,6 +32,10 @@ class ChatMessageAddedError implements ChatMessageAdded {
 /// 
 class NotLoggedInError {
   const NotLoggedInError();
+}
+
+class MessageError {
+  const MessageError();
 }
 
 /// 

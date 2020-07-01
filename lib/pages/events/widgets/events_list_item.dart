@@ -105,6 +105,20 @@ class _EventsListItemState extends State<EventsListItem> {
                     ),
                   ),
                 ),
+                Center(
+                  child: Container(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 if (widget.eventItem.isSponsored)
                   Align(
                     alignment: Alignment.topLeft,

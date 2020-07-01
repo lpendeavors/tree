@@ -73,7 +73,7 @@ class NotificationsBloc implements BaseBloc {
   }
 
   @override
-  void dispose() => dispose;
+  void dispose() => _dispose;
 
   static Stream<NotificationsListState> _toState(
     LoginState loginState,
@@ -125,7 +125,7 @@ class NotificationsBloc implements BaseBloc {
         body: entity.body,
         time: timeago.format(entity.createdAt.toDate()),
         sharedBy: entity.fullName,
-        isNew: entity.readBy.contains(entity.id),
+        isNew: (entity.readBy ?? []).contains(entity.id),
         image: entity.image,
         user: entity.ownerId,
       );

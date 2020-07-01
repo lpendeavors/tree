@@ -77,7 +77,7 @@ class ExploreConnectionsTab extends StatelessWidget {
                     ),
                   ),
                   ListView.separated(
-                    itemCount: data.connectionItems.length,
+                    itemCount: data.requestItems.length,
                     physics: BouncingScrollPhysics(),
                     shrinkWrap: true,
                     itemBuilder: (context, index) {

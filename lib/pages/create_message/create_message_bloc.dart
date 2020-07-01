@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:uuid/uuid.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/group/firestore_group_repository.dart';
 import '../../data/chat/firestore_chat_repository.dart';
@@ -10,6 +11,10 @@ import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../models/old/user_entity.dart';
 import './create_message_state.dart';
+
+bool _isMembersValid(List<MemberItem> members) {
+  return members.length > 1;
+} 
 
 const _kInitialCreateMessageState = CreateMessageState(
   error: null,
@@ -24,6 +29,7 @@ class CreateMessageBloc implements BaseBloc {
   final void Function() submitCreateMessage;
   final void Function(int) typeChanged;
   final void Function(List<MemberItem>) membersChanged;
+  final void Function(MemberItem) toggleMember;
   
   /// 
   /// Output streams
@@ -42,6 +48,7 @@ class CreateMessageBloc implements BaseBloc {
 
   CreateMessageBloc._({
     @required this.submitCreateMessage,
+    @required this.toggleMember,
     @required this.membersChanged,
     @required this.typeChanged,
     @required this.members$,
@@ -82,9 +89,14 @@ class CreateMessageBloc implements BaseBloc {
     /// 
     /// Streams
     /// 
+    final membersError$ = membersSubject.map((members) {
+      if (_isMembersValid(members)) return null;
+      return const MembersError();
+    }).share();
+
     final allFieldsAreValid$ = Rx.combineLatest(
       [
-
+        membersError$,
       ],
       (allError) => allError.every((error) {
         print(error);
@@ -133,8 +145,13 @@ class CreateMessageBloc implements BaseBloc {
       type$: typeSubject.stream,
       createMessageState$: createMessageState$,
       isLoading$: isLoadingSubject,
-      submitCreateMessage: () => submitCreateMessageSubject.add(null),
       message$: message$,
+      submitCreateMessage: () => submitCreateMessageSubject.add(null),
+      toggleMember: (member) {
+        var members = membersSubject.value;
+        members.contains(member) ? members.remove(member) : members.add(member);
+        membersSubject.add(members);
+      },
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
         await Future.wait(controllers.map((c) => c.close()));
@@ -231,17 +248,18 @@ class CreateMessageBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
-        if (type == MessageType.conversation) {
-          // await chatRepository.save(
-
-          // );
-          // yield MessageCreateSuccess();
-        } else if (type == MessageType.group) {
-          // await groupRepository.save(
-
-          // );
-          // yield MessageCreateSuccess();
-        }
+        var groupId = await groupRepository.save(
+          Uuid().v1(),
+          members,
+          true, //  isPrivate
+          true, //  isGroup
+          false, // isRoom
+          true, //  isConversation
+          loginState.uid,
+          loginState.isAdmin,
+          loginState.isVerified,
+        );
+        yield MessageCreateSuccess(groupId);
       } catch (e) {
         yield MessageCreateError(e);
       }

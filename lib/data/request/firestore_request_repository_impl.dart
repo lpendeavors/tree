@@ -36,7 +36,7 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
       .getDocuments()
       .then((requests) {
         return requests.documents
-          .map((doc) => doc['personId'] as String)
+          .map((doc) => doc['ownerId'] as String)
           .toList();
       });
 

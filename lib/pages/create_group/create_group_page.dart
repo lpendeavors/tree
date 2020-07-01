@@ -45,7 +45,14 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   }
 
   void _showMessageResult(GroupCreateMessage message) {
-    print('[DEBUG] GroupCreatedMessage=$message');
+    if (message is GroupCreateSuccess) {
+      Navigator.of(context).pushReplacementNamed(
+        '/chat_room',
+        arguments: message.groupId,
+      );
+    }
+
+    
   }
 
   @override
@@ -226,12 +233,19 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         SizedBox(width: 10),
                         Flexible(
                           flex: 1,
-                          child: Text(
-                            'This group is [hidden] or [visible]',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                            ),
+                          child: StreamBuilder(
+                            stream: _groupBloc.groupPrivate$,
+                            initialData: _groupBloc.groupPrivate$.value,
+                            builder: (context, snapshot) {
+                              var private = snapshot.data ?? false;
+                              return Text(
+                                'This group is ${private ? 'hidden' : 'visible'}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],

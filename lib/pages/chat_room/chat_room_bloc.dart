@@ -11,6 +11,10 @@ import '../../models/old/chat_entity.dart';
 import '../../models/old/group_entity.dart';
 import './chat_room_state.dart';
 
+bool _isMessageValid(String message) {
+  return message.length > 0;
+}
+
 const _kInitialChatRoomState = ChatRoomState(
   error: null,
   isLoading: true,
@@ -22,12 +26,17 @@ class ChatRoomBloc implements BaseBloc {
   /// 
   /// Input functions
   ///
-  
+  final void Function() sendMessage;
+  final void Function(String) messageChanged;
+  final void Function(int) messageTypeChanged;
 
   /// 
   /// Output streams
   ///
   final ValueStream<ChatRoomState> chatRoomState$;
+  final Stream<MessageError> messageError$;
+  final Stream<ChatRoomMessage> message$;
+  final ValueStream<bool> isLoading$;
 
   /// 
   /// Clean up
@@ -35,7 +44,13 @@ class ChatRoomBloc implements BaseBloc {
   final void Function() _dispose;
 
   ChatRoomBloc._({
+    @required this.sendMessage,
+    @required this.messageChanged,
+    @required this.messageTypeChanged,
     @required this.chatRoomState$,
+    @required this.messageError$,
+    @required this.message$,
+    @required this.isLoading$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -58,11 +73,29 @@ class ChatRoomBloc implements BaseBloc {
     /// 
     /// Stream controllers
     ///
-    
+    final sendMessageSubject = PublishSubject<void>();
+    final messageSubject = BehaviorSubject<String>.seeded('');
+    final messageTypeSubject = BehaviorSubject<int>.seeded(null);
+    final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     /// 
     /// Streams
     ///
+    final messageError$ = messageSubject.map((message) {
+      if (_isMessageValid(message)) return null;
+      return const MessageError();
+    }).share();
+
+    final allFieldsAreValid$ = Rx.combineLatest(
+      [
+        messageError$,
+      ],
+      (allError) => allError.every((error) {
+        print(error);
+        return error == null;
+      }),
+    );
+
     final chatRoomState$ = _getChatRoomContent(
       userBloc,
       groupRepository,
@@ -71,14 +104,47 @@ class ChatRoomBloc implements BaseBloc {
       isRoom,
     ).publishValueSeeded(_kInitialChatRoomState);
 
+    final message$ = sendMessageSubject
+      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+      .where((isValid) => isValid)
+      .exhaustMap(
+        (_) => sendNewMessage(
+          userBloc,
+          chatRepository,
+          messageSubject.value,
+          messageTypeSubject.value,
+          isLoadingSubject,
+          roomId,
+          isRoom,
+          chatRoomState$.value.details.members.map((member) => member.uid).toList(),
+        )
+      ).publish();
+
+    ///
+    /// Controllers and subscriptions
+    ///
     final subscriptions = <StreamSubscription>[
       chatRoomState$.connect(),
+      message$.connect(),
+    ];
+
+    final controllers = <StreamController>[
+      messageSubject,
+      messageTypeSubject,
+      isLoadingSubject,
     ];
 
     return ChatRoomBloc._(
+      messageChanged: messageSubject.add,
+      messageTypeChanged: messageTypeSubject.add,
+      sendMessage: () => sendMessageSubject.add(null),
       chatRoomState$: chatRoomState$,
+      messageError$: messageError$,
+      isLoading$: isLoadingSubject,
+      message$: message$,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
       }
     );
   }
@@ -181,5 +247,45 @@ class ChatRoomBloc implements BaseBloc {
         isGroup,
       );
     });
+  }
+
+  static Stream<ChatRoomMessage> sendNewMessage(
+    UserBloc userBloc,
+    FirestoreChatRepository chatRepository,
+    String message,
+    int messageType,
+    Sink<bool> isLoading,
+    String chatId,
+    bool isRoom,
+    List<String> parties,
+  ) async* {
+    print('[DEBUG] sendMessage');
+    LoginState loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      isLoading.add(true);
+      try {
+        await chatRepository.send(
+          message,
+          messageType,
+          loginState.isAdmin,
+          chatId,
+          loginState.fullName,
+          loginState.email,
+          loginState.image,
+          loginState.isVerified,
+          loginState.isChurch,
+          isRoom,
+          parties,
+          loginState.token,
+          false,
+        );
+        yield ChatMessageAddedSuccess();
+      } catch (e) {
+        yield ChatMessageAddedError(e);
+      }
+    } else {
+      yield ChatMessageAddedError(NotLoggedInError());
+    }
   }
 }
