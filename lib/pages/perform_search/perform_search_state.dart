@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:treeapp/models/old/church_info.dart';
-import 'package:treeapp/models/old/user_entity.dart';
 
 ///
 /// Message
@@ -15,7 +13,7 @@ abstract class ProfileMessage {
 ///
 @immutable
 class SearchState extends Equatable {
-  final List<UserEntity> results;
+  final List<dynamic> results;
   final bool isLoading;
   final Object error;
 

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
@@ -72,7 +74,7 @@ class _EventsTabsPageState extends State<EventsTabsPage> {
                   Flexible(
                     child: RaisedButton(
                       onPressed: () async {
-                        
+                        Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.EVENT});
                       },
                       color: Colors.grey[50],
                       elevation: 0,
