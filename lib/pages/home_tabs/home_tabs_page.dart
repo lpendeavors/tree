@@ -13,7 +13,7 @@ import '../../generated/l10n.dart';
 import '../../util/asset_utils.dart';
 import '../feed/feed_bloc.dart';
 import '../feed/feed_page.dart';
-import '../chat/chat_tabs_page.dart';
+import '../chat_tabs/chat_tabs_page.dart';
 import '../chat/chat_tabs_bloc.dart';
 import '../explore/explore_bloc.dart';
 import '../explore/explore_tabs_page.dart';
@@ -132,15 +132,19 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                   children: <Widget>[
                     TreeTabItem(
                       title: S.of(context).home_tab_title,
-                      icon: Icons.home,
+                      iconImage: 'assets/images/tree.png',
                       onTap: () => _changePage(0),
                       isActive: _currentPage == 0,
+                      type: 1,
+                      icon: null,
                     ),
                     TreeTabItem(
                       title: S.of(context).explore_tab_title,
                       icon: Icons.search,
                       onTap: () => _changePage(1),
                       isActive: _currentPage == 1,
+                      type: 0,
+                      iconImage: null,
                     ),
                     Spacer(),
                     TreeTabItem(
@@ -148,12 +152,16 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                       icon: Icons.forum,
                       onTap: () => _changePage(2),
                       isActive: _currentPage == 2,
+                      type: 0,
+                      iconImage: null,
                     ),
                     TreeTabItem(
                       title: S.of(context).profile_tab_title,
                       icon: Icons.person,
                       onTap: () => _changePage(3),
                       isActive: _currentPage == 3,
+                      type: 0,
+                      iconImage: null,
                     ),
                   ],
                 ),

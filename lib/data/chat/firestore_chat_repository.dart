@@ -28,7 +28,6 @@ abstract class FirestoreChatRepository {
     bool isVerified,
     bool isChurch,
     bool isRoom,
-    List<String> parties,
     String token,
     bool showDate,
   );

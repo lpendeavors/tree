@@ -116,8 +116,7 @@ class ChatRoomBloc implements BaseBloc {
           isLoadingSubject,
           roomId,
           isRoom,
-          chatRoomState$.value.details.members.map((member) => member.uid).toList(),
-        )
+        ),
       ).publish();
 
     ///
@@ -257,14 +256,13 @@ class ChatRoomBloc implements BaseBloc {
     Sink<bool> isLoading,
     String chatId,
     bool isRoom,
-    List<String> parties,
   ) async* {
     print('[DEBUG] sendMessage');
     LoginState loginState = userBloc.loginState$.value;
 
     if (loginState is LoggedInUser) {
-      isLoading.add(true);
       try {
+        isLoading.add(true);
         await chatRepository.send(
           message,
           messageType,
@@ -276,13 +274,14 @@ class ChatRoomBloc implements BaseBloc {
           loginState.isVerified,
           loginState.isChurch,
           isRoom,
-          parties,
           loginState.token,
           false,
         );
         yield ChatMessageAddedSuccess();
       } catch (e) {
         yield ChatMessageAddedError(e);
+      } finally {
+        isLoading.add(false);
       }
     } else {
       yield ChatMessageAddedError(NotLoggedInError());

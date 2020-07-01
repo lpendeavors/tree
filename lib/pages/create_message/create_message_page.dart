@@ -44,7 +44,7 @@ class _CreateMessagePageState extends State<CreateMessagePage> {
     if (message is MessageCreateSuccess) {
       Navigator.of(context).pushReplacementNamed(
         '/chat_room',
-        arguments: message.groupId,
+        arguments: message.details,
       );
     }
   }

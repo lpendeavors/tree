@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 class TreeTabItem extends StatelessWidget {
   final IconData icon;
+  final String iconImage;
   final String title;
   final Function() onTap;
   final bool isActive;
+  final int type;
 
   const TreeTabItem({
     Key key,
@@ -12,6 +14,8 @@ class TreeTabItem extends StatelessWidget {
     @required this.title,
     @required this.onTap,
     @required this.isActive,
+    @required this.type,
+    @required this.iconImage,
   }) : super(key: key);
 
   @override
@@ -25,11 +29,16 @@ class TreeTabItem extends StatelessWidget {
               alignment: Alignment.center,
               child: Column(
                 children: <Widget>[
-                  Icon(
-                    icon,
-                    size: isActive ? 22 : 18,
-                    color: isActive ? Theme.of(context).primaryColor : Colors.grey,
-                  ),
+                  type == 0
+                    ? Icon(
+                        icon,
+                        size: isActive ? 22 : 18,
+                        color: isActive ? Theme.of(context).primaryColor : Colors.grey,
+                      )
+                    : Image.asset(
+                        iconImage,
+                        height: isActive ? 22 : 18,
+                      ),
                   SizedBox(height: 5),
                   Text(
                     title,

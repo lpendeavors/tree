@@ -8,7 +8,7 @@ abstract class FirestoreEventRepository {
 
   Stream<List<EventEntity>> getByOwner(String ownerId);
 
-  Future<Map<String, String>> save(
+  Future<void> save(
     String ownerId,
     String ownerEmail,
     String ownerName,

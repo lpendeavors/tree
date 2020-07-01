@@ -13,8 +13,8 @@ enum MessageType { group, conversation }
 abstract class MessageCreateMessage {}
 
 class MessageCreateSuccess implements MessageCreateMessage {
-  final String groupId;
-  const MessageCreateSuccess(this.groupId);
+  final Map<String, dynamic> details;
+  const MessageCreateSuccess(this.details);
 }
 
 class MessageCreateError implements MessageCreateMessage {

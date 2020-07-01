@@ -40,7 +40,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       widget.userBloc.loginState$
         .where((state) => state is Unauthenticated)
         .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+      _chatRoomBloc.message$.listen((message) => _showMessageResult(message)),
     ];
+  }
+
+  void _showMessageResult(ChatRoomMessage message) {
+    print(message);
   }
 
   @override
@@ -61,6 +66,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         initialData: _chatRoomBloc.chatRoomState$.value,
         builder: (context, snapshot) {
           var data = snapshot.data;
+          print(data);
 
           if (data.error != null) {
             print(data.error);
@@ -151,7 +157,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     fit: BoxFit.cover,
                                     image: CacheImage(
                                       data.details == null 
-                                       ? data.messages.where((m) => m.isMine == false).toList()[0].image
+                                       ? "" //data.messages.where((m) => m.isMine == false).toList()[0].image
                                        : data.details.groupImage
                                     ),
                                   ),
@@ -166,7 +172,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 children: <Widget>[
                                   if (data.details == null)
                                     Text(
-                                      data.messages.where((m) => m.isMine == false).toList()[0].name,
+                                      "", //data.messages.where((m) => m.isMine == false).toList()[0].name,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(

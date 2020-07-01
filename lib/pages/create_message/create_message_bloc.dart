@@ -248,8 +248,8 @@ class CreateMessageBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
-        var groupId = await groupRepository.save(
-          Uuid().v1(),
+        var details = await groupRepository.save(
+          null,
           members,
           true, //  isPrivate
           true, //  isGroup
@@ -259,7 +259,7 @@ class CreateMessageBloc implements BaseBloc {
           loginState.isAdmin,
           loginState.isVerified,
         );
-        yield MessageCreateSuccess(groupId);
+        yield MessageCreateSuccess(details);
       } catch (e) {
         yield MessageCreateError(e);
       }

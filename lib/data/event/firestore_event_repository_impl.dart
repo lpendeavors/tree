@@ -47,7 +47,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   }
 
   @override
-  Future<Map<String, String>> save(
+  Future<void> save(
     String ownerId,
     String ownerEmail,
     String ownerName,
@@ -84,8 +84,6 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
         return url;
       }).toList(),
     );
-
-    print(imageUrls);
 
     final event = <String, dynamic>{
       'attending': [ownerId],
@@ -136,28 +134,15 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
-
     if (id != null) {
-      await _firestore
+      return _firestore
         .collection('eventBase')
         .document(id)
-        .setData(event, merge: true)
-        .then((_) {
-          print(id);
-          return <String, String>{
-            'eventId': id
-          };
-        });
+        .setData(event, merge: true);
     } else {
-      await _firestore
+      return _firestore
         .collection('eventBase')
-        .add(event)
-        .then((doc) {
-          print(doc.documentID);
-          return <String, String>{
-            'eventId': doc.documentID,
-          };
-        });
+        .add(event);
     }
   }
 

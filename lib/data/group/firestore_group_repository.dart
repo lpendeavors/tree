@@ -9,7 +9,7 @@ abstract class FirestoreGroupRepository {
 
   Stream<List<GroupEntity>> get();
 
-  Future<String> save(
+  Future<Map<String, dynamic>> save(
     String groupId,
     List<MemberItem> members,
     bool isPrivate,

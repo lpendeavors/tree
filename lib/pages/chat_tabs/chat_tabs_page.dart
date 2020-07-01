@@ -4,10 +4,10 @@ import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
 import '../../util/asset_utils.dart';
-import './widgets/chat_messages.dart';
-import './widgets/chat_rooms.dart';
-import './widgets/chat_groups.dart';
-import './chat_tabs_bloc.dart';
+import '../chat/widgets/chat_messages.dart';
+import '../chat/widgets/chat_rooms.dart';
+import '../chat/widgets/chat_groups.dart';
+import '../chat/chat_tabs_bloc.dart';
 import 'package:flutter/material.dart';
 
 class ChatTabsPage extends StatefulWidget {
