@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestore_event_repository.dart';
 import '../../models/old/event_entity.dart';
+import 'dart:async';
 
 class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   final Firestore _firestore;
@@ -70,5 +71,15 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     return querySnapshot.documents.map((documentSnapshot) {
       return EventEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
+  }
+
+  @override
+  Future<List<EventEntity>> runSearchQuery(String query) {
+    return _firestore
+      .collection('eventBase')
+      .where('searchData', arrayContains: query.trim())
+      .limit(30)
+      .getDocuments()
+      .then(_toEntities);
   }
 }

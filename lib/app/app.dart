@@ -437,6 +437,7 @@ class MyApp extends StatelessWidget {
         builder: (context) {
           return PerformSearch(
             userRepository: Injector.of(context).userRepository,
+            eventRepository: Injector.of(context).eventRepository,
             searchType: (routerSettings.arguments as Map)['searchType'],
             searchFilter: (routerSettings.arguments as Map)['filter'],
           );

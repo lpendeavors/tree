@@ -64,3 +64,9 @@ List<EventType> eventTypes = [
       assetImage: conference
   ),
 ];
+
+const int PENDING = 0;
+const int APPROVED = 1;
+const int REJECTED = 2;
+const int INACTIVE = 3;
+const int COMPLETED = 4;

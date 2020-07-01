@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/bloc/bloc_provider.dart';
+import 'package:treeapp/data/event/firestore_event_repository.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
 import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
@@ -40,6 +41,7 @@ class SearchBloc implements BaseBloc {
 
   factory SearchBloc({
     @required FirestoreUserRepository userRepository,
+    @required FirestoreEventRepository eventRepository,
     @required SearchType searchType
   }) {
     ///
@@ -61,6 +63,7 @@ class SearchBloc implements BaseBloc {
           return _toState(
             query,
             userRepository,
+            eventRepository,
             searchType
           );
         }
@@ -93,11 +96,11 @@ class SearchBloc implements BaseBloc {
   static Future<SearchState> _toState(
     String query,
     FirestoreUserRepository userRepository,
+    FirestoreEventRepository eventRepository,
     SearchType searchType
   ) {
     if(query.length > 0) {
-      return _runSearch(query, userRepository, searchType).then((results) {
-        print('_toState ${results.length}');
+      return _runSearch(query, userRepository, eventRepository, searchType).then((results) {
         return _kInitialSearchState.copyWith(
           results: results,
           isLoading: false,
@@ -115,11 +118,18 @@ class SearchBloc implements BaseBloc {
     }
   }
 
-  static Future<List<UserEntity>> _runSearch(
+  static Future<List<dynamic>> _runSearch(
     String query,
     FirestoreUserRepository userRepository,
+    FirestoreEventRepository eventRepository,
     SearchType searchType
   ) {
-    return userRepository.runSearchQuery(query, searchType);
+    if(searchType == SearchType.USERS || searchType == SearchType.CHURCH){
+      return userRepository.runSearchQuery(query, searchType);
+    }else if(searchType == SearchType.EVENT){
+      return eventRepository.runSearchQuery(query);
+    }else{
+      return Future.value([]);
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import '../../models/old/event_entity.dart';
+import 'dart:async';
 
 abstract class FirestoreEventRepository {
   Stream<EventEntity> getById(String eventId);
@@ -23,4 +24,6 @@ abstract class FirestoreEventRepository {
     double budget,
     bool isSponsored,
   );
+
+  Future<List<EventEntity>> runSearchQuery(String query);
 }
