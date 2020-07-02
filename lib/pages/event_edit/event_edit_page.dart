@@ -72,7 +72,7 @@ class _EventEditPageState extends State<EventEditPage> {
       stream: _eventEditBloc.eventEditState$,
       initialData: _eventEditBloc.eventEditState$.value,
       builder: (context, snapshot) {
-        var data = snapshot.data;
+        var existingEvent = snapshot.data;
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -100,13 +100,29 @@ class _EventEditPageState extends State<EventEditPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
-                  child: Text(
-                    data.eventDetails == null
-                     ? s.event_create_title
-                     : s.event_save_title,
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                  child: StreamBuilder<bool>(
+                    stream: _eventEditBloc.isLoading$,
+                    initialData: _eventEditBloc.isLoading$.value,
+                    builder: (context, snapshot) {
+                      bool loading = snapshot.data ?? false;
+
+                      if (loading) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          ),
+                        );
+                      }
+
+                      return Text(
+                        existingEvent.eventDetails == null
+                        ? s.event_create_title
+                        : s.event_save_title,
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      );
+                    }
                   ),
                   onPressed: _eventEditBloc.saveEvent,
                 ),
@@ -127,7 +143,7 @@ class _EventEditPageState extends State<EventEditPage> {
                       initialData: _eventEditBloc.images$.value,
                       builder: (context, snapshot) {
                         var newImages = snapshot.data;
-                        if (newImages.isEmpty && data.eventDetails == null) {
+                        if (newImages.isEmpty && existingEvent.eventDetails == null) {
                           return Container();
                         } else {
                           return Container(
@@ -138,8 +154,8 @@ class _EventEditPageState extends State<EventEditPage> {
                                 viewportFraction: 0.9
                               ),
                               scrollDirection: Axis.horizontal,
-                              itemCount: data.eventDetails != null
-                                ? data.eventDetails.media.length
+                              itemCount: existingEvent.eventDetails != null
+                                ? existingEvent.eventDetails.media.length
                                 : newImages.length,
                               itemBuilder: (context, index) {
                                 return Padding(
@@ -181,7 +197,7 @@ class _EventEditPageState extends State<EventEditPage> {
                                                         size: 14,
                                                       ),
                                                     ),
-                                                    data.eventDetails == null
+                                                    existingEvent.eventDetails == null
                                                       ? Image.file(
                                                           File(newImages[index]),
                                                         )
@@ -189,7 +205,7 @@ class _EventEditPageState extends State<EventEditPage> {
                                                           height: double.infinity,
                                                           width: double.infinity,
                                                           fit: BoxFit.cover,
-                                                          image: CacheImage(data.eventDetails.media[index].url),
+                                                          image: CacheImage(existingEvent.eventDetails.media[index].url),
                                                         ),
                                                   ],
                                                 ),
@@ -298,9 +314,9 @@ class _EventEditPageState extends State<EventEditPage> {
                 child: Column(
                   children: <Widget>[
                     TextFormField(
-                      initialValue: data.eventDetails == null
-                        ? ""
-                        : data.eventDetails.title,
+                      initialValue: existingEvent.eventDetails != null 
+                        ? existingEvent.eventDetails.title
+                        : '',
                       onChanged: _eventEditBloc.titleChanged,
                       keyboardType: TextInputType.text,
                       style: TextStyle(
@@ -338,9 +354,7 @@ class _EventEditPageState extends State<EventEditPage> {
                               ),
                               SizedBox(width: 10),
                               Text(
-                                data.eventDetails == null
-                                ? s.event_start_end_date
-                                : data.eventDetails.startDate,
+                                s.event_start_end_date,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -373,9 +387,9 @@ class _EventEditPageState extends State<EventEditPage> {
                                             stream: _eventEditBloc.startDate$,
                                             initialData: _eventEditBloc.startDate$.value,
                                             builder: (context, snapshot) {
-                                              var date = data.eventDetails == null
+                                              var date = existingEvent.eventDetails == null
                                                 ? snapshot.data
-                                                : data.eventDetails.startDate;
+                                                : existingEvent.eventDetails.startDate;
                                               
                                               return Text(
                                                 date != null
@@ -398,9 +412,9 @@ class _EventEditPageState extends State<EventEditPage> {
                                             stream: _eventEditBloc.startTime$,
                                             initialData: _eventEditBloc.startTime$.value,
                                             builder: (context, snapshot) {
-                                              var time = data.eventDetails == null
+                                              var time = existingEvent.eventDetails == null
                                                   ? snapshot.data
-                                                  : data.eventDetails.startTime;
+                                                  : existingEvent.eventDetails.startTime;
 
                                               return Text(
                                                 time != null 
@@ -441,9 +455,9 @@ class _EventEditPageState extends State<EventEditPage> {
                                             stream: _eventEditBloc.endDate$,
                                             initialData: _eventEditBloc.endDate$.value,
                                             builder: (context, snapshot) {
-                                              var date = data.eventDetails == null
+                                              var date = existingEvent.eventDetails == null
                                                 ? snapshot.data
-                                                : data.eventDetails.endDate;
+                                                : existingEvent.eventDetails.endDate;
                                               
                                               return Text(
                                                 date != null
@@ -466,9 +480,9 @@ class _EventEditPageState extends State<EventEditPage> {
                                             stream: _eventEditBloc.endTime$,
                                             initialData: _eventEditBloc.endTime$.value,
                                             builder: (context, snapshot) {
-                                              var time = data.eventDetails == null
+                                              var time = existingEvent.eventDetails == null
                                                   ? snapshot.data
-                                                  : data.eventDetails.endTime;
+                                                  : existingEvent.eventDetails.endTime;
 
                                               return Text(
                                                 time != null 
@@ -520,6 +534,7 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                           Divider(),
                           TextFormField(
+                            initialValue: existingEvent.eventDetails.description,
                             onChanged: _eventEditBloc.descriptionChanged,
                             keyboardType: TextInputType.multiline,
                             maxLines: 4,
@@ -569,6 +584,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                           Divider(),
                           TextFormField(
+                            initialValue: existingEvent.eventDetails != null
+                              ? existingEvent.eventDetails.webAddress
+                              : '',
                             onChanged: _eventEditBloc.webAddressChanged,
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
@@ -617,6 +635,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                           Divider(),
                           TextFormField(
+                            initialValue: existingEvent.eventDetails != null
+                              ? existingEvent.eventDetails.eventCost.toStringAsFixed(2)
+                              : '',
                             onChanged: _eventEditBloc.costChanged,
                             keyboardType: TextInputType.numberWithOptions(
                               decimal: true,
@@ -707,15 +728,17 @@ class _EventEditPageState extends State<EventEditPage> {
                                     );
                                   }
                                 },
-                                title: StreamBuilder(
+                                title: StreamBuilder<String>(
                                   stream: _eventEditBloc.venue$,
                                   initialData: _eventEditBloc.venue$.value,
                                   builder: (context, snapshot) {
                                     var venue = snapshot.data ?? "";
                                     return Text(
-                                      venue.isEmpty
-                                        ? s.event_venue_hint
-                                        : venue,
+                                      _eventEditBloc.eventEditState$.value.eventDetails == null
+                                        ? venue.isEmpty 
+                                          ? s.event_venue_hint
+                                          : venue
+                                        : _eventEditBloc.eventEditState$.value.eventDetails.venue,
                                       style: TextStyle(
                                         color: venue.isEmpty 
                                           ? Colors.grey
@@ -758,9 +781,9 @@ class _EventEditPageState extends State<EventEditPage> {
                               stream: _eventEditBloc.isSponsored$,
                               initialData: _eventEditBloc.isSponsored$.value,
                               builder: (context, snapshot) {
-                                var _isSponsored = data.eventDetails == null
+                                var _isSponsored = existingEvent.eventDetails == null
                                   ? _eventEditBloc.isSponsored$.value
-                                  : data.eventDetails.isSponsored;
+                                  : existingEvent.eventDetails.isSponsored;
 
                                 return SwitchListTile(
                                   value: _isSponsored,
@@ -824,9 +847,9 @@ class _EventEditPageState extends State<EventEditPage> {
                             stream: _eventEditBloc.isSponsored$,
                             initialData: _eventEditBloc.isSponsored$.value,
                             builder: (context, snapshot) {
-                              var _isSponsored = data.eventDetails == null
+                              var _isSponsored = existingEvent.eventDetails == null
                                 ? _eventEditBloc.isSponsored$.value
-                                : data.eventDetails.isSponsored;
+                                : existingEvent.eventDetails.isSponsored;
 
                               if (!_isSponsored) {
                                 return Container();
@@ -859,9 +882,9 @@ class _EventEditPageState extends State<EventEditPage> {
                                       stream: _eventEditBloc.budget$,
                                       initialData: _eventEditBloc.budget$.value,
                                       builder: (context, snapshot) {
-                                        var _cost = data.eventDetails == null
+                                        var _cost = existingEvent.eventDetails == null
                                           ? _eventEditBloc.budget$.value
-                                          : data.eventDetails.budget;
+                                          : existingEvent.eventDetails.budget.toStringAsFixed(2);
                                         
                                         return TextFormField(
                                           initialValue: _cost,
@@ -968,5 +991,23 @@ class _EventEditPageState extends State<EventEditPage> {
         );
       },
     );
+  }
+
+  void _updateBloc(EventEditState state) {
+    if (state.eventDetails != null) {
+      var event = state.eventDetails;
+      _eventEditBloc.titleChanged(event.title);
+      _eventEditBloc.descriptionChanged(event.description);
+      // _eventEditBloc.imagesChanged(event.media.map((m) => m.url).toList());
+      _eventEditBloc.startDateChanged(event.startDate);
+      _eventEditBloc.startTimeChanged(event.startTime);
+      _eventEditBloc.endDateChanged(event.endDate);
+      _eventEditBloc.endTimeChanged(event.endTime);
+      _eventEditBloc.webAddressChanged(event.webAddress);
+      _eventEditBloc.costChanged(event.eventCost.toStringAsFixed(2));
+      _eventEditBloc.venueChanged(event.venue);
+      _eventEditBloc.isSponsoredChanged(event.isSponsored);
+      _eventEditBloc.budgetChanged(event.budget.toStringAsFixed(2));
+    }
   }
 }

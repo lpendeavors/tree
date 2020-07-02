@@ -7,9 +7,13 @@ import '../events_state.dart';
 
 class EventsListItem extends StatefulWidget {
   final EventItem eventItem;
+  final Function() onDelete;
+  final Function() onReport;
 
   const EventsListItem({
     @required this.eventItem,
+    @required this.onDelete,
+    @required this.onReport,
   });
 
   @override
@@ -27,7 +31,7 @@ class _EventsListItemState extends State<EventsListItem> {
         );
       },
       onLongPress: () {
-
+        
       },
       child: Container(
         margin: EdgeInsets.all(10),
@@ -105,20 +109,6 @@ class _EventsListItemState extends State<EventsListItem> {
                     ),
                   ),
                 ),
-                Center(
-                  child: Container(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
                 if (widget.eventItem.isSponsored)
                   Align(
                     alignment: Alignment.topLeft,
@@ -147,9 +137,7 @@ class _EventsListItemState extends State<EventsListItem> {
                       Icons.more_vert,
                       color: Colors.white,
                     ),
-                    onPressed: () {
-                      print('options clicked');
-                    },
+                    onPressed: () => _showEventOptions(context),
                   ),
                 ),
               ],
@@ -226,7 +214,68 @@ class _EventsListItemState extends State<EventsListItem> {
     );
   }
 
-  Future<void> _showOptionsDialog() async {
-    
+  Future<void> _showEventOptions(
+    BuildContext context
+  ) async {
+    switch (await showDialog<EventOption>(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(
+            'Tree',
+          ),
+          children: <Widget>[
+            if (widget.eventItem.isMine) ...[
+              SimpleDialogOption(
+                child: Text('Edit Event'),
+                onPressed: () => Navigator.pop(context, EventOption.edit),
+              ),
+              SimpleDialogOption(
+                child: Text('Delete Event'),
+                onPressed: () => Navigator.pop(context, EventOption.delete),
+              ),
+            ],
+            if (!widget.eventItem.isMine) ...[
+              SimpleDialogOption(
+                child: Text('Report Event'),
+                onPressed: () => Navigator.pop(context, EventOption.report),
+              ),
+            ],
+            if (widget.eventItem.isAdmin) ...[
+              SimpleDialogOption(
+                child: Text('Change Status'),
+                onPressed: () => Navigator.pop(context, EventOption.changeStatus),
+              ),
+              SimpleDialogOption(
+                child: Text('Update Max Reach'),
+                onPressed: () => Navigator.pop(context, EventOption.updateReach),
+              ),
+            ]
+          ],
+        );
+      }
+    )) {
+      case EventOption.edit:
+        Navigator.of(context).pushNamed(
+          '/edit_event',
+          arguments: <String, dynamic>{
+            'eventId': widget.eventItem.id,
+            'eventType': widget.eventItem.eventType,
+          },
+        );
+      break;
+      case EventOption.delete:
+        print('delete');
+      break;
+      case EventOption.report:
+        print('repport');
+      break;
+      case EventOption.updateReach:
+        print('update reach');
+      break;
+      case EventOption.changeStatus:
+        print('change status');
+      break;
+    }
   }
 }

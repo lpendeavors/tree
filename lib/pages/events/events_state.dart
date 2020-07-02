@@ -1,6 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
+/// 
+/// Enum
+///
+enum EventOption { report, edit, delete, changeStatus, updateReach }
+
 ///
 /// Message
 ///
@@ -62,6 +67,8 @@ class EventItem extends Equatable {
   final int eventType;
   final DateTime startDate;
   final List<String> isAttending;
+  final bool isMine;
+  final bool isAdmin;
 
   const EventItem({
     @required this.id,
@@ -74,6 +81,8 @@ class EventItem extends Equatable {
     @required this.eventType,
     @required this.startDate,
     @required this.isAttending,
+    @required this.isMine,
+    @required this.isAdmin,
   });
 
   @override
@@ -88,6 +97,8 @@ class EventItem extends Equatable {
     eventType,
     startDate,
     isAttending,
+    isMine,
+    isAdmin,
   ];
 
   @override

@@ -190,10 +190,10 @@ class EventEditBloc implements BaseBloc {
     final endTimeSubject = BehaviorSubject<DateTime>.seeded(null);
     final imagesSubject = BehaviorSubject<List<String>>.seeded([]);
     final webAddressSubject = BehaviorSubject<String>.seeded('');
-    final costSubject = BehaviorSubject<String>.seeded(null);
+    final costSubject = BehaviorSubject<String>.seeded('0.00');
     final venueSubject = BehaviorSubject<String>.seeded('');
     final venueGeoSubject = BehaviorSubject<Tuple2<double, double>>.seeded(null);
-    final budgetSubject = BehaviorSubject<String>.seeded(null);
+    final budgetSubject = BehaviorSubject<String>.seeded('0.00');
     final isSponsoredSubject = BehaviorSubject<bool>.seeded(false);
     final saveEventSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
@@ -442,6 +442,7 @@ class EventEditBloc implements BaseBloc {
     return EventEditItem(
       id: entity.documentId,
       title: entity.eventTitle,
+      description: entity.eventDetails,
       startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
       startTime: DateTime.fromMillisecondsSinceEpoch(entity.eventStartTime),
       endDate: DateTime.fromMillisecondsSinceEpoch(entity.eventEndDate),
@@ -451,6 +452,7 @@ class EventEditBloc implements BaseBloc {
       venue: entity.location,
       isSponsored: entity.isSponsored,
       budget: entity.sponsorFee,
+      webAddress: entity.eventWebAddress ?? '',
     );
   }
 
@@ -499,11 +501,12 @@ class EventEditBloc implements BaseBloc {
     bool isSponsored,
     Sink<bool> isLoading,
   ) async* {
-    print('[DEBUG] saveEvent');
+    print('[DEBUG] EventEditBloc#performSave');
     LoginState loginState = userBloc.loginState$.value;
 
     if (loginState is LoggedInUser) {
       try {
+        isLoading.add(true);
         await eventRepository.save(
           loginState.uid,
           loginState.email,
@@ -533,6 +536,8 @@ class EventEditBloc implements BaseBloc {
         yield EventEditedMessageSuccess(eventTitle);
       } catch (e) {
         yield EventEditedMessageError(e);
+      } finally {
+        isLoading.add(false);
       }
     } else {
       yield EventEditedMessageError(NotLoggedInError());

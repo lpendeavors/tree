@@ -131,6 +131,7 @@ class EventEditState extends Equatable {
 class EventEditItem extends Equatable {
   final String id;
   final String title;
+  final String description;
   final DateTime startDate;
   final DateTime startTime;
   final DateTime endDate;
@@ -140,10 +141,12 @@ class EventEditItem extends Equatable {
   final List<EventMediaItem> media;
   final bool isSponsored;
   final double budget;
+  final String webAddress;
 
   const EventEditItem({
     @required this.id,
     @required this.title,
+    @required this.description,
     @required this.startDate,
     @required this.startTime,
     @required this.endDate,
@@ -153,12 +156,14 @@ class EventEditItem extends Equatable {
     @required this.media,
     @required this.isSponsored,
     @required this.budget,
+    @required this.webAddress,
   });
 
   @override
   List<Object> get props => [
     id,
     title,
+    description,
     startDate,
     startTime,
     endDate,
@@ -168,6 +173,7 @@ class EventEditItem extends Equatable {
     media,
     isSponsored,
     budget,
+    webAddress,
   ];
 
   @override

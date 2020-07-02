@@ -36,5 +36,11 @@ abstract class FirestoreEventRepository {
     bool isVerified,
   );
 
+  Future<void> changeAttendance(
+    String eventId,
+    bool attending,
+    String userId,
+  );
+
   Future<List<EventEntity>> runSearchQuery(String query);
 }

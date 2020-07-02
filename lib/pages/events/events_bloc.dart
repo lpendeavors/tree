@@ -20,11 +20,12 @@ class EventsBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-
+  final void Function(bool) hideEventsOnMapChanged;
 
   ///
   /// Output streams
   ///
+  final ValueStream<bool> hideEventsOnMap$;
   final ValueStream<EventsListState> eventsListState$;
 
   ///
@@ -33,7 +34,9 @@ class EventsBloc implements BaseBloc {
   final void Function() _dispose;
 
   EventsBloc._({
+    @required this.hideEventsOnMap$,
     @required this.eventsListState$,
+    @required this.hideEventsOnMapChanged,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -50,7 +53,7 @@ class EventsBloc implements BaseBloc {
     ///
     /// Stream controllers
     ///
-
+    final hideEventsOnMapSubject = BehaviorSubject<bool>.seeded(false);
 
     ///
     /// Streams
@@ -60,14 +63,25 @@ class EventsBloc implements BaseBloc {
       eventRepository,
     ).publishValueSeeded(_kInitialEventsListState);
 
+
+    /// 
+    /// Controllers and subscriptions
+    /// 
     final subscriptions = <StreamSubscription>[
       eventsListState$.connect(),
     ];
 
+    final controllers = <StreamController>[
+      hideEventsOnMapSubject,
+    ];
+
     return EventsBloc._(
+      hideEventsOnMap$: hideEventsOnMapSubject.stream,
+      hideEventsOnMapChanged: hideEventsOnMapSubject.add,
       eventsListState$: eventsListState$,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
       }
     );
   }
@@ -91,7 +105,11 @@ class EventsBloc implements BaseBloc {
     if (loginState is LoggedInUser) {
       return eventRepository.get()
         .map((entities) {
-          return _entitiesToEventItems(entities);
+          return _entitiesToEventItems(
+            entities, 
+            loginState.uid,
+            loginState.isAdmin,
+          );
         })
         .map((eventItems) {
           return _kInitialEventsListState.copyWith(
@@ -119,6 +137,8 @@ class EventsBloc implements BaseBloc {
 
   static List<EventItem> _entitiesToEventItems(
     List<EventEntity> entities,
+    String uid,
+    bool isAdmin,
   ) {
     entities.sort((a, b) => a.eventStartDate.compareTo(b.eventStartDate));
     return entities.map((entity) {
@@ -133,6 +153,8 @@ class EventsBloc implements BaseBloc {
         startDate: DateTime.fromMillisecondsSinceEpoch(entity.eventStartDate),
         isSponsored: entity.isSponsored,
         isAttending: entity.attending,
+        isMine: entity.ownerId == uid,
+        isAdmin: isAdmin,
       );
     }).toList();
   }

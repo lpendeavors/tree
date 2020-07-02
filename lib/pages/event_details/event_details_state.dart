@@ -12,6 +12,15 @@ abstract class EventAttendeesMessage {
   const EventAttendeesMessage();
 }
 
+class EventAttendanceChangedSuccess implements EventAttendeesMessage {
+  const EventAttendanceChangedSuccess();
+}
+
+class EventAttendanceChangedError implements EventAttendeesMessage {
+  final Object error;
+  const EventAttendanceChangedError(this.error);
+}
+
 ///
 /// Error
 ///

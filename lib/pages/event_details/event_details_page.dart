@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_text_view/smart_text_view.dart';
 import '../../util/asset_utils.dart';
 import '../../util/event_utils.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
+import './widgets/event_details_map.dart';
 import './event_details_bloc.dart';
 import './event_details_state.dart';
 
@@ -42,7 +44,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     ];
   }
 
-  void _showMessageResult(EventDetailsMessage message) {
+  void _showMessageResult(EventAttendeesMessage message) {
     print('[DEBUG] EventDetailsMessage=$message');
   }
 
@@ -296,9 +298,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                   width: 30,
                                   padding: EdgeInsets.all(8),
                                   child: Image.asset(
-                                    eventTypes[
-                                    data.eventDetails.type
-                                    ].assetImage,
+                                    eventTypes[data.eventDetails.type].assetImage,
                                     height: 15,
                                     width: 15,
                                     color: eventTypes[data.eventDetails.type].useColor
@@ -386,7 +386,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     SizedBox(width: 5),
                                     Flexible(
                                       child: Text(
-                                        data.eventDetails.price.toString(),
+                                        data.eventDetails.price.toStringAsFixed(2),
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -484,7 +484,18 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                               ),
                               child: Text(S.of(context).view_map),
                               onPressed: () async {
-                                // TODO: open map
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return EventDetailsMap(
+                                        LatLng(
+                                          data.eventDetails.latitude,
+                                          data.eventDetails.longitude,
+                                        ),
+                                      );
+                                    }
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -498,13 +509,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               if (data.eventDetails != null) ...[
                 if (!data.eventDetails.isMine) ...[
                   RaisedButton(
-                    color: Color(0xffe94f4f),
+                    color: data.eventDetails.isAttending
+                      ? Color(0xffe94f4f)
+                      : Theme.of(context).primaryColor,
                     padding: EdgeInsets.all(20),
                     child: Center(
                       child: Text(
                         data.eventDetails.isAttending
-                            ? S.of(context).cancel
-                            : S.of(context).event_attend_title,
+                          ? S.of(context).cancel
+                          : S.of(context).event_attend_title,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -512,9 +525,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         ),
                       ),
                     ),
-                    onPressed: data.eventDetails.isAttending
-                      ? _eventDetailsBloc.cancelAttendance
-                      : _eventDetailsBloc.attendEvent,
+                    onPressed: () {
+                      _eventDetailsBloc
+                        .toggleAttendance(!data.eventDetails.isAttending);
+                    },
                   ),
                 ],
               ],

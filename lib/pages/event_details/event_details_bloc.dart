@@ -19,14 +19,14 @@ class EventDetailsBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-  Function() attendEvent;
-  Function() cancelAttendance;
+  Function(bool) toggleAttendance;
 
   ///
   /// Output streams
   ///
   final ValueStream<EventDetailsState> eventDetailsState$;
-  final Stream<EventDetailsMessage> message$;
+  final Stream<EventAttendeesMessage> message$;
+  final ValueStream<bool> isLoading$;
 
   ///
   /// Clean up
@@ -34,10 +34,10 @@ class EventDetailsBloc implements BaseBloc {
   final void Function() _dispose;
 
   EventDetailsBloc._({
-    @required this.attendEvent,
-    @required this.cancelAttendance,
+    @required this.toggleAttendance,
     @required this.eventDetailsState$,
     @required this.message$,
+    @required this.isLoading$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -56,18 +56,22 @@ class EventDetailsBloc implements BaseBloc {
     ///
     /// Stream controllers
     ///
-    final attendEvent = PublishSubject<String>(sync: true);
-    final cancelAttendance = PublishSubject<String>(sync: true);
+    final attendanceSubject = PublishSubject<bool>();
+    final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     ///
     /// Streams
     ///
-    final message$ = _getEventDetailsMessage(
-      attendEvent,
-      cancelAttendance,
-      userBloc,
-      eventRepository,
-    );
+    final message$ = attendanceSubject
+      .exhaustMap(
+        (attending) => switchAttendance(
+          userBloc,
+          eventRepository,
+          eventId,
+          attending,
+          isLoadingSubject,
+        ),
+      ).publish();
 
     final eventDetailsState$ = _getEventDetails(
         userBloc,
@@ -81,9 +85,9 @@ class EventDetailsBloc implements BaseBloc {
     ];
 
     return EventDetailsBloc._(
-      attendEvent: () => attendEvent.add(null),
-      cancelAttendance: () => cancelAttendance.add(null),
+      toggleAttendance: attendanceSubject.add,
       eventDetailsState$: eventDetailsState$,
+      isLoading$: isLoadingSubject,
       message$: message$,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -151,7 +155,6 @@ class EventDetailsBloc implements BaseBloc {
       isMine: entity.uid == (loginState as LoggedInUser).uid,
       isRejected: entity.status == 2,
       reason: entity.reason,
-      isAttending: false,
       latitude: entity.eventLatitude,
       longitude: entity.eventLongitude,
       status: entity.status,
@@ -161,6 +164,8 @@ class EventDetailsBloc implements BaseBloc {
       location: entity.location,
       details: entity.eventDetails,
       isSponsored: entity.isSponsored,
+      isAttending: (entity.attending ?? [])
+        .contains((loginState as LoggedInUser).uid),
     );
   }
 
@@ -178,25 +183,30 @@ class EventDetailsBloc implements BaseBloc {
     });
   }
 
-  static ConnectableStream<EventDetailsMessage> _getEventDetailsMessage(
-    Stream<String> attendEvent,
-    Stream<String> cancelAttendance,
+  static Stream<EventAttendeesMessage> switchAttendance(
     UserBloc userBloc,
     FirestoreEventRepository eventRepository,
-  ) {
-    return Rx.combineLatest([
-      attendEvent,
-      cancelAttendance,
-    ], (message) {
+    String eventId,
+    bool isAttending,
+    Sink<bool> isLoading,
+  ) async* {
+    print('[DEBUG] EventDetailsBloc#switchAttendance');
+    LoginState loginState = userBloc.loginState$.value;
 
-      var loginState = userBloc.loginState$.value;
-      if (loginState is Unauthenticated) {
-
+    if (loginState is LoggedInUser) {
+      try {
+        isLoading.add(true);
+        await eventRepository.changeAttendance(
+          eventId,
+          isAttending,
+          loginState.uid,
+        );
+        yield EventAttendanceChangedSuccess();
+      } catch (e) {
+        yield EventAttendanceChangedError(e);
+      } finally {
+        isLoading.add(false);
       }
-
-      if (loginState is LoggedInUser) {
-        print(message);
-      }
-    }).publish();
+    }
   }
 }
