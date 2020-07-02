@@ -6,13 +6,15 @@ import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/bloc/bloc_provider.dart';
 import 'package:treeapp/data/event/firestore_event_repository.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
+import 'package:treeapp/data/group/firestore_group_repository.dart';
 import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import '../../pages/perform_search/perform_search_state.dart';
-
+import '../../user_bloc/user_bloc.dart';
 
 const _kInitialSearchState = SearchState(
   results: [],
+  user: null,
   isLoading: false,
   error: null,
 );
@@ -42,12 +44,15 @@ class SearchBloc implements BaseBloc {
   factory SearchBloc({
     @required FirestoreUserRepository userRepository,
     @required FirestoreEventRepository eventRepository,
+    @required FirestoreGroupRepository groupRepository,
     @required SearchType searchType
   }) {
     ///
     /// Assert
     ///
     assert(userRepository != null, 'userRepository cannot be null');
+    assert(eventRepository != null, 'eventRepository cannot be null');
+    assert(groupRepository != null, 'groupRepository cannot be null');
     assert(searchType != null, 'searchType cannot be null');
 
     ///
@@ -64,6 +69,7 @@ class SearchBloc implements BaseBloc {
             query,
             userRepository,
             eventRepository,
+            groupRepository,
             searchType
           );
         }
@@ -73,7 +79,7 @@ class SearchBloc implements BaseBloc {
     /// Subscriptions and controllers
     ///
     final subscriptions = <StreamSubscription>[
-      searchState$.connect()
+      searchState$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -97,15 +103,19 @@ class SearchBloc implements BaseBloc {
     String query,
     FirestoreUserRepository userRepository,
     FirestoreEventRepository eventRepository,
+    FirestoreGroupRepository groupRepository,
     SearchType searchType
   ) {
     if(query.length > 0) {
-      return _runSearch(query, userRepository, eventRepository, searchType).then((results) {
-        return _kInitialSearchState.copyWith(
-          results: results,
-          isLoading: false,
-          error: null,
-        );
+      return _runSearch(query, userRepository, eventRepository, groupRepository, searchType).then((results) {
+        return _getLogin(userRepository).then((value){
+          return _kInitialSearchState.copyWith(
+            results: results,
+            user: value,
+            isLoading: false,
+            error: null,
+          );
+        });
       });
     }else{
       return Future.value(
@@ -122,6 +132,7 @@ class SearchBloc implements BaseBloc {
     String query,
     FirestoreUserRepository userRepository,
     FirestoreEventRepository eventRepository,
+    FirestoreGroupRepository groupRepository,
     SearchType searchType
   ) {
     if(searchType == SearchType.USERS || searchType == SearchType.CHURCH){
@@ -129,7 +140,13 @@ class SearchBloc implements BaseBloc {
     }else if(searchType == SearchType.EVENT){
       return eventRepository.runSearchQuery(query);
     }else{
-      return Future.value([]);
+      return groupRepository.runSearchQuery(query);
     }
+  }
+
+  static Future<UserEntity> _getLogin(
+    FirestoreUserRepository userRepository,
+  ) {
+    return userRepository.user().first;
   }
 }

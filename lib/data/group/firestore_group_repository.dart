@@ -20,4 +20,8 @@ abstract class FirestoreGroupRepository {
     bool byAdmin,
     bool isVerified,
   );
+
+  Future<List<GroupEntity>> runSearchQuery(
+      String query
+  );
 }
