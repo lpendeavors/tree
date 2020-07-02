@@ -9,6 +9,7 @@ import '../chat/widgets/chat_rooms.dart';
 import '../chat/widgets/chat_groups.dart';
 import '../chat/chat_tabs_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 
 class ChatTabsPage extends StatefulWidget {
   final ChatTabsBloc chatBloc;
@@ -70,7 +71,7 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
                     flex: 1,
                     child: RaisedButton(
                       onPressed: () async {
-
+                        Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.CHAT});
                       },
                       color: Colors.grey[50],
                       elevation: 0,

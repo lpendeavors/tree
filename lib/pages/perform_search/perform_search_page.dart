@@ -1,18 +1,25 @@
 import 'dart:math';
+import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_text_view/smart_text_view.dart';
 import 'package:treeapp/data/event/firestore_event_repository.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
+import 'package:treeapp/data/group/firestore_group_repository.dart';
 import 'package:treeapp/models/old/event_entity.dart';
 import 'package:treeapp/models/old/user_entity.dart';
+import 'package:treeapp/models/old/group_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_bloc.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:treeapp/util/asset_utils.dart';
 import 'package:treeapp/util/event_utils.dart';
+import '../../user_bloc/user_bloc.dart';
+import '../../models/old/user_chat_data.dart';
+import '../../models/old/user_chat_group_member.dart';
 
-enum SearchType { CHURCH, USERS, EVENT }
+
+enum SearchType { CHURCH, USERS, EVENT, CHAT }
 
 List months = [
   'JAN',
@@ -29,17 +36,25 @@ List months = [
   'DEC',
 ];
 
+const int CHAT_TYPE_TEXT = 0;
+const int CHAT_TYPE_IMAGE = 1;
+const int CHAT_TYPE_GIF = 2;
+const int CHAT_TYPE_DOC = 3;
+const int CHAT_TYPE_VIDEO = 4;
+
 class PerformSearch extends StatefulWidget {
   final SearchType searchType;
   final String searchFilter;
   final FirestoreUserRepository userRepository;
   final FirestoreEventRepository eventRepository;
+  final FirestoreGroupRepository groupRepository;
 
   const PerformSearch({Key key,
     this.searchType = SearchType.USERS,
     this.searchFilter,
     @required this.userRepository,
-    @required this.eventRepository
+    @required this.eventRepository,
+    @required this.groupRepository
   }) : super(key: key);
 
   @override
@@ -61,6 +76,7 @@ class _PerformSearchState extends State<PerformSearch> {
     _searchBloc = SearchBloc(
       userRepository: widget.userRepository,
       eventRepository: widget.eventRepository,
+      groupRepository: widget.groupRepository,
       searchType: widget.searchType
     );
 
@@ -302,6 +318,7 @@ class _PerformSearchState extends State<PerformSearch> {
       initialData: _searchBloc.searchState$.value,
       builder: (context, snapshot) {
         SearchState state = snapshot.data;
+        var results = state.results;
 
         if(state.isLoading){
           return Center(
@@ -309,7 +326,26 @@ class _PerformSearchState extends State<PerformSearch> {
           );
         }
 
-        if(state.results.length == 0){
+        if(widget.searchType == SearchType.CHAT){
+          results = results.where((item){
+            item = (item as GroupEntity);
+            String groupId = item.groupId;
+            List<ChatData> myChats = state.user.myChatsList13;
+            bool matching = false;
+
+            for (ChatData chat in myChats) {
+              String chatId = chat.chatId;
+              if (groupId == chatId) {
+                matching = true;
+                break;
+              }
+            }
+
+            return matching;
+          }).toList();
+        }
+
+        if(results.length == 0){
           return Container(
             color: Colors.white,
             child: Center(
@@ -409,9 +445,10 @@ class _PerformSearchState extends State<PerformSearch> {
               child: ListView.separated(
                 controller: scrollController,
                 shrinkWrap: true,
-                itemCount: state.results.length,
+                itemCount: results.length,
                 itemBuilder: (context, index) {
-                  var item = state.results[index];
+                  var item = results[index];
+                  var user = state.user;
 
                   if(item is UserEntity){
                     bool thisIsChurch = item.isChurch;
@@ -871,6 +908,318 @@ class _PerformSearchState extends State<PerformSearch> {
                                 ],
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }else if(item is GroupEntity){
+                    GroupEntity item2 = item;
+
+                    String groupId = item2.groupId;
+                    List<ChatData> myChats = user.myChatsList13;
+
+                    List<UserChatGroupMember> members;
+                    var isConversation;
+                    var isRoom;
+                    var isGroup;
+
+                    var groupImage = item2.groupImage ?? "";
+                    var groupName = item2.groupName ?? "";
+                    var groupDescription = item2.groupDescription ?? "";
+
+                    for (ChatData chat in myChats) {
+                      String chatId = chat.chatId;
+                      if (groupId == chatId) {
+                        isConversation = chat.isConversation;
+                        isRoom = chat.isRoom;
+                        isGroup = chat.isGroup;
+
+                        if (isGroup && isConversation) {
+                          members = chat.groupMembers;
+                        }
+                        break;
+                      }
+                    }
+
+                    return InkWell(
+                      onTap: () {
+                        /*
+                        popUpWidgetAndDisposeCurrent(
+                            context,
+                            GroupDetails(
+                              groupDetails: chatModel,
+                              isGroup: true,
+                              isConversation: isConversation,
+                              chatId: chatId,
+                              canJoinGroup: true,
+                            ));*/
+                      },
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                if (members != null && members.length > 2 && isConversation)
+                                  Container(
+                                    height: 40,
+                                    width: 40,
+                                    child: Stack(
+                                      children:
+                                      List.generate(members.length > 3 ? 3 : members.length, (int i) {
+                                        return Padding(
+                                          padding: EdgeInsets.only(left: 5 + (i * 4.0)),
+                                          child: GestureDetector(
+                                            onTap: (){},
+                                            child: ClipRRect(
+                                              child: AnimatedContainer(
+                                                curve: Curves.ease,
+                                                alignment: Alignment.center,
+                                                duration: Duration(milliseconds: 300),
+                                                padding: EdgeInsets.all(i == 1 ? 0 : .5),
+                                                decoration: BoxDecoration(
+                                                  color: Color(0xfff79836),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                width: 30,
+                                                height: 30,
+                                                child: Stack(
+                                                  children: <Widget>[
+                                                    Card(
+                                                      margin: EdgeInsets.all(0),
+                                                      shape: CircleBorder(),
+                                                      clipBehavior: Clip.antiAlias,
+                                                      color: Colors.transparent,
+                                                      elevation: .5,
+                                                      child: Stack(
+                                                        alignment: Alignment.center,
+                                                        children: <Widget>[
+                                                          Container(
+                                                            width: 30,
+                                                            height: 30,
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons.people,
+                                                                color: Colors.white,
+                                                                size: 14,
+                                                              )
+                                                            ),
+                                                          ),
+                                                          CachedNetworkImage(
+                                                            width: 30,
+                                                            height: 30,
+                                                            imageUrl: groupImage,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                  )
+                                else
+                                  Container(
+                                    padding: EdgeInsets.all(3),
+                                    child: GestureDetector(
+                                      onTap: (){},
+                                      child: ClipRRect(
+                                        child: AnimatedContainer(
+                                          curve: Curves.ease,
+                                          alignment: Alignment.center,
+                                          duration: Duration(milliseconds: 300),
+                                          padding: EdgeInsets.all(0),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xfff79836),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          width: 40,
+                                          height: 40,
+                                          child: Stack(
+                                            children: <Widget>[
+                                            Card(
+                                              margin: EdgeInsets.all(0),
+                                              shape: CircleBorder(),
+                                              clipBehavior: Clip.antiAlias,
+                                              color: Colors.transparent,
+                                              elevation: .5,
+                                              child: Stack(
+                                                alignment: Alignment.center,
+                                                children: <Widget>[
+                                                  Container(
+                                                    width: 40,
+                                                    height: 40,
+                                                    child: Center(
+                                                      child: Icon(
+                                                        Icons.people,
+                                                        color: Colors.white,
+                                                        size: 14,
+                                                      )
+                                                    ),
+                                                  ),
+                                                  CachedNetworkImage(
+                                                    width: 40,
+                                                    height: 40,
+                                                    imageUrl: groupImage,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(width: 1, color: Color(0xfff79836))
+                                    ),
+                                  ),
+                                SizedBox(width: 10),
+                                Flexible(
+                                  flex: 1,
+                                  fit: FlexFit.tight,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          Flexible(
+                                            flex: 1,
+                                            fit: FlexFit.tight,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Flexible(
+                                                  child: Text(
+                                                    groupName,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontFamily: 'NirmalaB',
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14.0,
+                                                      color: Colors.black
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (isConversation && members.length > 2)
+                                                  Container(
+                                                    margin: const EdgeInsets.fromLTRB(6, 0, 0, 0),
+                                                    padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xff5c4eb2),
+                                                      borderRadius: BorderRadius.circular(25),
+                                                      border: Border.all(color: Color(0xfffff3f3f3), width: 1)
+                                                    ),
+                                                    child: Text(
+                                                      "Conversation",
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontFamily: 'NirmalaB',
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 12.0,
+                                                        color: Colors.white
+                                                      ),
+                                                    ),
+                                                  )
+                                                else if (isRoom)
+                                                  Container(
+                                                    margin: const EdgeInsets.fromLTRB(6, 0, 0, 0),
+                                                    padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xff5c4eb2),
+                                                      borderRadius: BorderRadius.circular(25),
+                                                      border: Border.all(color: Color(0xfffff3f3f3), width: 1)
+                                                    ),
+                                                    child: Text(
+                                                      "Chat Room",
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontFamily: 'NirmalaB',
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 12.0,
+                                                        color: Colors.white
+                                                      ),
+                                                    ),
+                                                  )
+                                                else if (isGroup && !isConversation)
+                                                  Container(
+                                                    margin:
+                                                    const EdgeInsets.fromLTRB(6, 0, 0, 0),
+                                                    padding:
+                                                    const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xff5c4eb2),
+                                                      borderRadius: BorderRadius.circular(25),
+                                                      border: Border.all(color: Color(0xfffff3f3f3), width: 1)
+                                                    ),
+                                                    child: Text(
+                                                      "Group",
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontFamily: 'NirmalaB',
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 12.0,
+                                                        color: Colors.white
+                                                      ),
+                                                    ),
+                                                  )
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 5),
+                                        ],
+                                      ),
+                                      SizedBox(height: 5),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xff0f534949),
+                                          borderRadius: BorderRadius.circular(25),
+                                          border: Border.all(color: Color(0xfffff3f3f3), width: 1)
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                          child: Text(
+                                            groupDescription,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontFamily: 'Nirmala',
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 12.0,
+                                              color: Colors.black.withOpacity(.4)
+                                            ),
+                                          )
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Container(
+                              height: 0.5,
+                              width: double.infinity,
+                              color: Colors.black.withOpacity(.1),
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            )
                           ],
                         ),
                       ),

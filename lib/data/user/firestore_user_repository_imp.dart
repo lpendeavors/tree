@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
-import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';

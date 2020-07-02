@@ -107,4 +107,14 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
       (result) => result is Map<String, dynamic> ? result : result.cast<String, dynamic>()
     );
   }
+
+  @override
+  Future<List<GroupEntity>> runSearchQuery(String query) {
+    return Firestore.instance
+        .collection("groupBase")
+        .where("searchData", arrayContains: query.trim())
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
+  }
 }
