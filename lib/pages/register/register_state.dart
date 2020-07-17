@@ -70,7 +70,6 @@ class WeakPasswordError implements RegisterError {
   const WeakPasswordError();
 }
 
-///
 class UnknownRegisterError implements RegisterError {
   final Object error;
 
@@ -78,6 +77,10 @@ class UnknownRegisterError implements RegisterError {
 
   @override
   String toString() => 'UnknownRegisterError{error: $error}';
+}
+
+class PhoneInUseError implements RegisterError {
+  const PhoneInUseError();
 }
 
 ///

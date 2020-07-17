@@ -247,7 +247,7 @@ class PhoneRegisterBloc implements BaseBloc {
     print('[DEBUG] send verification code');
     try {
       isLoadingSink.add(true);
-      Tuple2<String, bool> verification = await userRepository.phoneSignIn(
+      Tuple2<String, bool> verification = await userRepository.phoneRegister(
           "$countryCode$phone");
       if (verification.item2) {
         yield const RegisterMessageSuccess();
@@ -262,10 +262,14 @@ class PhoneRegisterBloc implements BaseBloc {
   }
 
   static RegisterMessageError _getRegisterError(error) {
+    print(error);
     if (error is PlatformException) {
       switch (error.code) {
 
       }
+    }
+    if(error == "already_in_use"){
+      return RegisterMessageError(PhoneInUseError());
     }
     return RegisterMessageError(UnknownRegisterError(error));
   }

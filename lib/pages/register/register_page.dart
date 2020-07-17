@@ -604,6 +604,9 @@ class _RegisterPageState extends State<RegisterPage> {
         case InvalidBusinessEmailError:
           _showSnackBar("Enter a valid business email address");
           break;
+        case PhoneInUseError:
+          _showSnackBar("This phone number is already in use. Please Sign In.");
+          break;
         default:
           _showSnackBar("Unknown error");
       }
@@ -615,8 +618,3 @@ class _RegisterPageState extends State<RegisterPage> {
     print('_showRegisterMessage ${message}');
   }
 }
-
-/*
-Broken verification back button
-Continue button
- */
