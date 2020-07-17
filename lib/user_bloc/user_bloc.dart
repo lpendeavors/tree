@@ -86,7 +86,8 @@ class UserBloc implements BaseBloc {
       token: userEntity.pushNotificationToken,
       isChurch: userEntity.isChurch ?? false,
       isVerified: userEntity.isVerified ?? false,
-      isChurchUpdated: userEntity.isChurchUpdated
+      isChurchUpdated: userEntity.isChurchUpdated ?? false,
+      isProfileUpdated: userEntity.isProfileUpdated ?? false
     );
   }
 }

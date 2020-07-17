@@ -40,8 +40,12 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, Auto
         .where((state) => state is Unauthenticated)
         .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
       widget.userBloc.loginState$
-          .where((state) => state is LoggedInUser && !state.isChurchUpdated)
-          .listen((st) => Navigator.pushNamed(context, '/info', arguments: SettingsType.updateChurch)),
+          .where((state) => state is LoggedInUser && (!state.isChurchUpdated || !state.isProfileUpdated))
+          .listen((state) => {
+            if(state is LoggedInUser){
+              Navigator.pushNamed(context, '/info', arguments: !state.isChurchUpdated ? SettingsType.updateChurch : SettingsType.updatePersonal)
+            }
+          }),
       _feedBloc.message$.listen(_showMessageResult),
     ];
   }

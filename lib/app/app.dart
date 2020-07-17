@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+import 'package:treeapp/pages/settings/settings_state.dart';
 import 'package:treeapp/widgets/modals/info_dialog.dart';
 import '../pages/settings/profile/profile_settings_bloc.dart';
 import '../pages/settings/profile/profile_settings_page.dart';
@@ -452,10 +453,10 @@ class MyApp extends StatelessWidget {
         builder: (context) {
           return InfoDialog(
             title: "Profile Update",
-            message: "Your Church information needs to be updated",
+            message: (routerSettings.arguments as SettingsType) == SettingsType.updateChurch ? "Your Church information needs to be updated" : "Your Personal information needs to be updated",
             btnTitle: "Update Now",
             onClick: () {
-              Navigator.of(context).pushReplacementNamed('/update_info', arguments: 1);
+              Navigator.of(context).pushReplacementNamed('/update_info', arguments: (routerSettings.arguments as SettingsType) == SettingsType.updateChurch ? 1 : 0);
             }
           );
         },

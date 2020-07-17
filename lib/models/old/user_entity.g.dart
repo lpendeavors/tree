@@ -72,6 +72,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     churchLat: (json['churchLat'] as num)?.toDouble(),
     churchLong: (json['churchLong'] as num)?.toDouble(),
     isChurchUpdated: json['isChurchUpdated'] as bool,
+    isProfileUpdated: json['isProfileUpdated'] as bool,
   );
 }
 
@@ -129,6 +130,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'churchLat': instance.churchLat,
       'churchLong': instance.churchLong,
       'isChurchUpdated': instance.isChurchUpdated,
+      'isProfileUpdated': instance.isProfileUpdated,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };
