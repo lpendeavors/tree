@@ -234,6 +234,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
   @override
   void initState() {
     _profileSettingsBloc = widget.initProfileSettingsBloc();
+
     _phoneLoginBloc = PhoneLoginBloc(widget.userRepository);
     _emailLoginBloc = EmailLoginBloc(widget.userRepository);
 
@@ -247,6 +248,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>{
 
     _profileSettingsBloc.settingState$.listen((event) {
       if(event.userEntity != null){
+        _profileSettingsBloc.setValidationType(widget.index + (event.userEntity.isChurch ? 3 : 0));
+
+
         firstName.text = event.userEntity.firstName;
         lastName.text = event.userEntity.lastName;
 

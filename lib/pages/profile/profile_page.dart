@@ -662,6 +662,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   _profileStatusNotifier(ProfileItem profile) {
+    if(!profile.myProfile){
+      return Container();
+    }
+
     if(!profile.isChurchUpdated && showChurchBroadcast){
       return ClipRRect(
         borderRadius: BorderRadius.circular(10),
