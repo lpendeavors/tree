@@ -111,10 +111,10 @@ class ProfileItem extends Equatable {
   final String relationStatus;
   final ChurchInfo churchInfo;
   final bool myProfile;
-
   final bool isFriend;
   final bool sent;
   final bool received;
+  final bool isChurchUpdated;
 
   const ProfileItem({
     @required this.id,
@@ -139,6 +139,7 @@ class ProfileItem extends Equatable {
     @required this.isFriend,
     @required this.sent,
     @required this.received,
+    @required this.isChurchUpdated,
   });
 
   @override
@@ -164,7 +165,8 @@ class ProfileItem extends Equatable {
     myProfile,
     isFriend,
     sent,
-    received
+    received,
+    isChurchUpdated
   ];
 
   @override

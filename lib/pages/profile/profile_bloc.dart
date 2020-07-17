@@ -357,6 +357,7 @@ class ProfileBloc implements BaseBloc {
       city: entity.city ?? 'NONE',
       relationStatus: entity.relationStatus ?? 'NONE',
       churchInfo: entity.churchInfo,
+      isChurchUpdated: entity.isChurchUpdated,
 
       //Variables
       myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),

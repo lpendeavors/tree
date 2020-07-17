@@ -58,6 +58,10 @@ class InvalidEmailError implements RegisterError {
   const InvalidEmailError();
 }
 
+class InvalidBusinessEmailError implements RegisterError {
+  const InvalidBusinessEmailError();
+}
+
 class EmailAlreadyInUserError implements RegisterError {
   const EmailAlreadyInUserError();
 }

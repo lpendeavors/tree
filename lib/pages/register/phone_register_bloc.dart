@@ -26,7 +26,7 @@ class PhoneRegisterBloc implements BaseBloc {
   final void Function(String) passwordChanged;
   final void Function(String) confirmPasswordChanged;
   final void Function(AuthResult) verificationResultChanged;
-  final void Function() submitUser;
+  final void Function(bool) submitUser;
 
   ///
   /// Output streams
@@ -80,7 +80,7 @@ class PhoneRegisterBloc implements BaseBloc {
     final confirmPasswordController = BehaviorSubject<String>.seeded('');
     final verificationResultController = BehaviorSubject<AuthResult>.seeded(null);
     final submitRegisterController = PublishSubject<void>();
-    final submitUserController = PublishSubject<void>();
+    final submitUserController = PublishSubject<bool>();
     final isLoadingController = BehaviorSubject<bool>.seeded(false);
 
     ///
@@ -157,13 +157,14 @@ class PhoneRegisterBloc implements BaseBloc {
     final saveResult$ = submitUserController
       .withLatestFrom(allInfoIsValid$, (_, bool isValid) => isValid)
       .exhaustMap(
-        (_) => saveUserToDatabase(
+        (isChurch) => saveUserToDatabase(
           userRepository,
           verificationResultController.value,
           emailController.value,
           firstNameController.value,
           lastNameController.value,
-          passwordController.value
+          passwordController.value,
+          isChurch
         ),
       ).publish();
 
@@ -195,7 +196,7 @@ class PhoneRegisterBloc implements BaseBloc {
       confirmPasswordChanged: confirmPasswordController.add,
       countryCodeChanged: countryCodeController.add,
       submitRegister: () => submitRegisterController.add(null),
-      submitUser: () => submitUserController.add(null),
+      submitUser: submitUserController.add,
       isLoading$: isLoadingController.stream,
       message$: message$,
       saveResult$: saveResult$,
@@ -213,10 +214,16 @@ class PhoneRegisterBloc implements BaseBloc {
       String email,
       String firstName,
       String lastName,
-      String password
+      String password,
+      bool isChurch
   ) async* {
     try{
       if(authResult != null) {
+        if (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail")){
+          yield RegisterMessageError(InvalidBusinessEmailError());
+          return;
+        }
+
         await userRepository.registerWithPhone(
           user: authResult.user,
           email: email,
@@ -235,12 +242,13 @@ class PhoneRegisterBloc implements BaseBloc {
     String countryCode,
     String phone,
     FirestoreUserRepository userRepository,
-    Sink<bool> isLoadingSink
+    Sink<bool> isLoadingSink,
   ) async* {
     print('[DEBUG] send verification code');
     try {
       isLoadingSink.add(true);
-      Tuple2<String,bool> verification = await userRepository.phoneSignIn("$countryCode$phone");
+      Tuple2<String, bool> verification = await userRepository.phoneSignIn(
+          "$countryCode$phone");
       if (verification.item2) {
         yield const RegisterMessageSuccess();
       } else {

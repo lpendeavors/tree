@@ -532,7 +532,9 @@ class _RegisterPageState extends State<RegisterPage> {
               height: 50.0,
               width: double.infinity,
               child: RaisedButton(
-                onPressed: _registerBloc.submitUser,
+                onPressed: (){
+                  _registerBloc.submitUser(_isChurch);
+                },
                 color: Color(0xFF6CA748),
                 textColor: Colors.white,
                 child: Text(
@@ -598,8 +600,13 @@ class _RegisterPageState extends State<RegisterPage> {
       final error = message.error;
       print('[DEBUG] error=$error');
 
-      //TODO
-      _showSnackBar("error");
+      switch(error.runtimeType){
+        case InvalidBusinessEmailError:
+          _showSnackBar("Enter a valid business email address");
+          break;
+        default:
+          _showSnackBar("Unknown error");
+      }
     }
     if (message is RegisterMessageComplete) {
       Navigator.of(context).pushNamed('/');

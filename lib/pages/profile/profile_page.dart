@@ -38,6 +38,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   ProfileBloc _profileBloc;
   List<StreamSubscription> _subscriptions;
+  bool showBroadcast = true;
 
   @override
   void initState() {
@@ -674,6 +675,74 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
             child: Column(
               children: <Widget>[
+                if(data.profile.myProfile && showBroadcast && !data.profile.isChurchUpdated) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          SizedBox(height: 10.0),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.info,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 10.0),
+                              Text(
+                                "Information Needed",
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white.withOpacity(.7)),
+                              ),
+                              SizedBox(width: 10.0),
+                              Expanded(
+                                child: Container(),
+                                flex: 1,
+                              ),
+                              InkWell(
+                                onTap: (){
+                                  setState(() {
+                                    showBroadcast = false;
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.clear,
+                                  //size: 18,
+                                  color: Colors.white.withOpacity(0.7),
+                                ),
+                              )
+                            ],
+                          ),
+                          SizedBox(height: 10.0),
+                          Text(
+                            "Your Church information needs to be updated",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          SizedBox(height: 10.0),
+                          RaisedButton(
+                            onPressed: () {
+                              Navigator.of(context).pushNamed('/update_info', arguments: 1);
+                            },
+                            color: Colors.white,
+                            padding: EdgeInsets.all(8),
+                            shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white.withOpacity(0.4)), borderRadius: BorderRadius.circular(8)),
+                            child: Center(
+                              child: Text(
+                                "Update Information",
+                                style:
+                                TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15.0)
+                ],
                 Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(

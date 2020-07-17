@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/settings/settings_state.dart';
 import '../../util/asset_utils.dart';
 import '../../widgets/curved_scaffold.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -38,6 +39,9 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, Auto
       widget.userBloc.loginState$
         .where((state) => state is Unauthenticated)
         .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+      widget.userBloc.loginState$
+          .where((state) => state is LoggedInUser && !state.isChurchUpdated)
+          .listen((st) => Navigator.pushNamed(context, '/info', arguments: SettingsType.updateChurch)),
       _feedBloc.message$.listen(_showMessageResult),
     ];
   }
