@@ -33,8 +33,8 @@ class NoChurchNameError {
   const NoChurchNameError();
 }
 
-class NoMinistryBioError {
-  const NoMinistryBioError();
+class NoBioError {
+  const NoBioError();
 }
 
 class NoWebsiteError {
@@ -43,6 +43,18 @@ class NoWebsiteError {
 
 class NoParentChurchError {
   const NoParentChurchError();
+}
+
+class NoCityError {
+  const NoCityError();
+}
+
+class NoChurchStateError {
+  const NoChurchStateError();
+}
+
+class NoChurchError {
+  const NoChurchError();
 }
 
 ///

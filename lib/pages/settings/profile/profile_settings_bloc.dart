@@ -55,9 +55,13 @@ class ProfileSettingsBloc implements BaseBloc{
   final Stream<NoLastNameError> lastNameError$;
 
   final Stream<NoChurchNameError> churchNameError$;
-  final Stream<NoMinistryBioError> ministryError$;
+  final Stream<NoBioError> ministryError$;
   final Stream<NoWebsiteError> websiteError$;
   final Stream<NoParentChurchError> parentChurchError$;
+
+  final Stream<NoCityError> cityError$;
+  final Stream<NoChurchStateError> churchStateError$;
+  final Stream<NoChurchError> churchError$;
 
   ///
   /// Clean up
@@ -96,6 +100,9 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.ministryError$,
     @required this.websiteError$,
     @required this.parentChurchError$,
+    @required this.cityError$,
+    @required this.churchStateError$,
+    @required this.churchError$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -127,9 +134,9 @@ class ProfileSettingsBloc implements BaseBloc{
     final setAddressController = BehaviorSubject<String>();
     final saveChangesController = PublishSubject<void>();
     final countryCodeController = BehaviorSubject<String>.seeded('+1');
-    final setChurchController = BehaviorSubject<UserEntity>();
+    final setChurchController = BehaviorSubject<UserEntity>.seeded(null);
     final setUnknownChurchController = BehaviorSubject<String>();
-    final setNoChurchController = BehaviorSubject<bool>();
+    final setNoChurchController = BehaviorSubject<bool>.seeded(null);
     final setChurchIdController = BehaviorSubject<String>();
 
     final setChurchNameController = BehaviorSubject<String>();
@@ -157,9 +164,9 @@ class ProfileSettingsBloc implements BaseBloc{
       return NoChurchNameError();
     }).share();
 
-    final ministryError$ = setBioController.map((bio) {
+    final bioError$ = setBioController.map((bio) {
       if (bio.length > 0) return null;
-      return NoMinistryBioError();
+      return NoBioError();
     }).share();
 
     final websiteError$ = setChurchWebsiteController.map((site) {
@@ -172,6 +179,21 @@ class ProfileSettingsBloc implements BaseBloc{
       return NoParentChurchError();
     }).share();
 
+    final cityError$ = setCityController.map((city) {
+      if (city.length > 0) return null;
+      return NoCityError();
+    }).share();
+
+    final churchStateError$ = setNoChurchController.map((church) {
+      if (church != null) return null;
+      return NoChurchStateError();
+    }).share();
+
+    final churchError$ = setChurchController.map((church) {
+      if (church != null) return null;
+      return NoChurchError();
+    }).share();
+
     ///
     /// Streams
     ///
@@ -182,7 +204,10 @@ class ProfileSettingsBloc implements BaseBloc{
 
     final personal_personalFieldsAreValid$ = Rx.combineLatest(
         [
-          //TODO
+          firstNameError$,
+          lastNameError$,
+          cityError$,
+          bioError$
         ], (allErrors) => allErrors.every((error) {
       print(error);
       return error == null;
@@ -190,7 +215,16 @@ class ProfileSettingsBloc implements BaseBloc{
 
     final personal_churchFieldsAreValid$ = Rx.combineLatest(
         [
-          //TODO
+          churchStateError$
+        ], (allErrors) => allErrors.every((error) {
+      print(error);
+      return error == null;
+    }));
+
+    final personal_churchFieldsAreValid2$ = Rx.combineLatest(
+        [
+          churchStateError$,
+          churchError$
         ], (allErrors) => allErrors.every((error) {
       print(error);
       return error == null;
@@ -210,7 +244,7 @@ class ProfileSettingsBloc implements BaseBloc{
     final church_churchFieldsAreValid$ = Rx.combineLatest(
         [
           churchNameError$,
-          ministryError$,
+          bioError$,
           websiteError$,
           parentChurchError$
         ], (allErrors) => allErrors.every((error) {
@@ -219,8 +253,8 @@ class ProfileSettingsBloc implements BaseBloc{
     }));
 
     final validators = [
-      Stream.value(true),
-      Stream.value(true),
+      personal_personalFieldsAreValid$,
+      [personal_churchFieldsAreValid$, personal_churchFieldsAreValid2$],
       Stream.value(true),
       church_personalFieldsAreValid$,
       church_churchFieldsAreValid$,
@@ -228,7 +262,7 @@ class ProfileSettingsBloc implements BaseBloc{
     ];
 
     final message$ = saveChangesController
-      .withLatestFrom(validators[validationTypeController.value], (_, bool isValid) {
+      .withLatestFrom(validationTypeController.value == 1 ? (validators[validationTypeController.value] as List)[setNoChurchController.value ? 1 : 0] : validators[validationTypeController.value], (_, bool isValid) {
         print(isValid);
         return isValid;
       })
@@ -320,9 +354,12 @@ class ProfileSettingsBloc implements BaseBloc{
         firstNameError$: firstNameError$,
         lastNameError$: lastNameError$,
         churchNameError$: churchNameError$,
-        ministryError$: ministryError$,
+        ministryError$: bioError$,
         websiteError$: websiteError$,
         parentChurchError$: parentChurchError$,
+        cityError$: cityError$,
+        churchStateError$: churchStateError$,
+        churchError$: churchError$,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
           await Future.wait(controllers.map((c) => c.close()));
