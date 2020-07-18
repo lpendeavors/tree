@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -43,35 +44,20 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
         child: Stack(
           children: <Widget>[
             Container(
-              color: Theme.of(context).primaryColor,
+              color: Colors.white,
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.1),
-                    Colors.black.withOpacity(0.5),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(splash),
-                  fit: BoxFit.cover,
-                ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Image.asset(
+                splashText
               ),
             ),
             Align(
               alignment: Alignment.center,
               child: Image.asset(
-                insideSplash,
-                height: 200,
-                width: 200,
+                splashIcon,
+                height: 150,
+                width: 150,
               ),
             ),
           ],

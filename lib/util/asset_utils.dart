@@ -50,6 +50,9 @@ const String treeSplash = "assets/images/treeSplash.png";
 const String splash = "assets/images/splash.png";
 const String insideSplash = "assets/images/inside_splash.png";
 
+const String splashText = "assets/images/splash_text.png";
+const String splashIcon = "assets/images/splash_icon.png";
+
 const String userThumbnailImage = "https://bit.ly/2BCsKbI";
 
 const String img1 = "assets/images/img1.jpg";
