@@ -8,6 +8,14 @@ bool isValidEmail(String email) {
   return RegExp(_emailRegExpString, caseSensitive: false).hasMatch(email);
 }
 
+bool isBusinessEmail(String email) {
+  if (email.contains("aol") ||
+      email.contains("gmail") ||
+      email.contains("yahoo") ||
+      email.contains("hotmail")) return false;
+  return true;
+}
+
 bool isValidName(String name) {
   return name.length >= 2;
 }

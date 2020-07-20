@@ -21,6 +21,42 @@ class SettingsNotLoggedInError {
   const SettingsNotLoggedInError();
 }
 
+class NoFirstNameError {
+  const NoFirstNameError();
+}
+
+class NoLastNameError {
+  const NoLastNameError();
+}
+
+class NoChurchNameError {
+  const NoChurchNameError();
+}
+
+class NoBioError {
+  const NoBioError();
+}
+
+class NoWebsiteError {
+  const NoWebsiteError();
+}
+
+class NoParentChurchError {
+  const NoParentChurchError();
+}
+
+class NoCityError {
+  const NoCityError();
+}
+
+class NoChurchStateError {
+  const NoChurchStateError();
+}
+
+class NoChurchError {
+  const NoChurchError();
+}
+
 ///
 /// State
 ///

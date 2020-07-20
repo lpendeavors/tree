@@ -58,6 +58,10 @@ class InvalidEmailError implements RegisterError {
   const InvalidEmailError();
 }
 
+class InvalidBusinessEmailError implements RegisterError {
+  const InvalidBusinessEmailError();
+}
+
 class EmailAlreadyInUserError implements RegisterError {
   const EmailAlreadyInUserError();
 }
@@ -66,7 +70,6 @@ class WeakPasswordError implements RegisterError {
   const WeakPasswordError();
 }
 
-///
 class UnknownRegisterError implements RegisterError {
   final Object error;
 
@@ -74,6 +77,10 @@ class UnknownRegisterError implements RegisterError {
 
   @override
   String toString() => 'UnknownRegisterError{error: $error}';
+}
+
+class PhoneInUseError implements RegisterError {
+  const PhoneInUseError();
 }
 
 ///

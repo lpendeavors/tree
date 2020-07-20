@@ -27,14 +27,12 @@ class ProfileState extends Equatable {
   final bool isLoading;
   final Object error;
   final bool isAdmin;
-  final List<FeedItem> feedItems;
 
   const ProfileState({
     @required this.profile,
     @required this.isLoading,
     @required this.error,
     @required this.isAdmin,
-    @required this.feedItems,
   });
 
   ProfileState copyWith({profile, isLoading, error, isAdmin, feedItems}) {
@@ -43,7 +41,6 @@ class ProfileState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
       isAdmin: isAdmin ?? this.isAdmin,
-      feedItems: feedItems ?? this.feedItems,
     );
   }
 
@@ -111,10 +108,11 @@ class ProfileItem extends Equatable {
   final String relationStatus;
   final ChurchInfo churchInfo;
   final bool myProfile;
-
   final bool isFriend;
   final bool sent;
   final bool received;
+  final bool isChurchUpdated;
+  final bool isProfileUpdated;
 
   const ProfileItem({
     @required this.id,
@@ -139,6 +137,8 @@ class ProfileItem extends Equatable {
     @required this.isFriend,
     @required this.sent,
     @required this.received,
+    @required this.isChurchUpdated,
+    @required this.isProfileUpdated,
   });
 
   @override
@@ -164,7 +164,9 @@ class ProfileItem extends Equatable {
     myProfile,
     isFriend,
     sent,
-    received
+    received,
+    isChurchUpdated,
+    isProfileUpdated
   ];
 
   @override

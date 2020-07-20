@@ -74,22 +74,24 @@ class UserBloc implements BaseBloc {
     }
 
     return LoggedInUser(
-      fullName: "${userEntity.firstName} ${userEntity.lastName}",
-      email: userEntity.email,
-      uid: userEntity.id,
-      isAdmin: userEntity.isAdmin ?? false,
-      chatList: userEntity.myChatsList13 ?? [],
-      image: userEntity.image,
-      connections: userEntity.connections ?? [],
-      church:
-          userEntity.churchInfo != null ? userEntity.churchInfo.churchName : "",
-      city: userEntity.city ?? "",
-      token: userEntity.pushNotificationToken,
-      isChurch: userEntity.isChurch ?? false,
-      isVerified: userEntity.isVerified ?? false,
-      churchId: userEntity.churchID,
-      isYouth: false,
-      mutedChats: [],
-    );
+        fullName: "${userEntity.firstName} ${userEntity.lastName}",
+        email: userEntity.email,
+        uid: userEntity.id,
+        isAdmin: userEntity.isAdmin ?? false,
+        chatList: userEntity.myChatsList13 ?? [],
+        image: userEntity.image,
+        connections: userEntity.connections ?? [],
+        church: userEntity.churchInfo != null
+            ? userEntity.churchInfo.churchName
+            : "",
+        city: userEntity.city ?? "",
+        token: userEntity.pushNotificationToken,
+        isChurch: userEntity.isChurch ?? false,
+        isVerified: userEntity.isVerified ?? false,
+        churchId: userEntity.churchID,
+        isYouth: false,
+        mutedChats: [],
+        isChurchUpdated: userEntity.isChurchUpdated ?? false,
+        isProfileUpdated: userEntity.isProfileUpdated ?? false);
   }
 }

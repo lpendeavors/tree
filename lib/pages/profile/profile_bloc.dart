@@ -19,7 +19,6 @@ const _kInitialProfileState = ProfileState(
   profile: null,
   isLoading: true,
   error: null,
-  feedItems: [],
   isAdmin: false,
 );
 
@@ -101,7 +100,6 @@ class ProfileBloc implements BaseBloc {
       userBloc,
       userId,
       userRepository,
-      postRepository,
     ).publishValueSeeded(_kInitialProfileState);
 
     final recentFeedState$ = _getRecentFeed(
@@ -247,7 +245,6 @@ class ProfileBloc implements BaseBloc {
     LoginState loginState,
     String userId,
     FirestoreUserRepository userRepository,
-    FirestorePostRepository postRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -259,14 +256,13 @@ class ProfileBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
-        userRepository.getUserById(uid: userId),
-        postRepository.postsByOwner(uid: userId),
-        (user, posts){
+      return userRepository.getUserById(uid: userId)
+        .map((user){
+          var profile = _entityToProfileItem(user, loginState);
           return _kInitialProfileState.copyWith(
+            profile: profile,
             isLoading: false,
-            feedItems: _entitiesToFeedItems(posts, loginState.uid),
-            profile: _entityToProfileItem(user, loginState),
+            isAdmin: loginState.isAdmin
           );
         })
         .startWith(_kInitialProfileState)
@@ -274,17 +270,9 @@ class ProfileBloc implements BaseBloc {
           return _kInitialProfileState.copyWith(
             error: e,
             isLoading: false,
+            isAdmin: loginState.isAdmin
           );
-        }
-      )
-      .startWith(_kInitialProfileState)
-      .onErrorReturnWith((e) {
-        return _kInitialProfileState.copyWith(
-          error: e,
-          isLoading: false,
-          isAdmin: loginState.isAdmin
-        );
-      });
+        });
     }
 
     return Stream.value(
@@ -358,6 +346,8 @@ class ProfileBloc implements BaseBloc {
       city: entity.city ?? 'NONE',
       relationStatus: entity.relationStatus ?? 'NONE',
       churchInfo: entity.churchInfo,
+      isChurchUpdated: entity.isChurchUpdated ?? false,
+      isProfileUpdated: entity.isProfileUpdated ?? false,
 
       //Variables
       myProfile: entity.uid == (loginState is LoggedInUser ? loginState.uid : ""),
@@ -371,14 +361,12 @@ class ProfileBloc implements BaseBloc {
     UserBloc userBloc,
     String userId,
     FirestoreUserRepository userRepository,
-    FirestorePostRepository postRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toProfileState(
         loginState,
         userId,
-        userRepository,
-        postRepository,
+        userRepository
       );
     });
   }
@@ -387,7 +375,7 @@ class ProfileBloc implements BaseBloc {
       UserBloc userBloc,
       String userId,
       FirestorePostRepository postRepository,
-      ) {
+  ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toFeedState(
           loginState,

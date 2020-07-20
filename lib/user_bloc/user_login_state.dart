@@ -23,6 +23,8 @@ class LoggedInUser extends Equatable implements LoginState {
   final String churchId;
   final bool isYouth;
   final List<String> mutedChats;
+  final bool isChurchUpdated;
+  final bool isProfileUpdated;
 
   const LoggedInUser({
     @required this.uid,
@@ -40,6 +42,8 @@ class LoggedInUser extends Equatable implements LoginState {
     @required this.churchId,
     @required this.isYouth,
     @required this.mutedChats,
+    @required this.isChurchUpdated,
+    @required this.isProfileUpdated,
   });
 
   @override
@@ -59,6 +63,8 @@ class LoggedInUser extends Equatable implements LoginState {
       churchId,
       isYouth,
       mutedChats,
+      isChurchUpdated,
+      isProfileUpdated
     ];
   }
 

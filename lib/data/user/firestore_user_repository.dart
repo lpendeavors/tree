@@ -37,6 +37,10 @@ abstract class FirestoreUserRepository {
     String phone
   );
 
+  Future<Tuple2<String,bool>> phoneRegister(
+    String phone
+  );
+
   Future<AuthResult> verifyPhoneCode(
     String verificationId,
     String smsCode,

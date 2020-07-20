@@ -173,6 +173,34 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
+  Future<Tuple2<String,bool>> phoneRegister(String phone) async {
+    var completer = Completer<Tuple2<String,bool>>();
+
+    print(phone);
+    var exists = await _firestore.collection('userBase')
+      .where('phoneNo', isEqualTo: phone.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", ""))
+      .getDocuments().then((value) => value.documents.length > 0);
+
+    if(exists){
+      Timer(Duration(milliseconds: 100), (){
+        completer.completeError("already_in_use");
+      });
+      return completer.future;
+    }
+
+    await _firebaseAuth.verifyPhoneNumber(
+      phoneNumber: phone,
+      timeout: Duration(seconds: 60),
+      verificationCompleted: (phoneAuthCredential) => completer.complete(Tuple2(null, true)),
+      verificationFailed: (authException) => completer.completeError(authException.message),
+      codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
+      codeAutoRetrievalTimeout: (timeout) => print(timeout),
+    ).catchError((error) => Future.error(error));
+
+    return completer.future;
+  }
+
+  @override
   Future<AuthResult> verifyPhoneCode(
     String smsCode,
     String verificationId
