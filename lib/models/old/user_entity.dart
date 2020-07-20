@@ -128,9 +128,9 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.churchLat,
     this.churchLong,
     this.churchID,
-    this.muted
+    this.muted,
     this.isChurchUpdated,
-    this.isProfileUpdated
+    this.isProfileUpdated,
   });
 
   String get id => this.documentId;
