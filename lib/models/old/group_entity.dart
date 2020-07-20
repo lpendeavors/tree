@@ -25,7 +25,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
   final String groupImage;
   final List<GroupMember> groupMembers;
   final String image;
-  // final bool isChurch;
+  final bool isChurch;
   final bool isConversation;
   final bool isGroup;
   final bool isGroupPrivate;
@@ -66,7 +66,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
     // this.churchName,
     // this.databaseName,
     this.groupName,
-    // this.isChurch,
+    this.isChurch,
     // this.isVerified,
     // this.phoneNo,
     // this.pushNotificationToken,
@@ -113,7 +113,7 @@ class GroupEntity extends Equatable implements FirebaseModel {
       // churchName,
       // databaseName,
       groupName,
-      // isChurch,
+      isChurch,
       // isVerified,
       // phoneNo,
       // pushNotificationToken,

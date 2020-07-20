@@ -161,23 +161,26 @@ class FeedBloc implements BaseBloc {
     List<PostEntity> entities,
     String uid,
   ) {
-    return entities.map((entity) {
-      return FeedItem(
-        id: entity.documentId,
-        tags: entity.tags,
-        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-        timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
-        message: entity.postMessage,
-        name: entity.fullName != null ? entity.fullName : entity.churchName,
-        userImage: entity.image,
-        userId: entity.ownerId,
-        isPoll: entity.type == PostType.poll.index,
-        postImages: _getPostImages(entity),
-        isMine: entity.ownerId == uid,
-        isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
-        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
-      );
-    }).toList();
+    return entities
+      .toSet()
+      .map((entity) {
+        return FeedItem(
+          id: entity.documentId,
+          tags: entity.tags,
+          timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+          timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+          message: entity.postMessage,
+          name: entity.fullName != null ? entity.fullName : entity.churchName,
+          userImage: entity.image,
+          userId: entity.ownerId,
+          isPoll: entity.type == PostType.poll.index,
+          postImages: _getPostImages(entity),
+          isMine: entity.ownerId == uid,
+          isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
+          abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+          isShared: entity.isPostPrivate == 1,
+        );
+      }).toList();
   }
 
   static Stream<FeedListState> _getFeedList(

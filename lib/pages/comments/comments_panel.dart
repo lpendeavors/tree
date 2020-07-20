@@ -95,19 +95,20 @@ class _CommentsPanelState extends State<CommentsPanel> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              // FlatButton(
-                              //   onPressed: () => Navigator.pushNamed(context, '/comments'),
-                              //   child: Center(
-                              //     child: Text(
-                              //       'View comments fullscreen',
-                              //       textAlign: TextAlign.end,
-                              //       style: TextStyle(
-                              //         fontSize: 14,
-                              //         color: Colors.black,
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
+                              FlatButton(
+                                onPressed: () => Navigator.pushNamed(context, '/comments'),
+                                child: Center(
+                                  child: Text(
+                                    'View comments fullscreen',
+                                    textAlign: TextAlign.end,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
                               Flexible(
                                 child: StreamBuilder<CommentsState>(
                                   stream: _commentsBloc.commentsState$,
@@ -144,29 +145,15 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                       );
                                     }
 
-                                    return Column(
-                                      children: <Widget>[
-                                        ListView.separated(
-                                          itemCount: data.comments.length,
-                                          physics: BouncingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemBuilder: (context, index) {
-                                            return CommentListItem(
-                                              comment: data.comments[index],
-                                            );
-                                          },
-                                          separatorBuilder: (context, index) {
-                                            return Align(
-                                              alignment: Alignment.centerRight,
-                                              child: Container(
-                                                height: 2,
-                                                width: MediaQuery.of(context).size.width,
-                                              ),
-                                            );
-                                          }, 
-                                        ),
-                                      ],
+                                    return ListView.builder(
+                                      itemCount: data.comments.length,
+                                      itemBuilder: (context, index) {
+                                        return CommentListItem(
+                                          comment: data.comments[index],
+                                        );
+                                      }
                                     );
+
                                   },
                                 ),
                               ),
@@ -175,7 +162,10 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                 width: double.infinity,
                                 color: Color(0xff14000000),
                               ),
-                              CommentInput(),
+                              CommentInput(
+                                userImage: (widget.userBloc.loginState$.value as LoggedInUser).image ?? "",
+                                commentsBloc: widget.commentsBloc,
+                              ),
                             ],
                           ),
                         ),

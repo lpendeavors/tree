@@ -9,6 +9,10 @@ import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './comments_state.dart';
 
+bool _isCommentValid(String comment) {
+  return comment.isNotEmpty;
+}
+
 const _kInitialCommentsState = CommentsState(
   comments: [],
   isLoading: true,
@@ -20,12 +24,19 @@ class CommentsBloc implements BaseBloc {
   /// Input functions
   /// 
   Function() addComment;
+  Function(String) commentChanged;
+  Function(String) gifChanged;
+  Function(bool) isGifChanged;
 
   /// 
   /// Output streams
   ///
   final ValueStream<CommentsState> commentsState$;
   final Stream<CommentAddedMessage> message$;
+  final ValueStream<bool> isLoading$;
+
+  final ValueStream<bool> isGif$;
+  final ValueStream<String> gif$;
 
   /// 
   /// Clean up
@@ -34,8 +45,14 @@ class CommentsBloc implements BaseBloc {
 
   CommentsBloc._({
     @required this.addComment,
+    @required this.commentChanged,
+    @required this.gifChanged,
+    @required this.isGifChanged,
     @required this.commentsState$,
     @required this.message$,
+    @required this.isLoading$,
+    @required this.isGif$,
+    @required this.gif$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -54,16 +71,23 @@ class CommentsBloc implements BaseBloc {
     /// 
     /// Stream controllers
     ///
-    final addComment = PublishSubject<void>(sync: true);
+    final addCommentSubject = PublishSubject<void>(sync: true);
+    final commentSubject = BehaviorSubject<String>.seeded('');
+    final gifSubject = BehaviorSubject<String>.seeded('');
+    final isGifSubject = BehaviorSubject<bool>.seeded(false);
+    final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     /// 
     /// Streams
     /// 
-    final message$ = _getCommentMessage(
-      addComment,
-      userBloc,
-      commentRepository,
-    );
+    final message$ = addCommentSubject
+      .exhaustMap(
+        (_) => saveComment(
+          userBloc,
+          commentRepository,
+          isLoadingSubject,
+        )
+      ).publish();
 
     final commentsState$ = _getComments(
       userBloc,
@@ -76,12 +100,26 @@ class CommentsBloc implements BaseBloc {
       message$.connect(),
     ];
 
+    final controllers = <StreamController>[
+      commentSubject,
+      gifSubject,
+      isGifSubject,
+      isLoadingSubject,
+    ];
+
     return CommentsBloc._(
-      addComment: () => addComment.add(null),
+      addComment: () => addCommentSubject.add(null),
+      commentChanged: commentSubject.add,
+      isGifChanged: isGifSubject.add,
+      gifChanged: gifSubject.add,
+      isGif$: isGifSubject.stream,
+      gif$: gifSubject.stream,
       commentsState$: commentsState$,
       message$: message$,
+      isLoading$: isLoadingSubject,
       dispose: () async {
         await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
       }
     );
   }
@@ -140,6 +178,7 @@ class CommentsBloc implements BaseBloc {
     return entities.map((entity) {
       return CommentItem(
         id: entity.documentId,
+        userId: entity.ownerId,
         fullName: (entity.fullName ?? entity.churchName) ?? "",
         message: entity.postMessage,
         image: entity.image ?? "",
@@ -165,22 +204,28 @@ class CommentsBloc implements BaseBloc {
     });
   }
   
-  static ConnectableStream<CommentAddedMessage> _getCommentMessage(
-    Stream<void> addComment,
+  static Stream<CommentAddedMessage> saveComment(
     UserBloc userBloc,
     FirestoreCommentRepository commentRepository,
-  ) {
-    return Rx.combineLatest([
-      addComment,
-    ], (message) {
-      var loginState = userBloc.loginState$.value;
-      if (loginState is Unauthenticated) {
+    Sink<bool> isLoading,
+  ) async* {
+    print('[DEBUG] CommentsBloc#saveComment');
+    LoginState loginState = userBloc.loginState$.value;
 
+    if (loginState is LoggedInUser) {
+      try {
+        isLoading.add(true);
+        await commentRepository.getByPost(
+          '1234',
+        );
+        yield CommentAddedSuccess();
+      } catch (e) {
+        yield CommentAddedError(e);
+      } finally {
+        isLoading.add(false);
       }
-
-      if (loginState is LoggedInUser) {
-        // TODO: save comment
-      }
-    }).publish();
+    } else {
+      yield CommentAddedError(NotLoggedInError());
+    }
   }
 }

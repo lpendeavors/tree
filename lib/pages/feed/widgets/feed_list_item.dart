@@ -1,6 +1,8 @@
 import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_text_view/smart_text_view.dart';
+import 'package:treeapp/util/asset_utils.dart';
 import '../../comments/comments_panel.dart';
 import '../../comments/comments_bloc.dart';
 import '../../../dependency_injection.dart';
@@ -26,19 +28,24 @@ class FeedListItem extends StatelessWidget {
     var _imagesController = PageController();
     var _currentPage = 0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+    return // Column(
+      // crossAxisAlignment: CrossAxisAlignment.start,
+      // children: <Widget>[
         GestureDetector(
           onTap: () {
-
+            Navigator.of(context).pushNamed(
+              '/post_details',
+              arguments: feedItem.id,
+            );
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Container(
               margin: EdgeInsets.only(left: 10, right: 10, bottom: 10),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.01),
+                color: feedItem.isShared 
+                  ? Colors.black.withOpacity(0.01) 
+                  : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: Colors.black.withOpacity(0.04),
@@ -60,10 +67,12 @@ class FeedListItem extends StatelessWidget {
                             children: <Widget>[
                               InkWell(
                                 onTap: () {
-                                  Navigator.of(context).pushNamed(
-                                    '/profile',
-                                    arguments: feedItem.userId,
-                                  );
+                                  if (!feedItem.isMine) {
+                                    Navigator.of(context).pushNamed(
+                                      '/profile',
+                                      arguments: feedItem.userId,
+                                    );
+                                  }
                                 },
                                 child: AbsorbPointer(
                                   child: GestureDetector(
@@ -106,9 +115,11 @@ class FeedListItem extends StatelessWidget {
                                                   ),
                                                 ),
                                                 if (feedItem.userImage != null)
-                                                  Image(
+                                                  CachedNetworkImage(
+                                                    imageUrl: feedItem.userImage,
+                                                    width: feedItem.isShared ? 40 : 50,
+                                                    height: feedItem.isShared ? 40 : 50,
                                                     fit: BoxFit.cover,
-                                                    image: CacheImage(feedItem.userImage),
                                                   ),
                                               ],
                                             ),
@@ -123,10 +134,16 @@ class FeedListItem extends StatelessWidget {
                               Flexible(
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.of(context).pushNamed(
-                                      '/profile',
-                                      arguments: feedItem.userId,
-                                    );
+                                    if (feedItem.tags.isNotEmpty) {
+                                      // Tag screen
+                                    }
+
+                                    if (!feedItem.isMine) {
+                                      Navigator.of(context).pushNamed(
+                                        '/profile',
+                                        arguments: feedItem.userId,
+                                      );
+                                    }
                                   },
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,8 +261,8 @@ class FeedListItem extends StatelessWidget {
                             onTap: () {
                               // TODO: preview image
                             },
-                            child: Image(
-                              image: CacheImage(feedItem.postImages[0] ?? ""),
+                            child: CachedNetworkImage(
+                              imageUrl: feedItem.postImages[0],
                               alignment: Alignment.center,
                             ),
                           )
@@ -264,8 +281,8 @@ class FeedListItem extends StatelessWidget {
                                       child: Stack(
                                         fit: StackFit.expand,
                                         children: <Widget>[
-                                          Image(
-                                            image: CacheImage(feedItem.postImages[index]),
+                                          CachedNetworkImage(
+                                            imageUrl: feedItem.postImages[index],
                                             fit: BoxFit.cover,
                                             alignment: Alignment.center,
                                           ),
@@ -399,10 +416,10 @@ class FeedListItem extends StatelessWidget {
               ),
             ),
           ),
-        ),
-        SizedBox(height: 20),
-      ],
-    );
+        ); //,
+    //     SizedBox(height: 20),
+    //   ],
+    // );
   }
 
   Widget _feedButton({
@@ -460,33 +477,146 @@ class FeedListItem extends StatelessWidget {
     switch (await showDialog<PostOption>(
       context: context,
       builder: (BuildContext context) {
-        return SimpleDialog(
-          title: Text(
-            'Tree',
+        return Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-          children: <Widget>[
-            if (feedItem.isMine) ...[
-              SimpleDialogOption(
-                child: Text('Edit Post'),
-                onPressed: () => Navigator.pop(context, PostOption.edit),
+          child: Container(
+            height: 140,
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Image.asset(
+                          ic_launcher,
+                          height: 20,
+                          width: 20,
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Flexible(
+                          flex: 1,
+                          child: Text(
+                            'Tree',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 15),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Container(
+                    height: 0.5,
+                    width: double.infinity,
+                    color: Colors.black.withOpacity(0.1),
+                  ),
+                  Container(
+                    color: Colors.white,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: 90,
+                      ),
+                      child: Scrollbar(
+                        child: ListView(
+                          children: <Widget>[
+                            SizedBox(height: 5),
+                            if (feedItem.isMine) ...[
+                              SimpleDialogOption(
+                                child: Text('Edit Post'),
+                                onPressed: () => Navigator.pop(context, PostOption.edit),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                              SizedBox(height: 5),
+                              SimpleDialogOption(
+                                child: Text('Delete Post'),
+                                onPressed: () => Navigator.pop(context, PostOption.delete),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ],
+                            if (!feedItem.isMine) ...[
+                              SimpleDialogOption(
+                                child: Text('Unconnect with this person'),
+                                onPressed: () => Navigator.pop(context, PostOption.unconnect),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                              SimpleDialogOption(
+                                child: Text('Report this post'),
+                                onPressed: () => Navigator.pop(context, PostOption.report),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              SimpleDialogOption(
-                child: Text('Delete Post'),
-                onPressed: () => Navigator.pop(context, PostOption.delete),
-              ),
-            ],
-            if (!feedItem.isMine) ...[
-              SimpleDialogOption(
-                child: Text('Unconnect with this person'),
-                onPressed: () => Navigator.pop(context, PostOption.unconnect),
-              ),
-              SimpleDialogOption(
-                child: Text('Report this post'),
-                onPressed: () => Navigator.pop(context, PostOption.report),
-              ),
-            ],
-          ],
+            ),
+          ),
         );
+        // return SimpleDialog(
+        //   title: Text(
+        //     'Tree',
+        //   ),
+        //   children: <Widget>[
+        //     if (feedItem.isMine) ...[
+        //       SimpleDialogOption(
+        //         child: Text('Edit Post'),
+        //         onPressed: () => Navigator.pop(context, PostOption.edit),
+        //       ),
+        //       SimpleDialogOption(
+        //         child: Text('Delete Post'),
+        //         onPressed: () => Navigator.pop(context, PostOption.delete),
+        //       ),
+        //     ],
+        //     if (!feedItem.isMine) ...[
+        //       SimpleDialogOption(
+        //         child: Text('Unconnect with this person'),
+        //         onPressed: () => Navigator.pop(context, PostOption.unconnect),
+        //       ),
+        //       SimpleDialogOption(
+        //         child: Text('Report this post'),
+        //         onPressed: () => Navigator.pop(context, PostOption.report),
+        //       ),
+        //     ],
+        //   ],
+        // );
       }
     )) {
       case PostOption.edit:

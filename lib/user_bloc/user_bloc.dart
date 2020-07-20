@@ -27,17 +27,19 @@ class UserBloc implements BaseBloc {
   factory UserBloc(FirestoreUserRepository userRepository) {
     final signOutController = PublishSubject<void>(sync: true);
 
-    final user$ = userRepository.user()
-      .map(_toLoginState)
-      .distinct()
-      .publishValueSeeded(const Unauthenticated());
+    final user$ = userRepository
+        .user()
+        .map(_toLoginState)
+        .distinct()
+        .publishValueSeeded(const Unauthenticated());
 
     final signOutMessage$ = signOutController.exhaustMap((_) {
-      return userRepository.signOut()
-        .asStream()
-        .doOnError((e) => print('[DEBUG] logout error=$e'))
-        .onErrorReturnWith((e) => UserLogoutMessageError(e))
-        .map((_) => const UserLogoutMessageSuccess());
+      return userRepository
+          .signOut()
+          .asStream()
+          .doOnError((e) => print('[DEBUG] logout error=$e'))
+          .onErrorReturnWith((e) => UserLogoutMessageError(e))
+          .map((_) => const UserLogoutMessageSuccess());
     }).publish();
 
     final subscriptions = <StreamSubscription<dynamic>>[
@@ -72,22 +74,24 @@ class UserBloc implements BaseBloc {
     }
 
     return LoggedInUser(
-      fullName: "${userEntity.firstName} ${userEntity.lastName}",
-      email: userEntity.email,
-      uid: userEntity.id,
-      isAdmin: userEntity.isAdmin ?? false,
-      chatList: userEntity.myChatsList13 ?? [],
-      image: userEntity.image,
-      connections: userEntity.connections ?? [],
-      church: userEntity.churchInfo != null 
-        ? userEntity.churchInfo.churchName 
-        : "",
-      city: userEntity.city ?? "",
-      token: userEntity.pushNotificationToken,
-      isChurch: userEntity.isChurch ?? false,
-      isVerified: userEntity.isVerified ?? false,
-      isChurchUpdated: userEntity.isChurchUpdated ?? false,
-      isProfileUpdated: userEntity.isProfileUpdated ?? false
-    );
+        fullName: "${userEntity.firstName} ${userEntity.lastName}",
+        email: userEntity.email,
+        uid: userEntity.id,
+        isAdmin: userEntity.isAdmin ?? false,
+        chatList: userEntity.myChatsList13 ?? [],
+        image: userEntity.image,
+        connections: userEntity.connections ?? [],
+        church: userEntity.churchInfo != null
+            ? userEntity.churchInfo.churchName
+            : "",
+        city: userEntity.city ?? "",
+        token: userEntity.pushNotificationToken,
+        isChurch: userEntity.isChurch ?? false,
+        isVerified: userEntity.isVerified ?? false,
+        churchId: userEntity.churchID,
+        isYouth: false,
+        mutedChats: [],
+        isChurchUpdated: userEntity.isChurchUpdated ?? false,
+        isProfileUpdated: userEntity.isProfileUpdated ?? false);
   }
 }

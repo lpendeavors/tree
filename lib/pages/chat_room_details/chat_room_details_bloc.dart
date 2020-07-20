@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:treeapp/pages/feed/feed_state.dart' as feed;
+import 'package:treeapp/util/post_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/group/firestore_group_repository.dart';
 import '../../data/post/firestore_post_repository.dart';
@@ -20,17 +23,16 @@ const _kInitialChatRoomDetailsState = ChatRoomDetailsState(
 );
 
 class ChatRoomDetailsBloc implements BaseBloc {
-  /// 
+  ///
   /// Input functions
   ///
-  
 
-  /// 
+  ///
   /// Output streams
   ///
   final ValueStream<ChatRoomDetailsState> chatRoomDetailsState$;
-  
-  /// 
+
+  ///
   /// Clean up
   ///
   final void Function() _dispose;
@@ -46,21 +48,20 @@ class ChatRoomDetailsBloc implements BaseBloc {
     @required FirestorePostRepository postRepository,
     @required String roomId,
   }) {
-    /// 
+    ///
     /// Assert
-    /// 
+    ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(groupRepository != null, 'groupRepository cannot be null');
     assert(postRepository != null, 'postRepository cannot by null');
     assert(roomId != null, 'roomId cannot be null');
 
-    /// 
+    ///
     /// Stream controllers
     ///
-    
 
-    /// 
-    /// Streams 
+    ///
+    /// Streams
     ///
     final chatRoomDetailsState$ = _getRoomDetails(
       userBloc,
@@ -74,11 +75,10 @@ class ChatRoomDetailsBloc implements BaseBloc {
     ];
 
     return ChatRoomDetailsBloc._(
-      chatRoomDetailsState$: chatRoomDetailsState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-      }
-    );
+        chatRoomDetailsState$: chatRoomDetailsState$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+        });
   }
 
   @override
@@ -100,24 +100,19 @@ class ChatRoomDetailsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
-          groupRepository.getById(groupId: roomId),
-          postRepository.getByGroup(roomId),
-          (group, posts) {
-            return _kInitialChatRoomDetailsState.copyWith(
-              chatRoomDetails: _entityToRoomDetailsItem(group, loginState.uid),
-              chatRoomPosts: _entitiesToRoomPostItems(posts),
-              isLoading: false,
-            );
-          }
-        )
-        .startWith(_kInitialChatRoomDetailsState)
-        .onErrorReturnWith((e) {
-          return _kInitialChatRoomDetailsState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+      return Rx.zip2(groupRepository.getById(groupId: roomId),
+          postRepository.getByGroup(roomId), (group, posts) {
+        return _kInitialChatRoomDetailsState.copyWith(
+          chatRoomDetails: _entityToRoomDetailsItem(group, loginState.uid),
+          chatRoomPosts: _entitiesToRoomPostItems(posts, loginState.uid),
+          isLoading: false,
+        );
+      }).startWith(_kInitialChatRoomDetailsState).onErrorReturnWith((e) {
+        return _kInitialChatRoomDetailsState.copyWith(
+          error: e,
+          isLoading: false,
+        );
+      });
     }
 
     return Stream.value(
@@ -139,18 +134,33 @@ class ChatRoomDetailsBloc implements BaseBloc {
       isConversation: entity.isConversation ?? false,
       image: entity.groupImage,
       members: _entitiesToRoomMemberItem(entity.groupMembers),
-      isAdmin: _checkIfAdmin(entity.groupMembers, uid),
+      isAdmin: true,
       description: entity.groupDescription,
       wallEnabled: entity.canPostOnWall ?? false,
     );
   }
 
-  static List<ChatRoomPostItem> _entitiesToRoomPostItems(
+  static List<feed.FeedItem> _entitiesToRoomPostItems(
     List<PostEntity> posts,
+    String uid,
   ) {
-    return posts.map((post) {
-      return ChatRoomPostItem(
-        id: post.documentId,
+    return posts.map((entity) {
+      return feed.FeedItem(
+        id: entity.documentId,
+        tags: entity.tags,
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString:
+            timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+        message: entity.postMessage,
+        name: entity.fullName != null ? entity.fullName : entity.churchName,
+        userImage: entity.image ?? "",
+        isPoll: entity.type == feed.PostType.poll.index,
+        postImages: _getPostImages(entity),
+        userId: entity.ownerId,
+        isLiked: (entity.likes ?? []).contains(uid),
+        isMine: entity.ownerId == uid,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+        isShared: entity.isPostPrivate == 1,
       );
     }).toList();
   }
@@ -193,5 +203,17 @@ class ChatRoomDetailsBloc implements BaseBloc {
       }
     });
     return admin;
+  }
+
+  static List<String> _getPostImages(PostEntity entity) {
+    List<String> images = List<String>();
+
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        images = entity.postData.map((data) => data.imageUrl).toList();
+      }
+    }
+
+    return images;
   }
 }

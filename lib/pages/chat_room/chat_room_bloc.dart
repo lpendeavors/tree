@@ -23,14 +23,14 @@ const _kInitialChatRoomState = ChatRoomState(
 );
 
 class ChatRoomBloc implements BaseBloc {
-  /// 
+  ///
   /// Input functions
   ///
   final void Function() sendMessage;
   final void Function(String) messageChanged;
   final void Function(int) messageTypeChanged;
 
-  /// 
+  ///
   /// Output streams
   ///
   final ValueStream<ChatRoomState> chatRoomState$;
@@ -38,9 +38,9 @@ class ChatRoomBloc implements BaseBloc {
   final Stream<ChatRoomMessage> message$;
   final ValueStream<bool> isLoading$;
 
-  /// 
+  ///
   /// Clean up
-  /// 
+  ///
   final void Function() _dispose;
 
   ChatRoomBloc._({
@@ -61,16 +61,16 @@ class ChatRoomBloc implements BaseBloc {
     @required String roomId,
     @required bool isRoom,
   }) {
-    /// 
-    /// Assert 
-    /// 
+    ///
+    /// Assert
+    ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(chatRepository != null, 'chatRepository cannot be null');
     assert(groupRepository != null, 'groupRepository cannot be null');
     assert(roomId != null, 'roomId cannot be null');
     assert(isRoom != null, 'isRoom cannot be null');
 
-    /// 
+    ///
     /// Stream controllers
     ///
     final sendMessageSubject = PublishSubject<void>();
@@ -78,7 +78,7 @@ class ChatRoomBloc implements BaseBloc {
     final messageTypeSubject = BehaviorSubject<int>.seeded(null);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
-    /// 
+    ///
     /// Streams
     ///
     final messageError$ = messageSubject.map((message) {
@@ -105,19 +105,20 @@ class ChatRoomBloc implements BaseBloc {
     ).publishValueSeeded(_kInitialChatRoomState);
 
     final message$ = sendMessageSubject
-      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => sendNewMessage(
-          userBloc,
-          chatRepository,
-          messageSubject.value,
-          messageTypeSubject.value,
-          isLoadingSubject,
-          roomId,
-          isRoom,
-        ),
-      ).publish();
+        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        .where((isValid) => isValid)
+        .exhaustMap(
+          (_) => sendNewMessage(
+            userBloc,
+            chatRepository,
+            messageSubject.value,
+            messageTypeSubject.value,
+            isLoadingSubject,
+            roomId,
+            isRoom,
+          ),
+        )
+        .publish();
 
     ///
     /// Controllers and subscriptions
@@ -134,18 +135,17 @@ class ChatRoomBloc implements BaseBloc {
     ];
 
     return ChatRoomBloc._(
-      messageChanged: messageSubject.add,
-      messageTypeChanged: messageTypeSubject.add,
-      sendMessage: () => sendMessageSubject.add(null),
-      chatRoomState$: chatRoomState$,
-      messageError$: messageError$,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        messageChanged: messageSubject.add,
+        messageTypeChanged: messageTypeSubject.add,
+        sendMessage: () => sendMessageSubject.add(null),
+        chatRoomState$: chatRoomState$,
+        messageError$: messageError$,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   @override
@@ -169,18 +169,18 @@ class ChatRoomBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip2(
-        isGroup ? groupRepository.getById(groupId: roomId) : Stream.value(null),
-        chatRepository.getByGroup(roomId),
-        (group, chats) {
-          return _kInitialChatRoomState.copyWith(
-            isLoading: false,
-            details: isGroup ? _entityToChatRoomItem(group) : null,
-            messages: _entitiesToChatMessageItems(chats, loginState.uid),
-          );
-        }
-      )
-      .startWith(_kInitialChatRoomState)
-      .onErrorReturnWith((e) {
+          isGroup
+              ? groupRepository.getById(groupId: roomId)
+              : Stream.value(null),
+          chatRepository.getByGroup(roomId), (group, chats) {
+        return _kInitialChatRoomState.copyWith(
+          isLoading: false,
+          details: isGroup
+              ? _entityToChatRoomItem(group, loginState.mutedChats)
+              : null,
+          messages: _entitiesToChatMessageItems(chats, loginState.uid),
+        );
+      }).startWith(_kInitialChatRoomState).onErrorReturnWith((e) {
         return _kInitialChatRoomState.copyWith(
           error: e,
           isLoading: false,
@@ -198,6 +198,7 @@ class ChatRoomBloc implements BaseBloc {
 
   static ChatRoomItem _entityToChatRoomItem(
     GroupEntity entity,
+    List<String> mutedChats,
   ) {
     return ChatRoomItem(
       id: entity.documentId,
@@ -207,6 +208,7 @@ class ChatRoomBloc implements BaseBloc {
       image: entity.image,
       groupImage: entity.groupImage,
       name: entity.groupName,
+      isMuted: mutedChats.contains(entity.documentId),
     );
   }
 
@@ -226,6 +228,7 @@ class ChatRoomBloc implements BaseBloc {
         message: entity.message,
         image: entity.image,
         name: entity.fullName,
+        userId: entity.ownerId,
       );
     }).toList();
   }

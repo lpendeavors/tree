@@ -25,14 +25,14 @@ const _kInitialPostDetailsState = PostDetailsState(
 class PostDetailsBloc extends BaseBloc {
   ///
   /// Input functions
-  /// 
-  
-  /// 
+  ///
+
+  ///
   /// Output streams
-  /// 
+  ///
   final ValueStream<PostDetailsState> postDetailsState$;
 
-  /// 
+  ///
   /// Clean up
   ///
   final void Function() _dispose;
@@ -48,7 +48,7 @@ class PostDetailsBloc extends BaseBloc {
     @required FirestoreCommentRepository commentRepository,
     @required String postId,
   }) {
-    /// 
+    ///
     /// Assert
     ///
     assert(userBloc != null, 'userBloc cannot be null');
@@ -56,11 +56,11 @@ class PostDetailsBloc extends BaseBloc {
     assert(commentRepository != null, 'commentRepository cannot be null');
     assert(postId != null, 'postId cannot be null');
 
-    /// 
+    ///
     /// Stream controllers
-    /// 
-    
-    /// 
+    ///
+
+    ///
     /// Streams
     ///
     final postDetailsState$ = _getPostDetails(
@@ -75,11 +75,10 @@ class PostDetailsBloc extends BaseBloc {
     ];
 
     return PostDetailsBloc._(
-      postDetailsState$: postDetailsState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-      }
-    );
+        postDetailsState$: postDetailsState$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+        });
   }
 
   @override
@@ -111,9 +110,7 @@ class PostDetailsBloc extends BaseBloc {
             isLoading: false,
           );
         },
-      )
-      .startWith(_kInitialPostDetailsState)
-      .onErrorReturnWith((e)  {
+      ).startWith(_kInitialPostDetailsState).onErrorReturnWith((e) {
         return _kInitialPostDetailsState.copyWith(
           error: e,
           isLoading: false,
@@ -137,7 +134,8 @@ class PostDetailsBloc extends BaseBloc {
       id: entity.documentId,
       tags: entity.tags,
       timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-      timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+      timePostedString:
+          timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
       message: entity.postMessage,
       name: entity.fullName != null ? entity.fullName : entity.churchName,
       userImage: entity.image ?? "",
@@ -147,6 +145,7 @@ class PostDetailsBloc extends BaseBloc {
       isLiked: (entity.likes ?? []).contains(uid),
       isMine: entity.ownerId == uid,
       abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+      isShared: entity.isPostPrivate == 1,
     );
   }
 
@@ -164,6 +163,7 @@ class PostDetailsBloc extends BaseBloc {
         isGif: entity.isGIF ?? false,
         gif: entity.imagePath,
         owner: entity.ownerId,
+        userId: entity.uid,
       );
     }).toList();
   }

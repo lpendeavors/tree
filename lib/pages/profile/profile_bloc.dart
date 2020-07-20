@@ -224,6 +224,7 @@ class ProfileBloc implements BaseBloc {
         isLiked: (entity.likes ?? []).contains(uid),
         isMine: entity.ownerId == uid,
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+        isShared: entity.isPostPrivate == 1,
       );
     }).toList();
   }

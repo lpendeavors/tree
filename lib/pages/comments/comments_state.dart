@@ -17,7 +17,8 @@ class CommentAddedSuccess implements CommentAddedMessage {
 }
 
 class CommentAddedError implements CommentAddedMessage {
-  const CommentAddedError();
+  final Object error;
+  const CommentAddedError(this.error);
 }
 
 /// 
@@ -60,6 +61,7 @@ class CommentsState extends Equatable {
 @immutable
 class CommentItem extends Equatable {
   final String id;
+  final String userId;
   final String fullName;
   final String message;
   final String image;
@@ -70,6 +72,7 @@ class CommentItem extends Equatable {
 
   const CommentItem({
     @required this.id,
+    @required this.userId,
     @required this.fullName,
     @required this.message,
     @required this.image,
@@ -82,6 +85,7 @@ class CommentItem extends Equatable {
   @override
   List get props => [
     id,
+    userId,
     fullName,
     message,
     image,
