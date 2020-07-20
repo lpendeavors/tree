@@ -42,6 +42,7 @@ class CommentListItem extends StatelessWidget {
                         comment.fullName,
                         style: TextStyle(
                           fontSize: 14,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
@@ -71,6 +72,12 @@ class CommentListItem extends StatelessWidget {
             ),
           ),
           InkWell(
+            onTap: () {
+              Navigator.of(context).pushNamed(
+                '/profile',
+                arguments: comment.userId,
+              );
+            },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: AnimatedContainer(

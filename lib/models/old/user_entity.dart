@@ -63,17 +63,13 @@ class UserEntity extends Equatable implements FirebaseModel {
   final String parentChurch;
   final double churchLat;
   final double churchLong;
+  final String churchID;
+  // final List<String> muted;
 
-  @JsonKey(
-      fromJson: timestampFromJson,
-      toJson: timestampToJson
-  )
+  @JsonKey(fromJson: timestampFromJson, toJson: timestampToJson)
   final Timestamp createdAt;
 
-  @JsonKey(
-      fromJson: timestampFromJson,
-      toJson: timestampToJson
-  )
+  @JsonKey(fromJson: timestampFromJson, toJson: timestampToJson)
   final Timestamp updatedAt;
 
   const UserEntity({
@@ -128,7 +124,9 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.churchWebsite,
     this.parentChurch,
     this.churchLat,
-    this.churchLong
+    this.churchLong,
+    this.churchID,
+    // this.muted
   });
 
   String get id => this.documentId;
@@ -191,11 +189,13 @@ class UserEntity extends Equatable implements FirebaseModel {
       churchWebsite,
       parentChurch,
       churchLat,
-      churchLong
+      churchLong,
+      churchID,
+      //muted,
     ];
   }
 
-  static Map<String, dynamic> createWith(Map<String, dynamic> data){
+  static Map<String, dynamic> createWith(Map<String, dynamic> data) {
     //TODO: isChurch, searchData
     return {
       'databaseName': "userBase",

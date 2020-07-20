@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import 'package:smart_text_view/smart_text_view.dart';
@@ -28,7 +29,8 @@ class ChatRoomDetailsPage extends StatefulWidget {
   _ChatRoomDetailsPageState createState() => _ChatRoomDetailsPageState();
 }
 
-class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
+class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
+    with TickerProviderStateMixin {
   ChatRoomDetailsBloc _roomDetailsBloc;
   List<StreamSubscription> _subscriptions;
 
@@ -39,8 +41,9 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
     _roomDetailsBloc = widget.initRoomDetailsBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -86,19 +89,39 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                   height: 250,
                   child: Stack(
                     children: <Widget>[
-                      if (data.chatRoomDetails.isGroup && !data.chatRoomDetails.isConversation) ...[
+                      if (data.chatRoomDetails.isGroup &&
+                          !data.chatRoomDetails.isConversation) ...[
                         Align(
                           alignment: Alignment.center,
-                          child: Image(
+                          child: CachedNetworkImage(
                             fit: BoxFit.cover,
                             height: 250,
                             alignment: Alignment.center,
                             width: MediaQuery.of(context).size.width,
-                            image: CacheImage(data.chatRoomDetails.image),
+                            imageUrl: data.chatRoomDetails.image,
+                            placeholder: (context, string) {
+                              return Container(
+                                height: 250,
+                                color: Theme.of(context).primaryColor,
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
-                      if (data.chatRoomDetails.isGroup && data.chatRoomDetails.isConversation) ...[
+                      if (data.chatRoomDetails.isGroup &&
+                          data.chatRoomDetails.isConversation) ...[
                         Align(
                           alignment: Alignment.center,
                           child: BackdropFilter(
@@ -110,120 +133,119 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                               width: MediaQuery.of(context).size.width,
                               alignment: Alignment.center,
                               fit: BoxFit.cover,
-                              image: CacheImage(data.chatRoomDetails.members[0].image),
+                              image: CacheImage(
+                                  data.chatRoomDetails.members[0].image),
                             ),
                           ),
                         ),
-                        Container(
-                          height: 250,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.9),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.1),
-                                Colors.black.withOpacity(0.9),
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
+                      ],
+                      Container(
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.9),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.1),
+                              Colors.black.withOpacity(0.9),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
                         ),
-                        if (data.chatRoomDetails.isConversation) ...[
-                          Align(
-                            child: Container(
-                              height: 85,
-                              width: 85,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  ImageHolder(
-                                    size: 80,
-                                    image: data.chatRoomDetails.members[0].image,
-                                  ),
-                                  ...List.generate(
+                      ),
+                      if (data.chatRoomDetails.isConversation) ...[
+                        Align(
+                          child: Container(
+                            height: 85,
+                            width: 85,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                ImageHolder(
+                                  size: 80,
+                                  image: data.chatRoomDetails.members[0].image,
+                                ),
+                                ...List.generate(
                                     data.chatRoomDetails.members.length,
                                     (index) {
-                                      var member = data.chatRoomDetails.members[index];
-                                      var padding = index != 1 
-                                        ? (5 + index * 5).roundToDouble()
-                                        : 0;
+                                  var member =
+                                      data.chatRoomDetails.members[index];
+                                  var padding = index != 1
+                                      ? (5 + index * 5).roundToDouble()
+                                      : 0;
 
-                                      if (index == 0) 
-                                        return Container();
+                                  if (index == 0) return Container();
 
-                                      return Align(
-                                        alignment: Alignment.bottomCenter,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(
-                                            left: padding,
-                                          ),
-                                          child: ImageHolder(
-                                            size: 35,
-                                            image: member.image,
-                                          ),
+                                  return Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        left: padding,
+                                      ),
+                                      child: ImageHolder(
+                                        size: 35,
+                                        image: member.image,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 25,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                BackButton(
+                                  color: Colors.white,
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    if (data.chatRoomDetails.isAdmin) ...[
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.person_add,
+                                          color: Colors.white,
                                         ),
-                                      );
-                                    }
-                                  ),
-                                ],
+                                        onPressed: () {
+                                          // TODO: add members
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.more_vert,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: () => _showGroupOptions(),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(15),
+                            child: Text(
+                              data.chatRoomDetails.name,
+                              style: TextStyle(
+                                fontSize: 25,
+                                color: Colors.white,
                               ),
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  top: 25,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    BackButton(
-                                      color: Colors.white,
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        if (data.chatRoomDetails.isAdmin) ...[
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.person_add,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              // TODO: add members
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.more_vert,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              /// TODO: show options
-                                            },
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(15),
-                                child: Text(
-                                  data.chatRoomDetails.name,
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
-                      ],
+                      ),
+                      //],
                     ],
                   ),
                 ),
@@ -253,9 +275,7 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(
-                            'About'
-                          ),
+                          Text('About'),
                           SizedBox(height: 8),
                           Text(
                             data.chatRoomDetails.description,
@@ -290,13 +310,18 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                         itemBuilder: (_, index) {
                           return GestureDetector(
                             onTap: () {
-                              // TODO: go to profile
+                              Navigator.of(context).pushNamed(
+                                '/profile',
+                                arguments:
+                                    data.chatRoomDetails.members[index].id,
+                              );
                             },
                             child: AbsorbPointer(
                               absorbing: true,
                               child: ImageHolder(
                                 size: 40,
-                                image: data.chatRoomDetails.members[index].image,
+                                image:
+                                    data.chatRoomDetails.members[index].image,
                               ),
                             ),
                           );
@@ -307,46 +332,46 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                 ),
               ),
               RaisedButton(
-                padding: EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.chat_bubble,
-                          color: Colors.white,
-                          size: 15,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          'ENTER ROOM',
-                          style: TextStyle(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.chat_bubble,
                             color: Colors.white,
-                            fontSize: 14,
+                            size: 15,
                           ),
-                        ),
-                      ],
-                    ),
-                    Icon(
-                      Icons.navigate_next,
-                      size: 18,
-                      color: Colors.white.withOpacity(0.7),
-                    ),
-                  ],
-                ),
-                color: Theme.of(context).primaryColor,
-                onPressed: () {
-                  Navigator.of(context).pushNamed(
-                    '/chat_room',
-                    arguments: <String, dynamic>{
-                      'roomId': data.chatRoomDetails.id,
-                      'isRoom': true,
-                    },
-                  );
-                }
-              ),
-              if (!data.chatRoomDetails.isAdmin && !data.chatRoomDetails.wallEnabled) ...[
+                          SizedBox(width: 10),
+                          Text(
+                            'ENTER ROOM',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Icon(
+                        Icons.navigate_next,
+                        size: 18,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ],
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      '/chat_room',
+                      arguments: <String, dynamic>{
+                        'roomId': data.chatRoomDetails.id,
+                        'isRoom': true,
+                      },
+                    );
+                  }),
+              if (!data.chatRoomDetails.isAdmin &&
+                  !data.chatRoomDetails.wallEnabled) ...[
                 Container(
                   color: Colors.white,
                   margin: EdgeInsets.only(
@@ -383,7 +408,8 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                   ),
                 ),
               ],
-              if (data.chatRoomDetails.wallEnabled || data.chatRoomDetails.isAdmin) ...[
+              if (data.chatRoomDetails.wallEnabled ||
+                  data.chatRoomDetails.isAdmin) ...[
                 Container(
                   color: Colors.white,
                   margin: EdgeInsets.only(
@@ -399,12 +425,16 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                           child: FlatButton(
                             color: Colors.white,
                             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(0),
                             ),
                             onPressed: () {
-                              // TODO: new post
+                              Navigator.of(context).pushNamed(
+                                '/edit_post',
+                                arguments: null,
+                              );
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -463,24 +493,25 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                         height: 50,
                         child: FlatButton(
                           padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(0),
                           ),
                           onPressed: () {
-                            // TODO: create poll
+                            Navigator.of(context).pushNamed(
+                              '/edit_poll',
+                              arguments: null,
+                            );
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Flexible(
-                                child: Text(
-                                  'Poll',
-                                  style: TextStyle(
+                              Text(
+                                'Poll',
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor
-                                  ),
-                                ),
+                                    color: Theme.of(context).primaryColor),
                               ),
                               SizedBox(width: 10),
                               Container(
@@ -531,7 +562,17 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
                   padding: EdgeInsets.only(top: 10),
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return Container();
+                    return FeedListItem(
+                      context: context,
+                      tickerProvider: this,
+                      feedItem: data.chatRoomPosts[index],
+                      likeFeedItem: (item) {
+                        // TODO: finish saving like
+                        // _feedBloc.postToLikeChanged(item);
+                        // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
+                        // _feedBloc.saveLikeValue();
+                      },
+                    );
                   },
                 ),
               ],
@@ -541,4 +582,6 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage> {
       ),
     );
   }
+
+  void _showGroupOptions() {}
 }

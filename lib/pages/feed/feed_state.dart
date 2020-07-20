@@ -96,6 +96,7 @@ class FeedItem extends Equatable {
   final bool isMine;
   final bool isLiked;
   final String abbreviatedPost;
+  final bool isShared;
 
   const FeedItem({
     @required this.id,
@@ -111,6 +112,7 @@ class FeedItem extends Equatable {
     @required this.isMine,
     @required this.isLiked,
     @required this.abbreviatedPost,
+    @required this.isShared,
   });
 
   @override
@@ -128,6 +130,7 @@ class FeedItem extends Equatable {
     isMine,
     isLiked,
     abbreviatedPost,
+    isShared,
   ];
 
   @override

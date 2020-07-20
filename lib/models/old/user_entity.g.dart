@@ -71,6 +71,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     parentChurch: json['parentChurch'] as String,
     churchLat: (json['churchLat'] as num)?.toDouble(),
     churchLong: (json['churchLong'] as num)?.toDouble(),
+    churchID: json['churchID'] as String,
   );
 }
 
@@ -127,6 +128,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'parentChurch': instance.parentChurch,
       'churchLat': instance.churchLat,
       'churchLong': instance.churchLong,
+      'churchID': instance.churchID,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

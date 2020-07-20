@@ -1,27 +1,28 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/pages/feed/feed_state.dart';
 
-/// 
+///
 /// Message
 ///
 abstract class ChatRoomDetailsMessage {
   const ChatRoomDetailsMessage();
 }
 
-/// 
+///
 /// Error
 ///
 class NotLoggedInError {
   const NotLoggedInError();
 }
 
-/// 
+///
 /// State
 ///
 @immutable
 class ChatRoomDetailsState extends Equatable {
   final ChatRoomDetailsItem chatRoomDetails;
-  final List<ChatRoomPostItem> chatRoomPosts;
+  final List<FeedItem> chatRoomPosts;
   final bool isLoading;
   final Object error;
 
@@ -32,7 +33,8 @@ class ChatRoomDetailsState extends Equatable {
     @required this.error,
   });
 
-  ChatRoomDetailsState copyWith({chatRoomDetails, chatRoomPosts, isLoading, error}) {
+  ChatRoomDetailsState copyWith(
+      {chatRoomDetails, chatRoomPosts, isLoading, error}) {
     return ChatRoomDetailsState(
       chatRoomDetails: chatRoomDetails ?? this.chatRoomDetails,
       chatRoomPosts: chatRoomPosts ?? this.chatRoomPosts,
@@ -43,11 +45,11 @@ class ChatRoomDetailsState extends Equatable {
 
   @override
   List get props => [
-    chatRoomDetails,
-    chatRoomPosts,
-    isLoading,
-    error,
-  ];
+        chatRoomDetails,
+        chatRoomPosts,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -79,16 +81,16 @@ class ChatRoomDetailsItem extends Equatable {
 
   @override
   List get props => [
-    id, 
-    name,
-    isGroup,
-    isAdmin,
-    isConversation,
-    image,
-    members,
-    description,
-    wallEnabled,
-  ];
+        id,
+        name,
+        isGroup,
+        isAdmin,
+        isConversation,
+        image,
+        members,
+        description,
+        wallEnabled,
+      ];
 
   @override
   bool get stringify => true;
@@ -106,9 +108,9 @@ class ChatRoomMemberItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    image,
-  ];
+        id,
+        image,
+      ];
 
   @override
   bool get stringify => true;
@@ -123,9 +125,7 @@ class ChatRoomPostItem extends Equatable {
   });
 
   @override
-  List get props => [
-    id
-  ];
+  List get props => [id];
 
   @override
   bool get stringify => true;

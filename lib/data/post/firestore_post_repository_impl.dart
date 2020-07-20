@@ -82,7 +82,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     bool shouldLike, 
     String postId, 
     String userId
-  }) {
+  }) async {
     if (shouldLike) {
       return _firestore
         .document('postBase/$postId')

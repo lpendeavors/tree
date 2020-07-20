@@ -38,8 +38,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     _chatRoomBloc = widget.initChatRoomBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _chatRoomBloc.message$.listen((message) => _showMessageResult(message)),
     ];
   }
@@ -62,127 +63,126 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: StreamBuilder<ChatRoomState>(
-        stream: _chatRoomBloc.chatRoomState$,
-        initialData: _chatRoomBloc.chatRoomState$.value,
-        builder: (context, snapshot) {
-          var data = snapshot.data;
-          print(data);
+          stream: _chatRoomBloc.chatRoomState$,
+          initialData: _chatRoomBloc.chatRoomState$.value,
+          builder: (context, snapshot) {
+            var data = snapshot.data;
+            print(data);
 
-          if (data.error != null) {
-            print(data.error);
-            return Center(
-              child: Text(
-                S.of(context).error_occurred,
-              ),
-            );
-          }
+            if (data.error != null) {
+              print(data.error);
+              return Center(
+                child: Text(
+                  S.of(context).error_occurred,
+                ),
+              );
+            }
 
-          if (data.isLoading) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+            if (data.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          return Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              SizedBox(height: 30),
-              Container(
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        child: Center(
-                          child: Icon(
-                            Icons.keyboard_backspace,
-                            size: 25,
-                            color: Colors.black,
+            return Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(height: 30),
+                Container(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          child: Center(
+                            child: Icon(
+                              Icons.keyboard_backspace,
+                              size: 25,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      fit: FlexFit.tight,
-                      child: GestureDetector(
-                        onTap: () {
-                          if (data.details != null) {
-                            if (data.details.isGroup && !data.details.isConversation) {
-                              Navigator.of(context).pushNamed(
-                                '/chat_room_details', 
-                                arguments: data.details.id,
-                              );
-                            } else if (data.details.members.length > 2) {
-                              // TODO: view members
-                            } else {
-                              Navigator.of(context).pushNamed(
-                                '/profile',
-                                arguments: data.details.members[1].uid,
-                              );
+                      Flexible(
+                        flex: 1,
+                        fit: FlexFit.tight,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (data.details != null) {
+                              if (data.details.isGroup &&
+                                  !data.details.isConversation) {
+                                Navigator.of(context).pushNamed(
+                                  '/chat_room_details',
+                                  arguments: data.details.id,
+                                );
+                              } else if (data.details.members.length > 2) {
+                                // TODO: view members
+                              } else {
+                                Navigator.of(context).pushNamed(
+                                  '/profile',
+                                  arguments: data.details.members[1].uid,
+                                );
+                              }
                             }
-                          }
-                        },
-                        child: Row(
-                          children: <Widget>[
-                            Card(
-                              shape: CircleBorder(),
-                              margin: EdgeInsets.all(0),
-                              clipBehavior: Clip.antiAlias,
-                              color: Colors.transparent,
-                              elevation: 0.5,
-                              child: Stack(
-                                children: <Widget>[
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    color: Color(0xffe46514),
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 12,
+                          },
+                          child: Row(
+                            children: <Widget>[
+                              Card(
+                                shape: CircleBorder(),
+                                margin: EdgeInsets.all(0),
+                                clipBehavior: Clip.antiAlias,
+                                color: Colors.transparent,
+                                elevation: 0.5,
+                                child: Stack(
+                                  children: <Widget>[
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      color: Color(0xffe46514),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Image(
-                                    width: 40,
-                                    height: 40,
-                                    fit: BoxFit.cover,
-                                    image: CacheImage(
-                                      data.details == null 
-                                       ? "" //data.messages.where((m) => m.isMine == false).toList()[0].image
-                                       : data.details.groupImage
+                                    Image(
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                      image: CacheImage(data.details == null
+                                          ? "" //data.messages.where((m) => m.isMine == false).toList()[0].image
+                                          : data.details.groupImage),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 5),
-                            Flexible(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  if (data.details == null)
-                                    Text(
-                                      "", //data.messages.where((m) => m.isMine == false).toList()[0].name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  else
-                                    if (!data.details.isGroup || !data.details.isConversation)
+                              SizedBox(width: 5),
+                              Flexible(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    if (data.details == null)
+                                      Text(
+                                        "", //data.messages.where((m) => m.isMine == false).toList()[0].name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    else if (!data.details.isGroup ||
+                                        !data.details.isConversation)
                                       Text(
                                         data.details.name,
                                         maxLines: 1,
@@ -193,19 +193,24 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           color: Colors.black,
                                         ),
                                       )
-                                    else if (data.details.members.length > 2 && data.details.isConversation)
+                                    else if (data.details.members.length > 2 &&
+                                        data.details.isConversation)
                                       Text.rich(
                                         TextSpan(
                                           children: List.generate(
-                                            data.details.members
-                                              .where((m) => m.uid != (widget.userBloc.loginState$ as LoggedInUser).uid)
-                                              .length, 
-                                            (index) {
-                                              return TextSpan(
-                                                text: '${data.details.members[0].fullName} and ${data.details.members.length} more',
-                                              );
-                                            }
-                                          ),
+                                              data.details.members
+                                                  .where((m) =>
+                                                      m.uid !=
+                                                      (widget.userBloc
+                                                                  .loginState$
+                                                              as LoggedInUser)
+                                                          .uid)
+                                                  .length, (index) {
+                                            return TextSpan(
+                                              text:
+                                                  '${data.details.members[0].fullName} and ${data.details.members.length} more',
+                                            );
+                                          }),
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -215,192 +220,189 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           color: Colors.black,
                                         ),
                                       ),
-                                  SizedBox(height: 5),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      height: 30,
-                      width: 30,
-                      child: FlatButton(
-                        padding: EdgeInsets.all(0),
-                        color: Color(0xFF6CA748),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          side: BorderSide(
-                            width: 1,
-                            color: Colors.black.withOpacity(0.1),
-                          ),
-                        ),
-                        onPressed: () {
-                          // TODO: Mute chat
-                        },
-                        child: Center(
-                          child: Icon(
-                            Icons.notifications_off,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                  ],
-                ),
-              ),
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.1),
-                margin: EdgeInsets.only(top: 5),
-              ),
-              Expanded(
-                flex: 1,
-                child: Scrollbar(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    reverse: true,
-                    itemCount: data.messages.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        crossAxisAlignment: data.messages[index].isMine
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
-                        children: <Widget>[
-                          if (data.messages[index].showDate) ...[
-                            Center(
-                              child: Container(
-                                margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
-                                child: Text(
-                                  '${DateFormat.MMM().add_d().add_jm().format(data.messages[index].sentDate)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black.withOpacity(0.5),
-                                  ),
+                                    SizedBox(height: 5),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                          data.messages[index].isMine
-                            ? _outgoingMessage(data.messages[index])
-                            : _incommingMessage(data.messages[index]),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.1),
-                margin: EdgeInsets.only(top: 5),
-              ),
-              Container(
-                width: double.infinity,
-                color: Color(0xff0f534949),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      // Container(
-                      //   height: 50,
-                      //   width: 50,
-                      //   child: FlatButton(
-                      //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      //     onPressed: () {
-
-                      //     },
-                      //     child: Icon(
-                      //       Icons.keyboard,
-                      //       size: 20,
-                      //       color: Colors.black.withOpacity(0.5),
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(width: 15),
-                      Flexible(
-                        flex: 1,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: 120,
+                            ],
                           ),
-                          child: TextField(
-                            onChanged: _chatRoomBloc.messageChanged,
-                            cursorWidth: 1,
-                            cursorColor: Colors.black,
-                            keyboardType: TextInputType.multiline,
-                            scrollPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                            textCapitalization: TextCapitalization.sentences,
-                            decoration: InputDecoration(
-                              hintText: 'Type a message',
-                              hintStyle: TextStyle(
-                                fontSize: 17,
-                                color: Colors.black,
-                              ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Container(
+                        height: 30,
+                        width: 30,
+                        child: FlatButton(
+                          padding: EdgeInsets.all(0),
+                          color: Color(0xFF6CA748),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            side: BorderSide(
+                              width: 1,
+                              color: Colors.black.withOpacity(0.1),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: Center(
+                            child: Icon(
+                              Icons.notifications_off,
+                              size: 14,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
-                      Container(
-                        height: 50,
-                        width: 50,
-                        child: FlatButton(
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          onPressed: () async {
-                            
-                          },
-                          child: Icon(
-                            Icons.photo,
-                            size: 20,
-                            color: Colors.black.withOpacity(0.5),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 50,
-                        width: 50,
-                        child: FlatButton(
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          onPressed: () async {
-                            
-                          },
-                          child: Icon(
-                            Icons.video_library,
-                            size: 20,
-                            color: Colors.black.withOpacity(0.5),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 50,
-                        width: 50,
-                        child: FlatButton(
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          onPressed: _chatRoomBloc.sendMessage,
-                          child: Icon(
-                            Icons.send,
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      SizedBox(width: 10),
                     ],
                   ),
                 ),
-              ),
-            ],
-          );
-        }
-      ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: Colors.black.withOpacity(0.1),
+                  margin: EdgeInsets.only(top: 5),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Scrollbar(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      reverse: true,
+                      itemCount: data.messages.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          crossAxisAlignment: data.messages[index].isMine
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: <Widget>[
+                            if (data.messages[index].showDate) ...[
+                              Center(
+                                child: Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+                                  child: Text(
+                                    '${DateFormat.MMM().add_d().add_jm().format(data.messages[index].sentDate)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black.withOpacity(0.5),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            data.messages[index].isMine
+                                ? _outgoingMessage(data.messages[index])
+                                : _incommingMessage(data.messages[index]),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: Colors.black.withOpacity(0.1),
+                  margin: EdgeInsets.only(top: 5),
+                ),
+                Container(
+                  width: double.infinity,
+                  color: Color(0xff0f534949),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        // Container(
+                        //   height: 50,
+                        //   width: 50,
+                        //   child: FlatButton(
+                        //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        //     onPressed: () {
+
+                        //     },
+                        //     child: Icon(
+                        //       Icons.keyboard,
+                        //       size: 20,
+                        //       color: Colors.black.withOpacity(0.5),
+                        //     ),
+                        //   ),
+                        // ),
+                        SizedBox(width: 15),
+                        Flexible(
+                          flex: 1,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: 120,
+                            ),
+                            child: TextField(
+                              onChanged: _chatRoomBloc.messageChanged,
+                              cursorWidth: 1,
+                              cursorColor: Colors.black,
+                              keyboardType: TextInputType.multiline,
+                              scrollPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: InputDecoration(
+                                hintText: 'Type a message',
+                                hintStyle: TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () async {},
+                            child: Icon(
+                              Icons.photo,
+                              size: 20,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onPressed: () async {},
+                            child: Icon(
+                              Icons.video_library,
+                              size: 20,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 50,
+                          width: 50,
+                          child: FlatButton(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onPressed: _chatRoomBloc.sendMessage,
+                            child: Icon(
+                              Icons.send,
+                              size: 20,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
     );
   }
 
@@ -417,9 +419,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             margin: EdgeInsets.fromLTRB(60, 0, 20, 15),
             padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
             decoration: BoxDecoration(
-              color: messageItem.isRead 
-                ? Color(0xFF6CA748)
-                : Color(0xFF9CC83F),
+              color: messageItem.isRead ? Color(0xFF6CA748) : Color(0xFF9CC83F),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
@@ -484,12 +484,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      messageItem.name,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          '/profile',
+                          arguments: messageItem.userId,
+                        );
+                      },
+                      child: Text(
+                        messageItem.name,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                     SizedBox(height: 3),
@@ -512,9 +520,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
               ),
             ),
-            ImageHolder(
-              size: 40,
-              image: messageItem.image,
+            InkWell(
+              onTap: () {
+                print(messageItem.image);
+              },
+              child: ImageHolder(
+                size: 40,
+                image: messageItem.image,
+              ),
             ),
           ],
         );

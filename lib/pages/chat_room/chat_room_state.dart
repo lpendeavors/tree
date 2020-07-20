@@ -2,12 +2,12 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import '../../models/old/group_member.dart';
 
-/// 
+///
 /// Enums
 ///
 enum MessageType { text, image, gif, doc, video }
 
-/// 
+///
 /// Message
 ///
 abstract class ChatRoomMessage {
@@ -27,9 +27,9 @@ class ChatMessageAddedError implements ChatMessageAdded {
   const ChatMessageAddedError(this.error);
 }
 
-/// 
+///
 /// Error
-/// 
+///
 class NotLoggedInError {
   const NotLoggedInError();
 }
@@ -38,7 +38,7 @@ class MessageError {
   const MessageError();
 }
 
-/// 
+///
 /// State
 ///
 @immutable
@@ -66,11 +66,11 @@ class ChatRoomState extends Equatable {
 
   @override
   List get props => [
-    details,
-    messages,
-    isLoading,
-    error,
-  ];
+        details,
+        messages,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -85,6 +85,7 @@ class ChatRoomItem extends Equatable {
   final String image;
   final String groupImage;
   final String name;
+  final bool isMuted;
 
   const ChatRoomItem({
     @required this.id,
@@ -94,18 +95,20 @@ class ChatRoomItem extends Equatable {
     @required this.image,
     @required this.groupImage,
     @required this.name,
+    @required this.isMuted,
   });
 
   @override
   List get props => [
-    id,
-    isGroup,
-    isConversation,
-    members,
-    image,
-    groupImage,
-    name,
-  ];
+        id,
+        isGroup,
+        isConversation,
+        members,
+        image,
+        groupImage,
+        name,
+        isMuted,
+      ];
 
   @override
   bool get stringify => true;
@@ -122,6 +125,7 @@ class ChatMessageItem extends Equatable {
   final bool showDate;
   final DateTime sentDate;
   final String message;
+  final String userId;
 
   const ChatMessageItem({
     @required this.id,
@@ -133,20 +137,22 @@ class ChatMessageItem extends Equatable {
     @required this.showDate,
     @required this.sentDate,
     @required this.message,
+    @required this.userId,
   });
 
   @override
   List get props => [
-    id,
-    name,
-    type,
-    isMine,
-    isRead,
-    image,
-    showDate,
-    sentDate,
-    message,
-  ];
+        id,
+        name,
+        type,
+        isMine,
+        isRead,
+        image,
+        showDate,
+        sentDate,
+        message,
+        userId,
+      ];
 
   @override
   bool get stringify => true;

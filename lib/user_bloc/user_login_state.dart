@@ -20,6 +20,9 @@ class LoggedInUser extends Equatable implements LoginState {
   final String token;
   final bool isChurch;
   final bool isVerified;
+  final String churchId;
+  final bool isYouth;
+  final List<String> mutedChats;
 
   const LoggedInUser({
     @required this.uid,
@@ -34,12 +37,15 @@ class LoggedInUser extends Equatable implements LoginState {
     @required this.token,
     @required this.isChurch,
     @required this.isVerified,
+    @required this.churchId,
+    @required this.isYouth,
+    @required this.mutedChats,
   });
 
   @override
   List get props {
     return [
-      uid, 
+      uid,
       email,
       fullName,
       chatList,
@@ -50,6 +56,9 @@ class LoggedInUser extends Equatable implements LoginState {
       token,
       isChurch,
       isVerified,
+      churchId,
+      isYouth,
+      mutedChats,
     ];
   }
 

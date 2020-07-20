@@ -8,7 +8,7 @@ import '../chat_tabs_bloc.dart';
 
 class ChatMessages extends StatefulWidget {
   final ChatTabsBloc bloc;
-  
+
   const ChatMessages({
     Key key,
     @required this.bloc,
@@ -16,12 +16,11 @@ class ChatMessages extends StatefulWidget {
 
   @override
   _ChatMessagesState createState() => _ChatMessagesState();
-} 
-
+}
 
 class _ChatMessagesState extends State<ChatMessages> {
   ChatTabsBloc _chatBloc;
-  
+
   @override
   void initState() {
     super.initState();
@@ -93,14 +92,12 @@ class _ChatMessagesState extends State<ChatMessages> {
         // TODO: show options menu
       },
       onTap: () {
-        Map<String, dynamic> chatRoomArgs = {
-          'roomId': message.roomId,
-          'isRoom': message.isRoom,
-        };
-
         Navigator.of(context).pushNamed(
           '/chat_room',
-          arguments: chatRoomArgs,
+          arguments: {
+            'roomId': message.roomId,
+            'isRoom': message.isRoom,
+          },
         );
       },
       child: Container(
@@ -117,9 +114,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                   padding: EdgeInsets.all(3),
                   child: ImageHolder(
                     size: 40,
-                    image: group == null
-                      ? message.image
-                      : group.image,
+                    image: group == null ? message.image : group.image,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -149,9 +144,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                               children: <Widget>[
                                 Flexible(
                                   child: Text(
-                                    group == null
-                                      ? message.name
-                                      : group.name,
+                                    group == null ? message.name : group.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -160,37 +153,42 @@ class _ChatMessagesState extends State<ChatMessages> {
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  margin: EdgeInsets.fromLTRB(6, 0, 0, 0),
-                                  padding: EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff5c4eb2),
-                                    borderRadius: BorderRadius.circular(25),
-                                    border: Border.all(
-                                      width: 1,
-                                      color: Color(0xfffff3f3f3),
+                                if (message.isConversation &&
+                                    message.members.length > 2) ...[
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(6, 0, 0, 0),
+                                    padding: EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xff5c4eb2),
+                                      borderRadius: BorderRadius.circular(25),
+                                      border: Border.all(
+                                        width: 1,
+                                        color: Color(0xfffff3f3f3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _getLabelText(message),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
-                                  child: Text(
-                                    _getLabelText(message),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
+                                ],
                               ],
                             ),
                           ),
                           SizedBox(width: 5),
-                          // Icon(
-                          //   Icons.new_releases,
-                          //   size: 14,
-                          //   color: Color(0xff0072e5),
-                          // ),
-                          // SizedBox(width: 5),
+                          if (!message.isRead && !message.isMine) ...[
+                            Icon(
+                              Icons.new_releases,
+                              size: 14,
+                              color: Color(0xff0072e5),
+                            ),
+                          ],
+                          SizedBox(width: 5),
                           Text(
                             timeago.format(message.sentDate),
                             textAlign: TextAlign.end,
@@ -269,9 +267,7 @@ class _ChatMessagesState extends State<ChatMessages> {
     );
   }
 
-  String _getLabelText(
-    MessageItem message
-  ) {
+  String _getLabelText(MessageItem message) {
     if (message.isRoom) {
       return 'Chat Room';
     } else if (message.isGroup && !message.isConversation) {
@@ -287,8 +283,7 @@ class _ChatMessagesState extends State<ChatMessages> {
   ) {
     try {
       return groups.where((g) => g.id == message.roomId).single;
-    }
-    catch (e) {
+    } catch (e) {
       return null;
     }
   }

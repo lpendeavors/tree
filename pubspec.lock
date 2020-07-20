@@ -427,6 +427,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.3.2+2"
+  giphy_client:
+    dependency: "direct main"
+    description:
+      name: giphy_client
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   glob:
     dependency: transitive
     description:
@@ -826,6 +833,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.3"
+  shimmer:
+    dependency: "direct main"
+    description:
+      name: shimmer
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.1"
   sky_engine:
     dependency: transitive
     description: flutter

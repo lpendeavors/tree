@@ -43,12 +43,12 @@ class ChatTabsState extends Equatable {
 
   @override
   List get props => [
-    messages,
-    chatRooms,
-    groups,
-    isLoading,
-    error,
-  ];
+        messages,
+        chatRooms,
+        groups,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -66,6 +66,7 @@ class GroupItem extends Equatable {
   final List<GroupMember> members;
   final String ownerId;
   final bool isPrivate;
+  final bool isChurch;
 
   const GroupItem({
     @required this.id,
@@ -78,21 +79,23 @@ class GroupItem extends Equatable {
     @required this.members,
     @required this.ownerId,
     @required this.isPrivate,
+    @required this.isChurch,
   });
 
   @override
   List get props => [
-    id,
-    name,
-    isConversation,
-    isRoom,
-    isGroup,
-    image,
-    members,
-    byAdmin,
-    ownerId,
-    isPrivate,
-  ];
+        id,
+        name,
+        isConversation,
+        isRoom,
+        isGroup,
+        image,
+        members,
+        byAdmin,
+        ownerId,
+        isPrivate,
+        isChurch,
+      ];
 
   @override
   bool get stringify => true;
@@ -110,6 +113,8 @@ class MessageItem extends Equatable {
   final List<String> members;
   final DateTime sentDate;
   final String roomId;
+  final bool isRead;
+  final bool isMine;
 
   const MessageItem({
     @required this.id,
@@ -122,21 +127,25 @@ class MessageItem extends Equatable {
     @required this.members,
     @required this.sentDate,
     @required this.roomId,
+    @required this.isRead,
+    @required this.isMine,
   });
 
   @override
   List get props => [
-    id,
-    name,
-    image,
-    message,
-    isRoom,
-    isGroup,
-    isConversation,
-    members,
-    sentDate,
-    roomId,
-  ];
+        id,
+        name,
+        image,
+        message,
+        isRoom,
+        isGroup,
+        isConversation,
+        members,
+        sentDate,
+        roomId,
+        isRead,
+        isMine,
+      ];
 
   @override
   bool get stringify => true;

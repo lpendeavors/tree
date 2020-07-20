@@ -12,12 +12,11 @@ abstract class FirestoreChatRepository {
 
   Stream<List<ChatEntity>> getByUser({
     String uid,
-    List<String> chatIds,
   });
 
   Stream<List<ChatEntity>> getByGroup(String roomId);
 
-  Future<Map<String,String>> send(
+  Future<Map<String, String>> send(
     String message,
     int messageType,
     bool byAdmin,
