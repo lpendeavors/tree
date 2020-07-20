@@ -179,6 +179,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     print(phone);
     var exists = await _firestore.collection('userBase')
       .where('phoneNo', isEqualTo: phone.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", ""))
+      .limit(1)
       .getDocuments().then((value) => value.documents.length > 0);
 
     if(exists){
