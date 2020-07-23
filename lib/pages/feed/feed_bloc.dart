@@ -11,11 +11,8 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-const _kInitialFeedListState = FeedListState(
-  error: null,
-  isLoading: true,
-  feedItems: []
-);
+const _kInitialFeedListState =
+    FeedListState(error: null, isLoading: true, feedItems: []);
 
 class FeedBloc implements BaseBloc {
   ///
@@ -69,19 +66,19 @@ class FeedBloc implements BaseBloc {
     /// Streams
     ///
     final message$ = savePostLikeSubject
-      .switchMap((_) => performSave(
-        postRepository,
-        postLikeSubject.value,
-        (userBloc.loginState$.value as LoggedInUser).uid,
-        feedItemToLikeSubject.value,
-        isLoadingSubject,
-      )
-    ).publish();
+        .switchMap((_) => performSave(
+              postRepository,
+              postLikeSubject.value,
+              (userBloc.loginState$.value as LoggedInUser).uid,
+              feedItemToLikeSubject.value,
+              isLoadingSubject,
+            ))
+        .publish();
 
     final feedListState$ = _getFeedList(
-        userBloc,
-        postRepository,
-      ).publishValueSeeded(_kInitialFeedListState);
+      userBloc,
+      postRepository,
+    ).publishValueSeeded(_kInitialFeedListState);
 
     final subscriptions = <StreamSubscription>[
       feedListState$.connect(),
@@ -94,17 +91,16 @@ class FeedBloc implements BaseBloc {
     ];
 
     return FeedBloc._(
-      saveLikeValue: () => savePostLikeSubject.add(null),
-      likePostChanged: postLikeSubject.add,
-      postToLikeChanged: feedItemToLikeSubject.add,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      feedListState$: feedListState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        saveLikeValue: () => savePostLikeSubject.add(null),
+        likePostChanged: postLikeSubject.add,
+        postToLikeChanged: feedItemToLikeSubject.add,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        feedListState$: feedListState$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   @override
@@ -124,24 +120,19 @@ class FeedBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
-        postRepository.getByAdmin(),
-        postRepository.postsByUser(uid: loginState.uid),
-        (byAdmin, userFeed) {
-          var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
-          var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
+      return Rx.zip2(postRepository.getByAdmin(),
+          postRepository.postsByUser(uid: loginState.uid), (byAdmin, userFeed) {
+        var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
+        var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
 
-          feed.addAll(userPosts);
-          feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
+        feed.addAll(userPosts);
+        feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
 
-          return _kInitialFeedListState.copyWith(
-            isLoading: false,
-            feedItems: feed,
-          );
-        }
-      )
-      .startWith(_kInitialFeedListState)
-      .onErrorReturnWith((e) {
+        return _kInitialFeedListState.copyWith(
+          isLoading: false,
+          feedItems: feed,
+        );
+      }).startWith(_kInitialFeedListState).onErrorReturnWith((e) {
         return _kInitialFeedListState.copyWith(
           error: e,
           isLoading: false,
@@ -161,26 +152,25 @@ class FeedBloc implements BaseBloc {
     List<PostEntity> entities,
     String uid,
   ) {
-    return entities
-      .toSet()
-      .map((entity) {
-        return FeedItem(
-          id: entity.documentId,
-          tags: entity.tags,
-          timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-          timePostedString: timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
-          message: entity.postMessage,
-          name: entity.fullName != null ? entity.fullName : entity.churchName,
-          userImage: entity.image,
-          userId: entity.ownerId,
-          isPoll: entity.type == PostType.poll.index,
-          postImages: _getPostImages(entity),
-          isMine: entity.ownerId == uid,
-          isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
-          abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
-          isShared: entity.isPostPrivate == 1,
-        );
-      }).toList();
+    return entities.toSet().map((entity) {
+      return FeedItem(
+        id: entity.documentId,
+        tags: entity.tags,
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString:
+            timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+        message: entity.postMessage,
+        name: entity.fullName != null ? entity.fullName : entity.churchName,
+        userImage: entity.image,
+        userId: entity.ownerId,
+        isPoll: entity.type == PostType.poll.index,
+        postImages: _getPostImages(entity),
+        isMine: entity.ownerId == uid,
+        isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+        isShared: entity.isPostPrivate == 1,
+      );
+    }).toList();
   }
 
   static Stream<FeedListState> _getFeedList(
@@ -203,7 +193,7 @@ class FeedBloc implements BaseBloc {
         images = entity.postData.map((data) => data.imageUrl).toList();
       }
     }
-    
+
     return images;
   }
 

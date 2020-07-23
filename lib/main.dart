@@ -41,36 +41,38 @@ Future<void> main() async {
   FlutterError.onError = crashlytics.recordFlutterError;
 
   final userRepository = FirestoreUserRepositoryImpl(firebaseAuth, firestore);
-  final postRepository = FirestorePostRepositoryImpl(firestore);
+  final postRepository =
+      FirestorePostRepositoryImpl(firestore, firebaseStorage);
   final roomRepository = FirestoreRoomRepositoryImpl(firestore);
   final notificationRepository = FirestoreNotificationRepositoryImpl(firestore);
-  final eventRepository = FirestoreEventRepositoryImpl(firestore, firebaseStorage);
+  final eventRepository =
+      FirestoreEventRepositoryImpl(firestore, firebaseStorage);
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
-  final groupRepository = FirestoreGroupRepositoryImpl(firestore);  
+  final groupRepository = FirestoreGroupRepositoryImpl(firestore);
   final commentRepository = FirestoreCommentRepositoryImpl(firestore);
   final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   // runZoned(() {
-    runApp(
-      Injector(
-        userRepository: userRepository,
-        postRepository: postRepository,
-        notificationRepository: notificationRepository,
-        eventRepository: eventRepository,
-        roomRepository: roomRepository,
-        chatRepository: chatRepository,
-        groupRepository: groupRepository,
-        commentRepository: commentRepository,
-        requestRepository: requestReposirory,
-        child: BlocProvider<UserBloc>(
-          bloc: userBloc,
-          child: BlocProvider<LocaleBloc>(
-            bloc: LocaleBloc(sharedPrefUtil),
-            child: MyApp(),
-          ),
+  runApp(
+    Injector(
+      userRepository: userRepository,
+      postRepository: postRepository,
+      notificationRepository: notificationRepository,
+      eventRepository: eventRepository,
+      roomRepository: roomRepository,
+      chatRepository: chatRepository,
+      groupRepository: groupRepository,
+      commentRepository: commentRepository,
+      requestRepository: requestReposirory,
+      child: BlocProvider<UserBloc>(
+        bloc: userBloc,
+        child: BlocProvider<LocaleBloc>(
+          bloc: LocaleBloc(sharedPrefUtil),
+          child: MyApp(),
         ),
       ),
-    );
+    ),
+  );
   // }, onError: crashlytics.recordFlutterError);
 }

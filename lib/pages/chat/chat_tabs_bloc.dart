@@ -138,7 +138,7 @@ class ChatTabsBloc implements BaseBloc {
         ownerId: entity.uid,
         byAdmin: entity.byAdmin,
         isPrivate: entity.isGroupPrivate,
-        isChurch: entity.isChurch ?? false,
+        isChurch: false,
       );
     }).toList();
   }
@@ -202,13 +202,13 @@ class ChatTabsBloc implements BaseBloc {
     var roomsList = List<GroupItem>();
 
     if ((loginState as LoggedInUser).isYouth) {
+      roomsList = groups.where((group) => group.name.toLowerCase() == 'youth');
     } else {
       roomsList = groups
           .where((group) => group.byAdmin)
           .where((group) => group.isPrivate != true)
+          .where((group) => group.name.toLowerCase() != 'youth')
           .toList();
-
-      roomsList.forEach((g) => print(g.name));
 
       roomsList.addAll(groups.where((g) {
         return (g.members.contains(uid) && g.ownerId == churchId);
@@ -223,8 +223,8 @@ class ChatTabsBloc implements BaseBloc {
             .where((group) => !group.byAdmin)
             .where((group) => group.isGroup)
             .where((group) => !group.isChurch)
-            //.where((group) => (group.image ?? "").isNotEmpty)
-            //.where((group) => group.members.contains(uid))
+            .where((group) => (group.image ?? "").isNotEmpty)
+            .where((group) => group.members.contains(uid))
             .toList() ??
         []);
 

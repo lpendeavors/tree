@@ -26,7 +26,8 @@ class ExploreBloc implements BaseBloc {
   ///
   final void Function(ConnectionItem) removeConnection;
   final void Function(ConnectionItem) addConnection;
-
+  final void Function(ConnectionItem) acceptConnection;
+  final void Function(ConnectionItem) declineConnection;
 
   ///
   /// Output streams
@@ -35,6 +36,8 @@ class ExploreBloc implements BaseBloc {
   final ValueStream<bool> isLoading$;
   final Stream<ExploreMessage> addConnectionMessage$;
   final Stream<ExploreMessage> removeConnectionMessage$;
+  final Stream<ExploreMessage> acceptConnectionMessage$;
+  final Stream<ExploreMessage> declineConnectionMessage$;
 
   ///
   /// Clean up
@@ -46,8 +49,12 @@ class ExploreBloc implements BaseBloc {
     @required this.exploreState$,
     @required this.addConnectionMessage$,
     @required this.removeConnectionMessage$,
+    @required this.acceptConnectionMessage$,
+    @required this.declineConnectionMessage$,
     @required this.addConnection,
     @required this.removeConnection,
+    @required this.acceptConnection,
+    @required this.declineConnection,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -69,23 +76,34 @@ class ExploreBloc implements BaseBloc {
     /// Stream controllers
     ///
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
-    final addConnectionSubject = BehaviorSubject<ConnectionItem>.seeded(null);
-    final removeConnectionSubject = BehaviorSubject<ConnectionItem>.seeded(null);
+    final addConnectionSubject = PublishSubject<ConnectionItem>();
+    final removeConnectionSubject = PublishSubject<ConnectionItem>();
+    final acceptConnectionSubject = PublishSubject<ConnectionItem>();
+    final declineConnectionSubject = PublishSubject<ConnectionItem>();
 
     ///
     /// Streams
     ///
-    final addConnectionMessage$ = addConnectionSubject
-      .exhaustMap((connection) => saveAddConnection(
+    final addConnectionMessage$ = addConnectionSubject.exhaustMap((connection) {
+      print('add ${connection.name}');
+      return saveAddConnection(
         requestRepository,
         connection,
         userBloc.loginState$.value,
-      ))
-      .publish();
-    
+      );
+    }).publish();
+
     final removeConnectionMessage$ = removeConnectionSubject
-      .exhaustMap((connection) => saveRemoveConnection(connection))
-      .publish();
+        .exhaustMap((connection) => saveRemoveConnection(connection))
+        .publish();
+
+    final acceptConnectionMessage$ = acceptConnectionSubject
+        .exhaustMap((connection) => saveAcceptConnection(connection))
+        .publish();
+
+    final declineConnectionMessage$ = declineConnectionSubject
+        .exhaustMap((connection) => saveDeclineConnection(connection))
+        .publish();
 
     final exploreState$ = _getExploreList(
       userBloc,
@@ -98,17 +116,25 @@ class ExploreBloc implements BaseBloc {
       exploreState$.connect(),
     ];
 
+    final controllers = <StreamController>[
+      isLoadingSubject,
+    ];
+
     return ExploreBloc._(
-      addConnection: addConnectionSubject.add,
-      removeConnection: removeConnectionSubject.add,
-      isLoading$: isLoadingSubject,
-      addConnectionMessage$: addConnectionMessage$,
-      removeConnectionMessage$: removeConnectionMessage$,
-      exploreState$: exploreState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-      }
-    );
+        addConnection: addConnectionSubject.add,
+        removeConnection: removeConnectionSubject.add,
+        acceptConnection: acceptConnectionSubject.add,
+        declineConnection: declineConnectionSubject.add,
+        isLoading$: isLoadingSubject,
+        addConnectionMessage$: addConnectionMessage$,
+        removeConnectionMessage$: removeConnectionMessage$,
+        acceptConnectionMessage$: acceptConnectionMessage$,
+        declineConnectionMessage$: declineConnectionMessage$,
+        exploreState$: exploreState$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   @override
@@ -131,35 +157,34 @@ class ExploreBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.zip6(
-        userRepository.getSuggestionsByChurch(church: loginState.church),
-        userRepository.getSuggestionsByCity(city: loginState.city),
-        userRepository.getPublicFigures(),
-        userRepository.get(),
-        postRepository.postsForCollage(),
-        requestRepository.requestsByUser(uid: loginState.uid),
-        (churchUsers, cityUsers, publicFigures, newestUsers, posts, requests) {
-          var filiteredPosts = (posts as List<PostEntity>).where((p) {
-            return p.postData != null && p.postData.length > 0;
-          }).toList();
+          userRepository.getSuggestionsByChurch(church: loginState.church),
+          userRepository.getSuggestionsByCity(city: loginState.city),
+          userRepository.getPublicFigures(),
+          userRepository.get(),
+          postRepository.postsForCollage(),
+          requestRepository.requestsByUser(uid: loginState.uid), (churchUsers,
+              cityUsers, publicFigures, newestUsers, posts, requests) {
+        var filiteredPosts = (posts as List<PostEntity>).where((p) {
+          return p.postData != null && p.postData.length > 0;
+        }).toList();
 
-          filiteredPosts.sort((a, b) => b.time.compareTo(a.time));
-          (newestUsers as List<UserEntity>).sort((a, b) => b.time.compareTo(a.time));
+        filiteredPosts.sort((a, b) => b.time.compareTo(a.time));
+        (newestUsers as List<UserEntity>)
+            .sort((a, b) => b.time.compareTo(a.time));
 
-          var suggestions = churchUsers as List<UserEntity>;
-          suggestions.addAll(publicFigures);
-          suggestions.addAll(cityUsers);
-          suggestions.addAll(newestUsers);
-          suggestions.toSet().toList();
+        var suggestions = churchUsers as List<UserEntity>;
+        suggestions.addAll(publicFigures);
+        suggestions.addAll(cityUsers);
+        suggestions.addAll(newestUsers);
+        suggestions.toSet().where((s) => s.uid != loginState.uid).toList();
 
-          return _kInitialExploreState.copyWith(
-            connectionItems: _userEntitiesToItems(suggestions),
-            postItems: _postEntitiesToItems(filiteredPosts),
-            requestItems: _userEntitiesToItems(requests),
-            isLoading: false,
-          );
-        }
-      ).startWith(_kInitialExploreState)
-      .onErrorReturnWith((e) {
+        return _kInitialExploreState.copyWith(
+          connectionItems: _userEntitiesToItems(suggestions),
+          postItems: _postEntitiesToItems(filiteredPosts),
+          requestItems: _userEntitiesToItems(requests),
+          isLoading: false,
+        );
+      }).startWith(_kInitialExploreState).onErrorReturnWith((e) {
         return _kInitialExploreState.copyWith(
           error: e,
           isLoading: false,
@@ -182,11 +207,14 @@ class ExploreBloc implements BaseBloc {
       return ConnectionItem(
         id: entity.id,
         city: entity.city ?? "None",
-        church: entity.churchInfo != null ? entity.churchInfo.churchName : "None",
+        church:
+            entity.churchInfo != null ? entity.churchInfo.churchName : "None",
         isChurch: entity.isChurch ?? false,
         image: entity.image,
-        name: entity.fullName ?? entity.firstName,
-        denomination: entity.churchInfo != null ? entity.churchInfo.churchDenomination : "None",
+        name: entity.isChurch ? entity.churchName : entity.fullName,
+        denomination: entity.churchInfo != null
+            ? entity.churchInfo.churchDenomination
+            : "None",
       );
     }).toList();
   }
@@ -252,15 +280,16 @@ class ExploreBloc implements BaseBloc {
     ConnectionItem connection,
     LoginState loginState,
   ) async* {
+    print('[DEBUG] ExploreBloc#saveAddConnection');
     try {
-      requestRepository.saveRequest(
-        to: connection.name,
-        toUser: connection.id,
-        image: connection.image,
-        from: (loginState as LoggedInUser).uid,
-        fromUser: (loginState as LoggedInUser).fullName,
-        token: (loginState as LoggedInUser).token,
-      );
+      // requestRepository.saveRequest(
+      //   to: connection.name,
+      //   toUser: connection.id,
+      //   image: connection.image,
+      //   from: (loginState as LoggedInUser).uid,
+      //   fromUser: (loginState as LoggedInUser).fullName,
+      //   token: (loginState as LoggedInUser).token,
+      // );
       yield ConnectionAddedSuccess();
     } catch (e) {
       yield ConnectionAddedError(e);
@@ -268,8 +297,17 @@ class ExploreBloc implements BaseBloc {
   }
 
   static Stream<ExploreMessage> saveRemoveConnection(
-    ConnectionItem connection,
-  ) async* {
+      ConnectionItem connection) async* {
+    print('[DEBUG] ExploreBloc#saveAddConnection');
+  }
 
+  static Stream<ExploreMessage> saveAcceptConnection(
+      ConnectionItem connection) async* {
+    print('[DEBUG] ExploreBloc#saveAddConnection');
+  }
+
+  static Stream<ExploreMessage> saveDeclineConnection(
+      ConnectionItem connection) async* {
+    print('[DEBUG] ExploreBloc#saveAddConnection');
   }
 }

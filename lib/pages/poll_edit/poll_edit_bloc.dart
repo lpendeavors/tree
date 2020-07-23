@@ -16,17 +16,17 @@ const _kInitialPollEditState = EditPollState(
 );
 
 class EditPollBloc implements BaseBloc {
-  /// 
+  ///
   /// Input functions
-  /// 
+  ///
   final void Function(int) typeChanged;
   final void Function(List<TaggedItem>) taggedChanged;
   final void Function(List<PollAnswerItem>) answersChanged;
   final void Function() savePoll;
-  
-  /// 
+
+  ///
   /// Output streams
-  /// 
+  ///
   final ValueStream<int> type$;
   final ValueStream<List<TaggedItem>> tagged$;
   final ValueStream<List<PollAnswerItem>> answers$;
@@ -34,7 +34,7 @@ class EditPollBloc implements BaseBloc {
   final Stream<PollAddedMessage> message$;
   final ValueStream<bool> isLoading$;
 
-  /// 
+  ///
   /// Clean up
   ///
   final void Function() _dispose;
@@ -63,30 +63,32 @@ class EditPollBloc implements BaseBloc {
   }) {
     ///
     /// Assert
-    /// 
+    ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
 
-    /// 
+    ///
     /// Stream controller
-    /// 
+    ///
     final typeSubject = BehaviorSubject<int>.seeded(0);
     final answersSubject = BehaviorSubject<List<PollAnswerItem>>.seeded([]);
     final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
     final savePollSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
-    /// 
+    ///
     /// Streams
-    /// 
+    ///
     final message$ = savePollSubject
-      .switchMap((_) => performSave(
-        pollId,
-        userBloc,
-        postRepository,
-        isLoadingSubject,
-      ),
-    ).publish();
+        .switchMap(
+          (_) => performSave(
+            pollId,
+            userBloc,
+            postRepository,
+            isLoadingSubject,
+          ),
+        )
+        .publish();
 
     final pollEditState$ = _getPollDetails(
       userBloc,
@@ -96,7 +98,7 @@ class EditPollBloc implements BaseBloc {
 
     ///
     /// Controllers and subscriptions
-    /// 
+    ///
     final subscriptions = <StreamSubscription>[
       pollEditState$.connect(),
       message$.connect(),
@@ -110,21 +112,20 @@ class EditPollBloc implements BaseBloc {
     ];
 
     return EditPollBloc._(
-      savePoll: () => savePollSubject.add(null),
-      typeChanged: typeSubject.add,
-      taggedChanged: taggedSubject.add,
-      answersChanged: answersSubject.add,
-      type$: typeSubject.stream,
-      tagged$: taggedSubject.stream,
-      answers$: answersSubject.stream,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      pollEditState$: pollEditState$,
-      dispose: () async {
-        Future.wait(subscriptions.map((s) => s.cancel()));
-        Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        savePoll: () => savePollSubject.add(null),
+        typeChanged: typeSubject.add,
+        taggedChanged: taggedSubject.add,
+        answersChanged: answersSubject.add,
+        type$: typeSubject.stream,
+        tagged$: taggedSubject.stream,
+        answers$: answersSubject.stream,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        pollEditState$: pollEditState$,
+        dispose: () async {
+          Future.wait(subscriptions.map((s) => s.cancel()));
+          Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   static Stream<EditPollState> _toState(
@@ -143,23 +144,24 @@ class EditPollBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       if (pollId != null) {
-        return postRepository.postById(postId: pollId)
-          .map((entity) {
-            return _entityToPollItem(entity);
-          })
-          .map((pollItem) {
-            return _kInitialPollEditState.copyWith(
-              pollItem: pollItem,
-              isLoading: false,
-            );
-          })
-          .startWith(_kInitialPollEditState)
-          .onErrorReturnWith((e) {
-            return _kInitialPollEditState.copyWith(
-              error: e,
-              isLoading: false,
-            );
-          });
+        return postRepository
+            .postById(postId: pollId)
+            .map((entity) {
+              return _entityToPollItem(entity);
+            })
+            .map((pollItem) {
+              return _kInitialPollEditState.copyWith(
+                pollItem: pollItem,
+                isLoading: false,
+              );
+            })
+            .startWith(_kInitialPollEditState)
+            .onErrorReturnWith((e) {
+              return _kInitialPollEditState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
       } else {
         return Stream.value(
           _kInitialPollEditState.copyWith(
@@ -177,9 +179,7 @@ class EditPollBloc implements BaseBloc {
     );
   }
 
-  static FeedPollItem _entityToPollItem(
-    PostEntity entity
-  ) {
+  static FeedPollItem _entityToPollItem(PostEntity entity) {
     return FeedPollItem(
       id: entity.documentId,
       type: entity.type,
@@ -212,9 +212,6 @@ class EditPollBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
-        postRepository.savePost(
-          PostEntity(),
-        );
         yield PollAddedMessageSuccess();
       } catch (e) {
         yield PollAddedMessageError(e);

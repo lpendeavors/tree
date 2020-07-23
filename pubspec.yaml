@@ -66,12 +66,20 @@ dependencies:
   map_launcher: ^0.6.0
   giphy_client: ^0.2.0
   shimmer: ^1.0.1
+  video_thumbnail: ^0.2.2
+  path_provider: ^1.6.11
+  flutter_launcher_icons: ^0.7.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^1.0.0
   built_value_generator: ^7.0.0
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/ic_launcher.png"
 
 
 # For information on the generic Dart part of this file, see the

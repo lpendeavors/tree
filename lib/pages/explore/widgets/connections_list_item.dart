@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cache_image/cache_image.dart';
 import '../../../util/asset_utils.dart';
@@ -8,12 +10,16 @@ class ConnectionListItem extends StatefulWidget {
   final ConnectionItem connectionItem;
   final Function(ConnectionItem) onRemove;
   final Function(ConnectionItem) onConnect;
+  final Function(ConnectionItem) onAccept;
+  final Function(ConnectionItem) onDecline;
   final bool isRequest;
 
   const ConnectionListItem({
     @required this.connectionItem,
     @required this.onRemove,
     @required this.onConnect,
+    @required this.onAccept,
+    @required this.onDecline,
     @required this.isRequest,
   });
 
@@ -47,24 +53,34 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          widget.connectionItem.name,
-                          maxLines: 2,
-                          style: TextStyle(
-                            fontSize: 16,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            widget.connectionItem.name,
+                            maxLines: 2,
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                        if (widget.connectionItem.isChurch) ...[
-                          ImageHolder(
-                            size: 25,
-                            image: church_icon,
-                          ),
-                          SizedBox(height: 5),
-                        ],
-                      ]
-                    ),
+                          if (widget.connectionItem.isChurch) ...[
+                            Container(
+                              height: 25,
+                              width: 25,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(6),
+                                child: Image.asset(
+                                  church_icon,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                          ],
+                        ]),
                     Container(
                       padding: EdgeInsets.only(top: 4),
                       decoration: BoxDecoration(
@@ -161,12 +177,16 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () => widget.onConnect(widget.connectionItem),
+                            onPressed: () {
+                              if (widget.isRequest) {
+                                widget.onAccept(widget.connectionItem);
+                              } else {
+                                widget.onConnect(widget.connectionItem);
+                              }
+                            },
                             child: Center(
                               child: Text(
-                                widget.isRequest
-                                ? 'Accept'
-                                : 'Connect',
+                                widget.isRequest ? 'Accept' : 'Connect',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.white,
@@ -181,13 +201,17 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () => widget.onRemove(widget.connectionItem),
+                            onPressed: () {
+                              if (widget.isRequest) {
+                                widget.onDecline(widget.connectionItem);
+                              } else {
+                                widget.onRemove(widget.connectionItem);
+                              }
+                            },
                             child: Center(
                               child: Text(
-                                widget.isRequest
-                                ? 'Decline'
-                                : 'Remove',
-                                style: TextStyle( 
+                                widget.isRequest ? 'Decline' : 'Remove',
+                                style: TextStyle(
                                   fontSize: 12,
                                 ),
                               ),

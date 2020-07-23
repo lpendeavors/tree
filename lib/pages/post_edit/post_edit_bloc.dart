@@ -16,26 +16,30 @@ const _kInitialPostEditState = EditPostState(
 );
 
 class EditPostBloc implements BaseBloc {
-  /// 
+  ///
   /// Input functions
-  /// 
+  ///
   final void Function() savePost;
   final void Function(bool) postIsPublicChanged;
   final void Function(bool) postForConnectionsOnlyChanged;
   final void Function(String) postMessageChanged;
-  final void Function(List<String>) postImagesChanged;
-  final void Function(List<String>) postVideosChanged;
+  final void Function(List<String>) postMediaChanged;
   final void Function(List<String>) postTagsChanged;
+  final void Function(int) postMediaTypeChanged;
+  final void Function(String) postVideoThumbnailChanged;
 
-  /// 
+  ///
   /// Output streams
   ///
   final ValueStream<EditPostState> postEditState$;
   final Stream<PostAddedMessage> message$;
   final ValueStream<bool> isLoading$;
   final ValueStream<bool> postIsPublic$;
+  final ValueStream<List<String>> postMedia$;
+  final ValueStream<int> postMediaType$;
+  final ValueStream<String> postVideoThumbnail$;
 
-  /// 
+  ///
   /// Clean up
   ///
   final void Function() _dispose;
@@ -45,11 +49,15 @@ class EditPostBloc implements BaseBloc {
     @required this.postIsPublicChanged,
     @required this.postForConnectionsOnlyChanged,
     @required this.postMessageChanged,
-    @required this.postImagesChanged,
-    @required this.postVideosChanged,
+    @required this.postMediaChanged,
     @required this.postTagsChanged,
+    @required this.postMediaTypeChanged,
+    @required this.postVideoThumbnailChanged,
     @required this.postEditState$,
     @required this.postIsPublic$,
+    @required this.postMedia$,
+    @required this.postMediaType$,
+    @required this.postVideoThumbnail$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -60,44 +68,50 @@ class EditPostBloc implements BaseBloc {
 
   factory EditPostBloc({
     String postId,
+    String groupId,
     @required UserBloc userBloc,
     @required FirestorePostRepository postRepository,
   }) {
-    /// 
+    ///
     /// Assert
-    /// 
+    ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
 
-    /// 
+    ///
     /// Stream controller
-    /// 
+    ///
     final isPublicSubject = BehaviorSubject<bool>.seeded(false);
     final isOnlyForConnectionsSubject = BehaviorSubject<bool>.seeded(false);
     final messageSubject = BehaviorSubject<String>.seeded('');
-    final imagesSubject = BehaviorSubject<List<String>>.seeded(List<String>());
-    final videosSubject = BehaviorSubject<List<String>>.seeded(List<String>());
     final tagsSubject = BehaviorSubject<List<String>>.seeded(List<String>());
+    final postMediaSubject =
+        BehaviorSubject<List<String>>.seeded(List<String>());
+    final postMediaTypeSubject = BehaviorSubject<int>.seeded(null);
+    final postVideoThumbnailSubject = BehaviorSubject<String>.seeded('');
     final savePostSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
-    /// 
+    ///
     /// Streams
     ///
     final message$ = savePostSubject
-      .switchMap((_) => performSave(
-        postId,
-        userBloc,
-        postRepository,
-        isPublicSubject.value,
-        isOnlyForConnectionsSubject.value,
-        messageSubject.value,
-        imagesSubject.value,
-        videosSubject.value,
-        tagsSubject.value,
-        isLoadingSubject,
-      ),
-    ).publish();
+        .switchMap(
+          (_) => performSave(
+            postId,
+            userBloc,
+            postRepository,
+            isPublicSubject.value,
+            messageSubject.value,
+            postMediaSubject.value,
+            postVideoThumbnailSubject.value,
+            tagsSubject.value,
+            groupId,
+            postMediaTypeSubject.value,
+            isLoadingSubject,
+          ),
+        )
+        .publish();
 
     final postEditState$ = _getPostDetails(
       userBloc,
@@ -105,7 +119,7 @@ class EditPostBloc implements BaseBloc {
       postId,
     ).publishValueSeeded(_kInitialPostEditState);
 
-    /// 
+    ///
     /// Controllers and subscriptions
     ///
     final subscriptions = <StreamSubscription>[
@@ -117,29 +131,33 @@ class EditPostBloc implements BaseBloc {
       isPublicSubject,
       isOnlyForConnectionsSubject,
       messageSubject,
-      imagesSubject,
-      videosSubject,
+      postMediaSubject,
       tagsSubject,
+      postMediaTypeSubject,
+      postVideoThumbnailSubject,
       isLoadingSubject,
     ];
 
     return EditPostBloc._(
-      savePost: () => savePostSubject.add(null),
-      postIsPublicChanged: isPublicSubject.add,
-      postForConnectionsOnlyChanged: isOnlyForConnectionsSubject.add,
-      postMessageChanged: messageSubject.add,
-      postImagesChanged: imagesSubject.add,
-      postVideosChanged: videosSubject.add,
-      postTagsChanged: tagsSubject.add,
-      postIsPublic$: isPublicSubject.stream,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      postEditState$: postEditState$,
-      dispose: () async {
-        Future.wait(subscriptions.map((s) => s.cancel()));
-        Future.wait((controllers.map((c) => c.close())));
-      }
-    );
+        savePost: () => savePostSubject.add(null),
+        postIsPublicChanged: isPublicSubject.add,
+        postForConnectionsOnlyChanged: isOnlyForConnectionsSubject.add,
+        postMessageChanged: messageSubject.add,
+        postMediaChanged: postMediaSubject.add,
+        postTagsChanged: tagsSubject.add,
+        postMediaTypeChanged: postMediaTypeSubject.add,
+        postVideoThumbnailChanged: postVideoThumbnailSubject.add,
+        postIsPublic$: isPublicSubject.stream,
+        postMedia$: postMediaSubject.stream,
+        postMediaType$: postMediaTypeSubject.stream,
+        postVideoThumbnail$: postVideoThumbnailSubject.stream,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        postEditState$: postEditState$,
+        dispose: () async {
+          Future.wait(subscriptions.map((s) => s.cancel()));
+          Future.wait((controllers.map((c) => c.close())));
+        });
   }
 
   static Stream<EditPostState> _toState(
@@ -158,23 +176,24 @@ class EditPostBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       if (postId != null) {
-        return postRepository.postById(postId: postId)
-          .map((entity) {
-            return _entityToPostItem(entity);
-          })
-          .map((postItem) {
-            return _kInitialPostEditState.copyWith(
-              postItem: postItem,
-              isLoading: false,
-            );
-          })
-          .startWith(_kInitialPostEditState)
-          .onErrorReturnWith((e) {
-            return _kInitialPostEditState.copyWith(
-              error: e,
-              isLoading: false,
-            );
-          });
+        return postRepository
+            .postById(postId: postId)
+            .map((entity) {
+              return _entityToPostItem(entity);
+            })
+            .map((postItem) {
+              return _kInitialPostEditState.copyWith(
+                postItem: postItem,
+                isLoading: false,
+              );
+            })
+            .startWith(_kInitialPostEditState)
+            .onErrorReturnWith((e) {
+              return _kInitialPostEditState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
       } else {
         return Stream.value(
           _kInitialPostEditState.copyWith(
@@ -201,8 +220,14 @@ class EditPostBloc implements BaseBloc {
       connectionsOnly: false,
       isPublic: entity.isPostPrivate == 0,
       tagged: entity.tags,
-      images: entity.postData.where((p) => p.type == 0).map((p) => p.imageUrl).toList(),
-      videos: entity.postData.where((p) => p.type == 1).map((p) => p.imageUrl).toList(),
+      images: entity.postData
+          .where((p) => p.type == 0)
+          .map((p) => p.imageUrl)
+          .toList(),
+      videos: entity.postData
+          .where((p) => p.type == 1)
+          .map((p) => p.imageUrl)
+          .toList(),
     );
   }
 
@@ -225,11 +250,12 @@ class EditPostBloc implements BaseBloc {
     UserBloc userBloc,
     FirestorePostRepository postRepository,
     bool isPublic,
-    bool isOnlyForConnections,
-    String messageSubject,
-    List<String> imagesSubject,
-    List<String> videosSubject,
-    List<String> tagsSubject,
+    String message,
+    List<String> postMedia,
+    String postVideoThumbnail,
+    List<String> tags,
+    String groupId,
+    int mediaType,
     Sink<bool> isLoadingSubject,
   ) async* {
     print('[DEBUG] EditPostBloc#performSave');
@@ -237,8 +263,31 @@ class EditPostBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
+        postRepository.savePost(
+          postId,
+          loginState.isAdmin,
+          loginState.fullName,
+          loginState.image,
+          loginState.isAdmin,
+          loginState.isChurch,
+          groupId != null ? true : false,
+          isPublic,
+          0,
+          false,
+          loginState.isVerified,
+          loginState.uid,
+          loginState.connections,
+          postMedia ?? [],
+          mediaType,
+          message,
+          loginState.token,
+          0,
+          groupId,
+          tags,
+        );
         yield PostAddedMessageSuccess();
       } catch (e) {
+        print(e);
         yield PostAddedMessageError(e);
       }
     } else {
