@@ -39,13 +39,20 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
     _exploreBloc = widget.exploreBloc;
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       widget.exploreBloc.addConnectionMessage$
-        .listen((message) => showMessage(message)),
+          .listen((message) => showMessage(message)),
+      widget.exploreBloc.removeConnectionMessage$
+          .listen((message) => showMessage(message)),
+      widget.exploreBloc.acceptConnectionMessage$
+          .listen((message) => showMessage(message)),
+      widget.exploreBloc.declineConnectionMessage$
+          .listen((message) => showMessage(message)),
     ];
   }
-  
+
   void showMessage(ExploreMessage message) {
     print(message);
   }
@@ -72,11 +79,13 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
               padding: EdgeInsets.only(left: 10, right: 10, bottom: 5),
               child: RaisedButton(
                 onPressed: () => {
-                  Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.USERS})
+                  Navigator.of(context).pushNamed('/search',
+                      arguments: {'searchType': SearchType.USERS})
                 },
                 color: Colors.grey[50],
                 elevation: 0,
-                padding: EdgeInsets.only(top: 12, bottom: 12, right: 10, left: 10),
+                padding:
+                    EdgeInsets.only(top: 12, bottom: 12, right: 10, left: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                   side: BorderSide(
@@ -177,9 +186,8 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: index == _currentPage.value
-                ? Colors.white
-                : Colors.transparent,
+            color:
+                index == _currentPage.value ? Colors.white : Colors.transparent,
           ),
         ),
       ),

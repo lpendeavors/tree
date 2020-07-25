@@ -26,7 +26,8 @@ class FeedPage extends StatefulWidget {
   _FeedPageState createState() => _FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+class _FeedPageState extends State<FeedPage>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   List<StreamSubscription> _subscriptions;
   FeedBloc _feedBloc;
 
@@ -37,15 +38,22 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, Auto
     _feedBloc = widget.feedBloc;
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       widget.userBloc.loginState$
-          .where((state) => state is LoggedInUser && (!state.isChurchUpdated || !state.isProfileUpdated))
+          .where((state) =>
+              state is LoggedInUser &&
+              (!state.isChurchUpdated || !state.isProfileUpdated))
           .listen((state) => {
-            if(state is LoggedInUser){
-              Navigator.pushNamed(context, '/info', arguments: !state.isChurchUpdated ? SettingsType.updateChurch : SettingsType.updatePersonal)
-            }
-          }),
+                if (state is LoggedInUser)
+                  {
+                    Navigator.pushNamed(context, '/info',
+                        arguments: !state.isChurchUpdated
+                            ? SettingsType.updateChurch
+                            : SettingsType.updatePersonal)
+                  }
+              }),
       _feedBloc.message$.listen(_showMessageResult),
     ];
   }
@@ -105,9 +113,7 @@ class _FeedPageState extends State<FeedPage> with TickerProviderStateMixin, Auto
             ),
           ),
           GestureDetector(
-            onLongPress: () {
-
-            },
+            onLongPress: () {},
             child: Text(
               S.of(context).app_title,
               style: TextStyle(

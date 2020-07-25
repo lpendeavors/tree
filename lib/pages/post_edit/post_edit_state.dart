@@ -1,9 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-/// 
+///
+/// Enum
+///
+enum PostMediaType { image, video }
+
+///
 /// EditPostMessage
-/// 
+///
 @immutable
 abstract class EditPostMessage {}
 
@@ -23,7 +28,6 @@ class PostAddedMessageError implements PostAddedMessage {
 
 @immutable
 abstract class PostError {}
-
 
 class NotLoggedInError {
   const NotLoggedInError();
@@ -51,10 +55,10 @@ class EditPostState extends Equatable {
 
   @override
   List get props => [
-    postItem,
-    isLoading,
-    error,
-  ];
+        postItem,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -69,7 +73,7 @@ class FeedPostItem extends Equatable {
   final List<String> images;
   final List<String> videos;
   final List<String> tagged;
-  
+
   const FeedPostItem({
     @required this.id,
     @required this.isPublic,
@@ -82,14 +86,14 @@ class FeedPostItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    isPublic,
-    connectionsOnly,
-    message,
-    images,
-    videos,
-    tagged,
-  ];
+        id,
+        isPublic,
+        connectionsOnly,
+        message,
+        images,
+        videos,
+        tagged,
+      ];
 
   @override
   bool get stringify => true;

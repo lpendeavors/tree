@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../widgets/image_holder.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -15,13 +18,13 @@ import './post_edit_state.dart';
 class EditPostPage extends StatefulWidget {
   final UserBloc userBloc;
   final EditPostBloc Function() initEditPostBloc;
-  
+
   const EditPostPage({
     Key key,
     @required this.userBloc,
     @required this.initEditPostBloc,
   }) : super(key: key);
-  
+
   @override
   _EditPostPageState createState() => _EditPostPageState();
 }
@@ -37,14 +40,18 @@ class _EditPostPageState extends State<EditPostPage> {
     _editPostBloc = widget.initEditPostBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((event) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((event) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _editPostBloc.message$.listen(_showMessageResult),
     ];
   }
 
   void _showMessageResult(EditPostMessage message) {
     print('[DEBUG] EditPostMessage=$message');
+    if (message is PostAddedMessageSuccess) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -120,14 +127,18 @@ class _EditPostPageState extends State<EditPostPage> {
                             children: <Widget>[
                               _menuItem(
                                 title: 'Public',
-                                description: 'This post can be seen by anyone on Tree and can be shared by others',
-                                onChange: () => _editPostBloc.postIsPublicChanged(true),
+                                description:
+                                    'This post can be seen by anyone on Tree and can be shared by others',
+                                onChange: () =>
+                                    _editPostBloc.postIsPublicChanged(true),
                                 active: snapshot.data,
                               ),
                               _menuItem(
                                 title: 'Connections Only',
-                                description: "This post can only be seen by your connections and can't be shared by others",
-                                onChange: () => _editPostBloc.postIsPublicChanged(false),
+                                description:
+                                    "This post can only be seen by your connections and can't be shared by others",
+                                onChange: () =>
+                                    _editPostBloc.postIsPublicChanged(false),
                                 active: !snapshot.data,
                               ),
                             ],
@@ -142,18 +153,23 @@ class _EditPostPageState extends State<EditPostPage> {
                           children: <Widget>[
                             ImageHolder(
                               size: 40,
-                              image: (widget.userBloc.loginState$.value as LoggedInUser).image ?? '',
+                              image: (widget.userBloc.loginState$.value
+                                          as LoggedInUser)
+                                      .image ??
+                                  '',
                             ),
                             SizedBox(width: 10),
                             Flexible(
                               child: TextField(
+                                onChanged: _editPostBloc.postMessageChanged,
                                 keyboardType: TextInputType.multiline,
                                 style: TextStyle(
                                   fontSize: 18,
                                 ),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
-                                  hintText: 'Hi ${(widget.userBloc.loginState$.value as LoggedInUser).fullName} Share Something?',
+                                  hintText:
+                                      'Hi ${(widget.userBloc.loginState$.value as LoggedInUser).fullName} Share Something',
                                   hintStyle: TextStyle(
                                     color: Colors.grey.withOpacity(0.7),
                                   ),
@@ -163,76 +179,244 @@ class _EditPostPageState extends State<EditPostPage> {
                           ],
                         ),
                       ),
-                      if (data.postItem != null) ...[
-                        if (data.postItem.tagged.isNotEmpty) ...[
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            padding: EdgeInsets.all(5),
-                            margin: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                width: 0.5,
-                                color: Colors.black.withOpacity(0.1),
-                              ),
-                            ),
-                            child: Wrap(
-                              spacing: 5,
-                              alignment: WrapAlignment.start,
-                              crossAxisAlignment: WrapCrossAlignment.start,
-                              runAlignment: WrapAlignment.start,
-                              children: List.generate(
-                                data.postItem.tagged.length,
-                                (index) {
-                                  return Chip(
-                                    avatar: ImageHolder(
-                                      size: 30,
-                                      image: '',
-                                    ),
-                                    label: Text(
-                                      data.postItem.tagged[index],
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          Divider(height: 25),
-                          if (data.postItem.images.isNotEmpty) ...[
-                            Container(
-                              height: 350,
-                              margin: EdgeInsets.only(
-                                top: 15,
-                                bottom: 10,
-                              ),
-                              child: PageView.builder(
-                                controller: PageController(
-                                  viewportFraction: 0.9,
+                      // if (data.postItem != null) ...[
+                      // if (data.postItem.tagged.isNotEmpty) ...[
+                      //   Container(
+                      //     alignment: Alignment.centerLeft,
+                      //     padding: EdgeInsets.all(5),
+                      //     margin: EdgeInsets.all(8),
+                      //     decoration: BoxDecoration(
+                      //       color: Colors.grey[50],
+                      //       borderRadius: BorderRadius.circular(15),
+                      //       border: Border.all(
+                      //         width: 0.5,
+                      //         color: Colors.black.withOpacity(0.1),
+                      //       ),
+                      //     ),
+                      //     child: Wrap(
+                      //       spacing: 5,
+                      //       alignment: WrapAlignment.start,
+                      //       crossAxisAlignment: WrapCrossAlignment.start,
+                      //       runAlignment: WrapAlignment.start,
+                      //       children: List.generate(
+                      //         data.postItem.tagged.length,
+                      //         (index) {
+                      //           return Chip(
+                      //             avatar: ImageHolder(
+                      //               size: 30,
+                      //               image: '',
+                      //             ),
+                      //             label: Text(
+                      //               data.postItem.tagged[index],
+                      //               style: TextStyle(
+                      //                 fontSize: 10,
+                      //               ),
+                      //             ),
+                      //           );
+                      //         },
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ],
+                      Divider(height: 25),
+                      StreamBuilder<List<String>>(
+                          stream: _editPostBloc.postMedia$,
+                          initialData: _editPostBloc.postMedia$.value,
+                          builder: (context, snapshot) {
+                            var media = snapshot.data ?? [];
+
+                            if (media.isNotEmpty) {
+                              return Container(
+                                height: 350,
+                                margin: EdgeInsets.only(
+                                  top: 15,
+                                  bottom: 10,
                                 ),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: data.postItem.images.length,
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () async {
-                                      // TODO: preview if video
-                                    },
-                                    child: Stack(
-                                      alignment: Alignment.topLeft,
-                                      children: <Widget>[
-                                        Container(),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ],
-                      ],
+                                child: PageView.builder(
+                                  controller: PageController(
+                                    viewportFraction: 0.9,
+                                  ),
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: media.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        // TODO: preview if video
+                                      },
+                                      child: Stack(
+                                        alignment: Alignment.topLeft,
+                                        children: <Widget>[
+                                          StreamBuilder(
+                                            stream:
+                                                _editPostBloc.postMediaType$,
+                                            initialData: _editPostBloc
+                                                .postMediaType$.value,
+                                            builder: (context, snapshot) {
+                                              var mediaType =
+                                                  snapshot.data ?? null;
+
+                                              if (mediaType ==
+                                                  PostMediaType.image.index) {
+                                                return Container(
+                                                  margin: EdgeInsets.only(
+                                                      top: 10, left: 5),
+                                                  padding: EdgeInsets.all(2),
+                                                  height: 350,
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    border: Border.all(
+                                                      width: 0.25,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.6),
+                                                    ),
+                                                  ),
+                                                  child: Container(
+                                                    height: 350,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                            .size
+                                                            .width,
+                                                    margin: EdgeInsets.all(2),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.5),
+                                                      image: DecorationImage(
+                                                        image: FileImage(
+                                                          File(media[0]),
+                                                        ),
+                                                        fit: BoxFit.contain,
+                                                        alignment:
+                                                            Alignment.center,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+
+                                              if (mediaType ==
+                                                  PostMediaType.video.index) {
+                                                return Container(
+                                                  margin: EdgeInsets.only(
+                                                      top: 10, left: 5),
+                                                  padding: EdgeInsets.all(2),
+                                                  height: 300,
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: StreamBuilder<String>(
+                                                    stream: _editPostBloc
+                                                        .postVideoThumbnail$,
+                                                    initialData: _editPostBloc
+                                                        .postVideoThumbnail$
+                                                        .value,
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      var thumbnail =
+                                                          snapshot.data ?? '';
+
+                                                      if (thumbnail
+                                                          .isNotEmpty) {
+                                                        return Container(
+                                                          height: 300,
+                                                          width: MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .width,
+                                                          margin:
+                                                              EdgeInsets.all(2),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.grey
+                                                                .withOpacity(
+                                                                    0.5),
+                                                            image:
+                                                                DecorationImage(
+                                                              image: FileImage(
+                                                                File(media[0]),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: Center(
+                                                            child: Container(
+                                                              height: 50,
+                                                              width: 50,
+                                                              child: Icon(
+                                                                Icons
+                                                                    .play_arrow,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .black
+                                                                    .withOpacity(
+                                                                        0.8),
+                                                                border:
+                                                                    Border.all(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  width: 1.5,
+                                                                ),
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+
+                                                      return Container();
+                                                    },
+                                                  ),
+                                                );
+                                              }
+
+                                              return Container();
+                                            },
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              media.remove(media[0]);
+                                              _editPostBloc
+                                                  .postMediaChanged(media);
+                                              _editPostBloc
+                                                  .postMediaTypeChanged(
+                                                      PostMediaType
+                                                          .image.index);
+                                            },
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                  left: 20, top: 20),
+                                              child: Container(
+                                                height: 30,
+                                                width: 30,
+                                                child: Icon(
+                                                  Icons.clear,
+                                                  size: 15,
+                                                  color: Colors.white,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            } else {
+                              return Container();
+                            }
+                          }),
+                      // ],
                     ],
                   ),
                 ),
@@ -257,13 +441,11 @@ class _EditPostPageState extends State<EditPostPage> {
                         ),
                         onPressed: () async {
                           var image = await ImagePicker.pickImage(
-                            source: ImageSource.gallery
-                          );
+                              source: ImageSource.gallery);
                           if (image != null) {
                             var cropped = await ImageCropper.cropImage(
-                              sourcePath: image.path
-                            );
-                            _editPostBloc.postImagesChanged([cropped.path]);
+                                sourcePath: image.path);
+                            _editPostBloc.postMediaChanged([cropped.path]);
                           }
                         },
                         child: Row(
@@ -305,7 +487,17 @@ class _EditPostPageState extends State<EditPostPage> {
                             type: FileType.video,
                           );
                           if (video != null) {
-                            _editPostBloc.postVideosChanged([video]);
+                            var thumbnail = await VideoThumbnail.thumbnailFile(
+                              video: video,
+                              thumbnailPath:
+                                  (await getTemporaryDirectory()).path,
+                              imageFormat: ImageFormat.JPEG,
+                              maxHeight: 350,
+                              quality: 75,
+                            );
+
+                            _editPostBloc.postMediaChanged([video]);
+                            _editPostBloc.postVideoThumbnailChanged(thumbnail);
                           }
                         },
                         child: Row(
@@ -444,12 +636,11 @@ class _EditPostPageState extends State<EditPostPage> {
                         color: Colors.white,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green[700],
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.black.withOpacity(0.4),
-                        )
-                      ),
+                          color: Colors.green[700],
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.black.withOpacity(0.4),
+                          )),
                     ),
                   )
                 else

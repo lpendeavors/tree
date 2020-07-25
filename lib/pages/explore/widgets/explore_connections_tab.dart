@@ -7,10 +7,12 @@ import './connections_list_item.dart';
 
 class ExploreConnectionsTab extends StatelessWidget {
   final ExploreBloc bloc;
+  final Function(ConnectionItem) onConnect;
 
   const ExploreConnectionsTab({
     Key key,
     @required this.bloc,
+    @required this.onConnect,
   }) : super(key: key);
 
   @override
@@ -84,8 +86,10 @@ class ExploreConnectionsTab extends StatelessWidget {
                       return ConnectionListItem(
                         isRequest: true,
                         connectionItem: data.requestItems[index],
-                        onRemove: (connection) => print('remove ${connection.name}'),
-                        onConnect: (connection) => print('connect with ${connection.name}'),
+                        onRemove: null,
+                        onConnect: null,
+                        onAccept: bloc.acceptConnection,
+                        onDecline: bloc.declineConnection,
                       );
                     },
                     separatorBuilder: (context, index) {
@@ -129,8 +133,10 @@ class ExploreConnectionsTab extends StatelessWidget {
                     return ConnectionListItem(
                       isRequest: false,
                       connectionItem: data.connectionItems[index],
-                      onRemove: (connection) => print('remove ${connection.name}'),
-                      onConnect: (connection) => bloc.addConnection(connection),
+                      onRemove: bloc.removeConnection,
+                      onConnect: onConnect,
+                      onAccept: null,
+                      onDecline: null,
                     );
                   },
                   separatorBuilder: (context, index) {
