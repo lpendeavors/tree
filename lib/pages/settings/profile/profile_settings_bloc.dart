@@ -269,6 +269,7 @@ class ProfileSettingsBloc implements BaseBloc{
       .where((isValid) => isValid)
       .exhaustMap((_) => saveProfileChanges(
         userBloc,
+        validationTypeController.value,
         setFirstNameController.value,
         setLastNameController.value,
         setPhoneNumberController.value,
@@ -421,6 +422,7 @@ class ProfileSettingsBloc implements BaseBloc{
 
   static Stream<ProfileSettingsMessage> saveProfileChanges(
       UserBloc userBloc,
+      int saveType,
       String firstName,
       String lastName,
       String phoneNo,
@@ -500,6 +502,15 @@ class ProfileSettingsBloc implements BaseBloc{
 
     LoginState state = userBloc.loginState$.value;
     if(state is LoggedInUser){
+
+      if(saveType == 0 || saveType == 3){
+        data['isProfileUpdated'] = true;
+      }
+
+      if(saveType == 1 || saveType == 4){
+        data['isChurchUpdated'] = true;
+      }
+
       await userRepository.updateUserData(state.uid, data);
     }
 
