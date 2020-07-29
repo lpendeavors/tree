@@ -1,5 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 
 class ImageHolder extends StatelessWidget {
   final double size;
@@ -36,11 +36,10 @@ class ImageHolder extends StatelessWidget {
                   ),
                 ),
                 if (image.isNotEmpty) ...[
-                  Image(
+                  CachedNetworkImage(
+                    imageUrl: image,
                     height: size,
                     width: size,
-                    fit: BoxFit.cover,
-                    image: CacheImage(image),
                   ),
                 ],
               ],

@@ -49,7 +49,8 @@ Future<void> main() async {
       FirestoreEventRepositoryImpl(firestore, firebaseStorage);
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
   final groupRepository = FirestoreGroupRepositoryImpl(firestore);
-  final commentRepository = FirestoreCommentRepositoryImpl(firestore);
+  final commentRepository =
+      FirestoreCommentRepositoryImpl(firestore, firebaseStorage);
   final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 

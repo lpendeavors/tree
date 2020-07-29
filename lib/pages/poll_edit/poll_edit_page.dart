@@ -27,6 +27,13 @@ class _EditPollPageState extends State<EditPollPage> {
   EditPollBloc _editPollBloc;
   List<StreamSubscription> _subscriptions;
 
+  var _pollMessageController = TextEditingController();
+  var _pollAnswerControllers = List.generate(
+    4,
+    (index) => TextEditingController(),
+  );
+  var _editLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,14 +41,18 @@ class _EditPollPageState extends State<EditPollPage> {
     _editPollBloc = widget.initEditPollBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _editPollBloc.message$.listen(_showMessageResult),
     ];
   }
 
   void _showMessageResult(EditPollMessage message) {
     print('[DEBUG] EditPollMessage=$message');
+    if (message is PollAddedMessageSuccess) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -64,6 +75,11 @@ class _EditPollPageState extends State<EditPollPage> {
       initialData: _editPollBloc.pollEditState$.value,
       builder: (context, snapshot) {
         var data = snapshot.data;
+
+        if (data.pollItem != null && !_editLoaded) {
+          _updateFields(data.pollItem);
+          _editLoaded = true;
+        }
 
         return WillPopScope(
           onWillPop: () async {
@@ -118,11 +134,16 @@ class _EditPollPageState extends State<EditPollPage> {
                               children: <Widget>[
                                 ImageHolder(
                                   size: 40,
-                                  image: (widget.userBloc.loginState$.value as LoggedInUser).image ?? "",
+                                  image: (widget.userBloc.loginState$.value
+                                              as LoggedInUser)
+                                          .image ??
+                                      "",
                                 ),
                                 SizedBox(width: 10),
                                 Flexible(
                                   child: TextFormField(
+                                    controller: _pollMessageController,
+                                    onChanged: _editPollBloc.questionChanged,
                                     keyboardType: TextInputType.multiline,
                                     style: TextStyle(
                                       fontSize: 16,
@@ -164,7 +185,8 @@ class _EditPollPageState extends State<EditPollPage> {
                                     spacing: 5,
                                     alignment: WrapAlignment.start,
                                     runAlignment: WrapAlignment.start,
-                                    crossAxisAlignment: WrapCrossAlignment.start,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.start,
                                     children: List.generate(
                                       tagged.length,
                                       (index) {
@@ -210,7 +232,8 @@ class _EditPollPageState extends State<EditPollPage> {
                                           answers.length,
                                           (index) {
                                             return Padding(
-                                              padding: EdgeInsets.only(top: 5, bottom: 5),
+                                              padding: EdgeInsets.only(
+                                                  top: 5, bottom: 5),
                                               child: Row(
                                                 children: <Widget>[
                                                   Container(
@@ -219,58 +242,103 @@ class _EditPollPageState extends State<EditPollPage> {
                                                     padding: EdgeInsets.all(3),
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
-                                                      color: Theme.of(context).primaryColor,
+                                                      color: Theme.of(context)
+                                                          .primaryColor,
                                                     ),
                                                     child: Center(
                                                       child: Text(
                                                         answers[index].label,
                                                         style: TextStyle(
                                                           color: Colors.white,
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(width: 15),
                                                   Flexible(
-                                                    child: TextField(
+                                                    child: TextFormField(
+                                                      controller:
+                                                          _pollAnswerControllers[
+                                                              index],
                                                       onChanged: (value) {
-                                                        answers[index].answer = value;
-                                                        _editPollBloc.answersChanged(answers);
+                                                        answers[index].answer =
+                                                            value;
+                                                        _editPollBloc
+                                                            .answersChanged(
+                                                                answers);
                                                       },
-                                                      decoration: InputDecoration(
-                                                        hintText: 'Enter answer',
+                                                      decoration:
+                                                          InputDecoration(
+                                                        hintText:
+                                                            'Enter answer',
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(width: 20),
                                                   StreamBuilder<int>(
                                                     stream: _editPollBloc.type$,
-                                                    initialData: _editPollBloc.type$.value,
-                                                    builder: (context, snapshot) {
-                                                      var type = snapshot.data ?? 1;
+                                                    initialData: _editPollBloc
+                                                        .type$.value,
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      var type =
+                                                          snapshot.data ?? 1;
                                                       if (type == 1) {
                                                         return GestureDetector(
                                                           onTap: () {
-
+                                                            _editPollBloc
+                                                                .correctAnswerChanged(
+                                                                    index);
                                                           },
                                                           child: Container(
                                                             height: 20,
                                                             width: 20,
-                                                            padding: EdgeInsets.all(3),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              border: Border.all(
-                                                                color: Colors.grey,
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    3),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              border:
+                                                                  Border.all(
+                                                                color:
+                                                                    Colors.grey,
                                                               ),
                                                             ),
-                                                            child: Container(
-                                                              height: 20,
-                                                              width: 20,
-                                                              decoration: BoxDecoration(
-                                                                shape: BoxShape.circle,
-                                                                color: Colors.green[700],
-                                                              ),
+                                                            child:
+                                                                StreamBuilder<
+                                                                    int>(
+                                                              stream: _editPollBloc
+                                                                  .correctAnswer$,
+                                                              initialData:
+                                                                  _editPollBloc
+                                                                      .correctAnswer$
+                                                                      .value,
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                var correctAnswer =
+                                                                    snapshot
+                                                                        .data;
+
+                                                                return Container(
+                                                                  height: 20,
+                                                                  width: 20,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    color: index ==
+                                                                            correctAnswer
+                                                                        ? Colors.green[
+                                                                            700]
+                                                                        : Colors
+                                                                            .white,
+                                                                  ),
+                                                                );
+                                                              },
                                                             ),
                                                           ),
                                                         );
@@ -289,23 +357,48 @@ class _EditPollPageState extends State<EditPollPage> {
                                   ),
                                   GestureDetector(
                                     onTap: () async {
-                                      var date = await DatePicker.showDatePicker(context);
-                                      print(date);
+                                      var date =
+                                          await DatePicker.showDatePicker(
+                                              context);
+                                      if (date != null) {
+                                        _editPollBloc.endDateChanged(date);
+                                      }
                                     },
                                     child: Padding(
                                       padding: EdgeInsets.all(8),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
                                           Divider(),
                                           Text('Poll Duration'),
                                           SizedBox(height: 4),
-                                          Text(
-                                            'date',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Theme.of(context).primaryColor,
-                                            ),
+                                          StreamBuilder<DateTime>(
+                                            stream: _editPollBloc.endDate$,
+                                            initialData:
+                                                _editPollBloc.endDate$.value,
+                                            builder: (context, snapshot) {
+                                              var endDate = snapshot.data;
+                                              var difference = endDate != null
+                                                  ? endDate
+                                                      .difference(
+                                                          DateTime.now())
+                                                      .inDays
+                                                  : 0;
+
+                                              return Text(
+                                                endDate == null
+                                                    ? 'Select End Date'
+                                                    : '$difference days left',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: endDate == null
+                                                      ? Colors.grey
+                                                      : Theme.of(context)
+                                                          .primaryColor,
+                                                ),
+                                              );
+                                            },
                                           ),
                                         ],
                                       ),
@@ -320,12 +413,15 @@ class _EditPollPageState extends State<EditPollPage> {
                                         return Padding(
                                           padding: EdgeInsets.all(8),
                                           child: RaisedButton(
-                                            color: active ? Colors.blue : Colors.white,
+                                            color: active
+                                                ? Colors.blue
+                                                : Colors.white,
                                             shape: RoundedRectangleBorder(
                                               side: BorderSide(
                                                 color: Colors.blue,
                                               ),
-                                              borderRadius: BorderRadius.circular(25),
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
                                             ),
                                             onPressed: () {
                                               _editPollBloc.typeChanged(index);
@@ -338,21 +434,27 @@ class _EditPollPageState extends State<EditPollPage> {
                                                   child: Icon(
                                                     Icons.check,
                                                     size: 15,
-                                                    color: active ? Colors.blue : Colors.white,
+                                                    color: active
+                                                        ? Colors.blue
+                                                        : Colors.white,
                                                   ),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: active ? Colors.white : Colors.blue,
+                                                    color: active
+                                                        ? Colors.white
+                                                        : Colors.blue,
                                                   ),
                                                 ),
                                                 SizedBox(width: 10),
                                                 Text(
-                                                  index == 0 
-                                                    ? 'Poll Question'
-                                                    : 'Quiz',
+                                                  index == 0
+                                                      ? 'Poll Question'
+                                                      : 'Quiz',
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: active ? Colors.white : Colors.blue,
+                                                    color: active
+                                                        ? Colors.white
+                                                        : Colors.blue,
                                                   ),
                                                 ),
                                               ],
@@ -386,7 +488,14 @@ class _EditPollPageState extends State<EditPollPage> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                         onPressed: () async {
+                          var tagged = await Navigator.of(context).pushNamed(
+                            '/tag_connections',
+                          );
 
+                          if (tagged != null) {
+                            _editPollBloc
+                                .taggedChanged(tagged as List<TaggedItem>);
+                          }
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -426,18 +535,32 @@ class _EditPollPageState extends State<EditPollPage> {
     );
   }
 
+  void _updateFields(FeedPollItem poll) {
+    _editPollBloc.questionChanged(poll.question);
+    _pollMessageController.text = poll.question;
+
+    _editPollBloc.answersChanged(poll.answers);
+    poll.answers.forEach((answer) {
+      _pollAnswerControllers[poll.answers.indexOf(answer)].text = answer.answer;
+      if (answer.isCorrect != null && answer.isCorrect) {
+        _editPollBloc.correctAnswerChanged(poll.answers.indexOf(answer));
+      }
+    });
+
+    _editPollBloc.typeChanged(poll.type);
+    _editPollBloc.endDateChanged(poll.endDate);
+  }
+
   void _addDefaultAnswers() {
     var choices = ['A', 'B', 'C', 'D'];
-    var answers = List.generate(
-      choices.length, 
-      (index) {
-        var answer = PollAnswerItem();
-        answer.label = choices[index];
-        answer.answer = '';
-        return answer;
-      }
-    );
-    
+    var answers = List.generate(choices.length, (index) {
+      var answer = PollAnswerItem();
+      answer.label = choices[index];
+      answer.answer = '';
+      answer.isCorrect = false;
+      return answer;
+    });
+
     _editPollBloc.answersChanged(answers);
   }
 }

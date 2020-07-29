@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './post_data.dart';
+import './poll_data.dart';
 
 part 'post_entity.g.dart';
 
@@ -37,6 +38,7 @@ class PostEntity extends Equatable implements FirebaseModel {
   final List<String> tags;
   final String tokenID;
   final List<PostData> postData;
+  final List<PollData> pollData;
   final int type;
   final String uid;
   final String userImage;
@@ -44,6 +46,8 @@ class PostEntity extends Equatable implements FirebaseModel {
   final int visibility;
   final int time;
   final List<String> likes;
+  final List<String> muted;
+  final List<int> pollDuration;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -84,6 +88,7 @@ class PostEntity extends Equatable implements FirebaseModel {
     this.ownerId,
     this.parties,
     this.phoneNo,
+    this.pollData,
     this.postData,
     this.postMessage,
     this.tags,
@@ -92,6 +97,8 @@ class PostEntity extends Equatable implements FirebaseModel {
     this.username,
     this.time,
     this.likes,
+    this.muted,
+    this.pollDuration,
   });
 
   String get id => this.documentId;
@@ -126,6 +133,7 @@ class PostEntity extends Equatable implements FirebaseModel {
       ownerId,
       parties,
       phoneNo,
+      pollData,
       postData,
       postMessage,
       pushNotificationToken,
@@ -139,6 +147,8 @@ class PostEntity extends Equatable implements FirebaseModel {
       visibility,
       time,
       likes,
+      muted,
+      pollDuration,
     ];
   }
 

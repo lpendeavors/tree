@@ -41,31 +41,24 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     final post = <String, dynamic>{
       'byAdmin': byAdmin,
       'churchName': ownerIsChurch ? ownerName : '',
-      'createdAt': FieldValue.serverTimestamp(),
       'fullName': ownerIsChurch ? '' : ownerName,
       'image': ownerImage,
       'isAdmin': ownerIsAdmin,
       'isChurch': ownerIsChurch,
       'isGroup': groupId == null ? false : true,
       'postId': groupId == null ? '' : groupId,
-      'isHidden': false,
+      'isHidden': isHidden,
       'isPostPrivate': isPrivate,
-      'isReported': false,
       'isVerified': isVerified,
-      'likes': [],
       'ownerId': ownerId,
       'parties': parties,
-      'postData': [],
       'postMessage': message,
       'pushNotificationToken': ownerNotificationToken,
       'tags': tagged,
-      'time': DateTime.now().millisecondsSinceEpoch,
       'timeUpdated': DateTime.now().millisecondsSinceEpoch,
       'tokenID': ownerNotificationToken,
-      'type': 0,
       'uid': ownerId,
       'updatedAt': FieldValue.serverTimestamp(),
-      'visiblity': 0,
     };
 
     if (postId != null) {
@@ -88,10 +81,16 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
 
       if (media.isNotEmpty) {
         post.addAll({
+          'time': DateTime.now().millisecondsSinceEpoch,
+          'createdAt': FieldValue.serverTimestamp(),
+          'likes': [],
+          'isReported': false,
+          'type': 0,
+          'visiblity': 0,
           'postData': imageUrls.map((media) {
             return {
               'imageUrl': media,
-              'type': 2,
+              'type': mediaType + 1,
             };
           }).toList(),
         });
@@ -177,6 +176,80 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
       return _firestore.document('postBase/$postId').updateData({
         'likes': FieldValue.arrayRemove([userId])
       });
+    }
+  }
+
+  @override
+  Future<Map<String, String>> savePoll(
+    String pollId,
+    String groupId,
+    bool byAdmin,
+    String ownerId,
+    String ownerName,
+    String ownerImage,
+    String ownerToken,
+    bool ownerVerified,
+    bool isGroup,
+    bool isHidden,
+    bool isQuiz,
+    bool isVerified,
+    List<String> parties,
+    List<Map<String, dynamic>> answers,
+    DateTime endDate,
+    String question,
+    List<String> tags,
+    int pollType,
+  ) async {
+    final poll = <String, dynamic>{
+      'byAdmin': byAdmin,
+      'country': '',
+      'createdAt': null,
+      'email': '',
+      'fullName': ownerName,
+      'gender': 0,
+      'image': ownerImage,
+      'isAdmin': byAdmin,
+      'isGroup': isGroup,
+      'isHidden': isHidden,
+      'isPoll': true,
+      'isQuiz': pollType == 1 ? true : false,
+      'isVerified': ownerVerified,
+      'ownerId': ownerId,
+      'parties': parties,
+      'pollData': answers,
+      'pollDuration': [
+        DateTime.now().millisecondsSinceEpoch,
+        endDate.millisecondsSinceEpoch
+      ],
+      'postMessage': question,
+      'tags': tags,
+      'timeUpdated': DateTime.now().millisecondsSinceEpoch,
+      'tokenID': ownerToken,
+      'type': 2,
+      'uid': ownerId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'userImage': ownerImage,
+      'visibility': 0,
+    };
+
+    if (pollId != null) {
+      await _firestore
+          .collection('postBase')
+          .document(pollId)
+          .setData(poll, merge: true);
+    } else {
+      poll.addAll({
+        'isReported': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'time': DateTime.now().millisecondsSinceEpoch,
+        'likes': [],
+      });
+
+      if (groupId != null) {
+        poll.addAll({'postId': groupId});
+      }
+
+      await _firestore.collection('postBase').add(poll);
     }
   }
 }

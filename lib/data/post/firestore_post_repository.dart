@@ -43,6 +43,27 @@ abstract class FirestorePostRepository {
     List<String> tagged,
   );
 
+  Future<Map<String, String>> savePoll(
+    String pollId,
+    String groupId,
+    bool byAdmin,
+    String ownerId,
+    String ownerName,
+    String ownerImage,
+    String ownerToken,
+    bool ownerVerified,
+    bool isGroup,
+    bool isHidden,
+    bool isQuiz,
+    bool isVerified,
+    List<String> parties,
+    List<Map<String, dynamic>> answers,
+    DateTime endDate,
+    String question,
+    List<String> tags,
+    int pollType,
+  );
+
   Future<void> likeOrUnlikePost({
     @required bool shouldLike,
     @required String postId,

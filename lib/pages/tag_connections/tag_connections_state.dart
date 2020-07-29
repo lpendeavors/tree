@@ -47,11 +47,13 @@ class ConnectionItem extends Equatable {
   final String id;
   final String image;
   final String name;
+  final String about;
 
   const ConnectionItem({
     @required this.id,
     @required this.image,
     @required this.name,
+    @required this.about,
   });
 
   @override
@@ -59,6 +61,7 @@ class ConnectionItem extends Equatable {
         id,
         image,
         name,
+        about,
       ];
 
   @override

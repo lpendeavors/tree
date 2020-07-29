@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-/// 
+///
 /// EditPollMessage
 ///
 @immutable
@@ -50,10 +50,10 @@ class EditPollState extends Equatable {
 
   @override
   List get props => [
-    pollItem,
-    isLoading,
-    error,
-  ];
+        pollItem,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -64,19 +64,25 @@ class FeedPollItem extends Equatable {
   final String id;
   final int type;
   final List<PollAnswerItem> answers;
+  final String question;
+  final DateTime endDate;
 
   const FeedPollItem({
     @required this.id,
     @required this.type,
     @required this.answers,
+    @required this.question,
+    @required this.endDate,
   });
 
   @override
   List get props => [
-    id,
-    type,
-    answers,
-  ];
+        id,
+        type,
+        answers,
+        question,
+        endDate,
+      ];
 
   @override
   bool get stringify => true;
@@ -96,10 +102,10 @@ class TaggedItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    name,
-    image,
-  ];
+        id,
+        name,
+        image,
+      ];
 
   @override
   bool get stringify => true;
@@ -108,4 +114,5 @@ class TaggedItem extends Equatable {
 class PollAnswerItem {
   String label;
   String answer;
+  bool isCorrect;
 }

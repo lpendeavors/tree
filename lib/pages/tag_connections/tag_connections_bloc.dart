@@ -19,11 +19,13 @@ class TagConnectionsBloc extends BaseBloc {
   ///
   /// Input functions
   ///
+  final Function(List<ConnectionItem>) taggedChanged;
 
   ///
   /// Output streams
   ///
   final ValueStream<TagConnectionsState> tagConnectionsState$;
+  final ValueStream<List<ConnectionItem>> tagged$;
 
   ///
   /// Clean up
@@ -31,6 +33,8 @@ class TagConnectionsBloc extends BaseBloc {
   final void Function() _dispose;
 
   TagConnectionsBloc._({
+    @required this.taggedChanged,
+    @required this.tagged$,
     @required this.tagConnectionsState$,
     @required void Function() dispose,
   }) : _dispose = dispose;
@@ -48,6 +52,7 @@ class TagConnectionsBloc extends BaseBloc {
     ///
     /// Stream controllers
     ///
+    var taggedSubject = BehaviorSubject<List<ConnectionItem>>.seeded([]);
 
     ///
     /// Streams
@@ -61,10 +66,17 @@ class TagConnectionsBloc extends BaseBloc {
       tagConnectionsState$.connect(),
     ];
 
+    final controllers = <StreamController>[
+      taggedSubject,
+    ];
+
     return TagConnectionsBloc._(
+        taggedChanged: taggedSubject.add,
+        tagged$: taggedSubject.stream,
         tagConnectionsState$: tagConnectionsState$,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
         });
   }
 
@@ -118,6 +130,7 @@ class TagConnectionsBloc extends BaseBloc {
         id: entity.id,
         name: entity.isChurch ? entity.churchName : entity.fullName,
         image: entity.image ?? '',
+        about: entity.aboutMe ?? 'Hey there! i am using Tree',
       );
     }).toList();
   }

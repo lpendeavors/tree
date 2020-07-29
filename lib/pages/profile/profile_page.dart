@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -35,7 +35,8 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   ProfileBloc _profileBloc;
   List<StreamSubscription> _subscriptions;
   bool showChurchBroadcast = true;
@@ -48,8 +49,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _profileBloc = widget.initProfileBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -59,7 +61,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _profileBloc.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,35 +69,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         child: Column(
           children: <Widget>[
             StreamBuilder<ProfileState>(
-              stream: _profileBloc.profileState$,
-              initialData: _profileBloc.profileState$.value,
-              builder: (context, snapshot) {
-                var data = snapshot.data;
+                stream: _profileBloc.profileState$,
+                initialData: _profileBloc.profileState$.value,
+                builder: (context, snapshot) {
+                  var data = snapshot.data;
 
-                if(!data.isLoading){
-                  return Column(
-                    children: <Widget>[
-                      _appBar(data),
-                      _profile(data),
-                    ],
-                  );
-                } else {
-                  return Container(
-                    height: 800,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-              }
-            ),
+                  if (!data.isLoading) {
+                    return Column(
+                      children: <Widget>[
+                        _appBar(data),
+                        _profile(data),
+                      ],
+                    );
+                  } else {
+                    return Container(
+                      height: 800,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                }),
             StreamBuilder<RecentFeedState>(
                 stream: _profileBloc.recentFeedState$,
                 initialData: _profileBloc.recentFeedState$.value,
                 builder: (context, snapshot) {
                   var data = snapshot.data;
 
-                  if(!data.isLoading){
+                  if (!data.isLoading) {
                     return Column(
                       children: <Widget>[
                         _recentPostList(data),
@@ -104,40 +105,39 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   } else {
                     return Container();
                   }
-                }
-            ),
+                }),
           ],
         ),
       ),
-        // print(data.profile);
+      // print(data.profile);
 
-        // if (data.isLoading) {
-        //   return Center(
-        //     child: CircularProgressIndicator(),
-        //   );
-        // }
+      // if (data.isLoading) {
+      //   return Center(
+      //     child: CircularProgressIndicator(),
+      //   );
+      // }
 
-        // if (data.error != null) {
-        //   print(data.error);
-        //   return Center(
-        //     child: Text(
-        //       S.of(context).error_occurred,
-        //     ),
-        //   );
-        // }
+      // if (data.error != null) {
+      //   print(data.error);
+      //   return Center(
+      //     child: Text(
+      //       S.of(context).error_occurred,
+      //     ),
+      //   );
+      // }
 
-        // return Scaffold(
-        //   body: SingleChildScrollView(
-        //     physics: BouncingScrollPhysics(),
-        //     child: Column(
-        //       children: <Widget>[
-        //         _appBar(data),
-        //         _profile(data),
-        //         _recentPostList(data)
-        //       ],
-        //     ),
-        //   ),
-        // );
+      // return Scaffold(
+      //   body: SingleChildScrollView(
+      //     physics: BouncingScrollPhysics(),
+      //     child: Column(
+      //       children: <Widget>[
+      //         _appBar(data),
+      //         _profile(data),
+      //         _recentPostList(data)
+      //       ],
+      //     ),
+      //   ),
+      // );
       // }
     );
   }
@@ -147,41 +147,46 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       children: <Widget>[
         InkWell(
           onTap: () {
-           showDialog(
-             context: context,
-             builder: (BuildContext context){
-               return ProfileImageModal(
-                 options: data.profile.myProfile ? data.profile.photo.length > 0 ? ["View Picture", "Update Picture"] : ["Add Photo"] : ["View Picture", if(data.isAdmin) "Approve Account"]
-               );
-             }
-           ).then((result) async {
-             if (result == "Add Photo" || result == "Update Picture") {
-               bool hasPermission = await checkMediaPermission();
-               if (hasPermission) {
-                 var file = await ImagePicker.pickImage(
-                   source: ImageSource.gallery,
-                 );
-                 var cropped = await ImageCropper.cropImage(
-                   sourcePath: file.path,
-                 );
-                 _profileBloc.setPhoto(cropped);
-               }
-               return;
-             }
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ProfileImageModal(
+                      options: data.profile.myProfile
+                          ? data.profile.photo.length > 0
+                              ? ["View Picture", "Update Picture"]
+                              : ["Add Photo"]
+                          : [
+                              "View Picture",
+                              if (data.isAdmin) "Approve Account"
+                            ]);
+                }).then((result) async {
+              if (result == "Add Photo" || result == "Update Picture") {
+                bool hasPermission = await checkMediaPermission();
+                if (hasPermission) {
+                  var file = await ImagePicker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  var cropped = await ImageCropper.cropImage(
+                    sourcePath: file.path,
+                  );
+                  _profileBloc.setPhoto(cropped);
+                }
+                return;
+              }
 
-             if (result == "View Picture") {
-               Navigator.of(context).pushNamed(
-                 '/preview_image',
-                 arguments: data.profile.photo,
-               );
-               return;
-             }
+              if (result == "View Picture") {
+                Navigator.of(context).pushNamed(
+                  '/preview_image',
+                  arguments: data.profile.photo,
+                );
+                return;
+              }
 
-             if (result == "Approve Account") {
-               _profileBloc.approveAccount();
-               return;
-             }
-           });
+              if (result == "Approve Account") {
+                _profileBloc.approveAccount();
+                return;
+              }
+            });
           },
           child: Container(
             height: 300,
@@ -191,18 +196,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   height: 300,
                   color: Theme.of(context).primaryColor,
                   child: Center(
-                    child: Icon(
-                      Icons.person,
-                      size: 100,
-                      color: Colors.white70,
-                    )
-                  ),
+                      child: Icon(
+                    Icons.person,
+                    size: 100,
+                    color: Colors.white70,
+                  )),
                 ),
-                if (data.profile.photo != null) ...[
+                if (data.profile.photo.isNotEmpty) ...[
                   Align(
                     alignment: Alignment.center,
-                    child: Image(
-                      image: CacheImage(data.profile.photo),
+                    child: CachedNetworkImage(
+                      imageUrl: data.profile.photo,
                       height: 300,
                       width: MediaQuery.of(context).size.width,
                       alignment: Alignment.center,
@@ -259,13 +263,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               ),
                               onPressed: () {
                                 showDialog(
-                                  context: context,
-                                  builder: (BuildContext context){
-                                    return ProfileImageModal(
-                                      options: ["Report User", "Block User"]
-                                    );
-                                  }
-                                ).then((value){
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return ProfileImageModal(options: [
+                                        "Report User",
+                                        "Block User"
+                                      ]);
+                                    }).then((value) {
                                   //broken in original app too
                                 });
                               },
@@ -287,41 +291,51 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                   children: <Widget>[
                                     Flexible(
                                       child: Text(
-                                        data.profile.isChurch ? data.profile.churchName : data.profile.fullName,
+                                        data.profile.isChurch
+                                            ? data.profile.churchName
+                                            : data.profile.fullName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 23,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'NirmalaB'
-                                        ),
+                                            color: Colors.white,
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'NirmalaB'),
                                       ),
                                     ),
                                     SizedBox(width: 5),
-                                    if(data.profile.isVerified) ...[Image.asset(
-                                      verified_icon,
-                                      height: 25,
-                                      width: 25,
-                                      color: Color(0xFF9CC83F),
-                                    )]
+                                    if (data.profile.isVerified) ...[
+                                      Image.asset(
+                                        verified_icon,
+                                        height: 25,
+                                        width: 25,
+                                        color: Color(0xFF9CC83F),
+                                      )
+                                    ]
                                   ],
                                 ),
                                 SizedBox(height: 5),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Row(
                                       children: <Widget>[
                                         RaisedButton(
                                           color: Colors.white,
-                                          onPressed: (){},
-                                          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                                          onPressed: () {},
+                                          padding: EdgeInsets.only(
+                                              left: 10,
+                                              right: 10,
+                                              top: 5,
+                                              bottom: 5),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             side: BorderSide(
                                               width: 1,
-                                              color: Theme.of(context).primaryColor,
+                                              color: Theme.of(context)
+                                                  .primaryColor,
                                             ),
                                           ),
                                           child: Text(
@@ -329,7 +343,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                             style: TextStyle(
                                               fontWeight: FontWeight.w400,
                                               fontSize: 11,
-                                              color: Theme.of(context).primaryColor,
+                                              color: Theme.of(context)
+                                                  .primaryColor,
                                             ),
                                           ),
                                         ),
@@ -342,9 +357,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                             );
                                           },
                                           color: Colors.white,
-                                          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                                          padding: EdgeInsets.only(
+                                              left: 10,
+                                              right: 10,
+                                              top: 5,
+                                              bottom: 5),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             side: BorderSide(
                                               width: 1,
                                               color: Colors.blue,
@@ -361,7 +381,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                         ),
                                       ],
                                     ),
-                                    if(!data.profile.myProfile)
+                                    if (!data.profile.myProfile)
                                       _connectButton(data.profile)
                                   ],
                                 ),
@@ -377,38 +397,38 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
           ),
         ),
-        if(!data.profile.myProfile && data.profile.isFriend)
+        if (!data.profile.myProfile && data.profile.isFriend)
           RaisedButton(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(
-                      Icons.chat_bubble,
-                      color: Colors.white,
-                      size: 15,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      "Send Direct Message",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
-                Icon(
-                  Icons.navigate_next,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 15,
-                ),
-              ],
-            ),
-            color: Theme.of(context).primaryColor,
-            onPressed: () {
-              //TODO: Action
-            }
-          ),
+              padding: EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.chat_bubble,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        "Send Direct Message",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
+                  Icon(
+                    Icons.navigate_next,
+                    color: Colors.white.withOpacity(0.7),
+                    size: 15,
+                  ),
+                ],
+              ),
+              color: Theme.of(context).primaryColor,
+              onPressed: () {
+                //TODO: Action
+              }),
         Container(
           child: Column(
             children: <Widget>[
@@ -421,18 +441,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                          "Achievements",
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NirmalaB'
-                          )
-                        ),
+                        Text("Achievements",
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NirmalaB')),
                         Text(
                           "${data.profile.trophies.where((element) => element.trophyCount.length == element.trophyUnlockAt).length} Unlocked",
-                          style: TextStyle(fontSize: 14.0, fontFamily: 'Nirmala', color: Colors.black54, fontWeight: FontWeight.normal),
+                          style: TextStyle(
+                              fontSize: 14.0,
+                              fontFamily: 'Nirmala',
+                              color: Colors.black54,
+                              fontWeight: FontWeight.normal),
                         ),
                       ],
                     ),
@@ -444,10 +465,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         );
                       },
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 4.0, right: 4.0),
+                        padding: const EdgeInsets.only(
+                            top: 8.0, bottom: 8.0, left: 4.0, right: 4.0),
                         child: Text(
                           "View Trophies",
-                          style: TextStyle(fontSize: 12.0, fontFamily: 'Nirmala', color: Theme.of(context).primaryColor, fontWeight: FontWeight.normal),
+                          style: TextStyle(
+                              fontSize: 12.0,
+                              fontFamily: 'Nirmala',
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.normal),
                         ),
                       ),
                     )
@@ -456,11 +482,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
               GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.3,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5
-                ),
+                    crossAxisCount: 4,
+                    childAspectRatio: 1.3,
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 5),
                 itemBuilder: (c, index) {
                   Trophy trophy = data.profile.trophies[index];
                   String icon = trophy.trophyIcon;
@@ -472,10 +497,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       onTap: () {
-                        Navigator.of(context).pushNamed(
-                            '/trophy_info',
-                            arguments: index
-                        );
+                        Navigator.of(context)
+                            .pushNamed('/trophy_info', arguments: index);
                       },
                       radius: 10,
                       borderRadius: BorderRadius.circular(10),
@@ -492,33 +515,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           //if (!unlocked)
                           Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black.withOpacity(0.1),
-                                  Colors.black.withOpacity(unlocked ? 0.1 : 0.9)
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                //stops: [0.1, 0.1]
-                              )),
+                                color: Theme.of(context).primaryColor,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black.withOpacity(0.1),
+                                    Colors.black
+                                        .withOpacity(unlocked ? 0.1 : 0.9)
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  //stops: [0.1, 0.1]
+                                )),
                           ),
                           Align(
                             alignment: Alignment.topLeft,
                             child: Container(
-                              margin: EdgeInsets.all(8),
-                              height: 25,
-                              width: 25,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: unlocked ? Colors.green : Colors.red
-                              ),
-                              child: Icon(
-                                unlocked ? Icons.lock_open : Icons.lock_outline,
-                                size: 18,
-                                color: Colors.white,
-                              )
-                            ),
+                                margin: EdgeInsets.all(8),
+                                height: 25,
+                                width: 25,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color:
+                                        unlocked ? Colors.green : Colors.red),
+                                child: Icon(
+                                  unlocked
+                                      ? Icons.lock_open
+                                      : Icons.lock_outline,
+                                  size: 18,
+                                  color: Colors.white,
+                                )),
                           ),
                         ],
                       ),
@@ -526,7 +551,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   );
                 },
                 padding: EdgeInsets.all(8),
-                itemCount: data.profile.trophies.length > 8 ? 8 : data.profile.trophies.length,
+                itemCount: data.profile.trophies.length > 8
+                    ? 8
+                    : data.profile.trophies.length,
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
               ),
@@ -558,10 +585,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Text(
               "Respond",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.white
-              ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white),
             ),
           ],
         ),
@@ -573,10 +599,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         onPressed: () {
           showDialog(
               context: context,
-              builder: (BuildContext context){
+              builder: (BuildContext context) {
                 return DisconnectModal();
-              }
-          ).then((disconnect) {
+              }).then((disconnect) {
             if (disconnect) {
               _profileBloc.disconnect();
             }
@@ -591,10 +616,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Text(
               "UnConnect",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.white
-              ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white),
             ),
           ],
         ),
@@ -606,10 +630,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         onPressed: () {
           showDialog(
               context: context,
-              builder: (BuildContext context){
+              builder: (BuildContext context) {
                 return CancelRequestModal();
-              }
-          ).then((cancel) {
+              }).then((cancel) {
             if (cancel) {
               _profileBloc.cancelConnectRequest();
             }
@@ -621,15 +644,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
         child: Row(
           children: <Widget>[
-            Icon(Icons.pause_circle_filled, color: Theme.of(context).primaryColor, size: 15),
+            Icon(Icons.pause_circle_filled,
+                color: Theme.of(context).primaryColor, size: 15),
             SizedBox(width: 5),
             Text(
               "Pending",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Theme.of(context).primaryColor
-              ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Theme.of(context).primaryColor),
             ),
           ],
         ),
@@ -651,10 +674,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Text(
             "Connect",
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.white
-            ),
+                fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
           ),
         ],
       ),
@@ -662,16 +682,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   _profileStatusNotifier(ProfileItem profile) {
-    if(!profile.myProfile){
+    if (!profile.myProfile) {
       return Container();
     }
 
-    if(!profile.isChurchUpdated && showChurchBroadcast){
+    if (!profile.isChurchUpdated && showChurchBroadcast) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+              color: Colors.blue, borderRadius: BorderRadius.circular(10)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -686,7 +707,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   SizedBox(width: 10.0),
                   Text(
                     "Information Needed",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white.withOpacity(.7)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(.7)),
                   ),
                   SizedBox(width: 10.0),
                   Expanded(
@@ -694,7 +717,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     flex: 1,
                   ),
                   InkWell(
-                    onTap: (){
+                    onTap: () {
                       setState(() {
                         showChurchBroadcast = false;
                       });
@@ -719,12 +742,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 },
                 color: Colors.white,
                 padding: EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white.withOpacity(0.4)), borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(8)),
                 child: Center(
                   child: Text(
                     "Update Information",
-                    style:
-                    TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -732,12 +758,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
         ),
       );
-    }else if(!profile.isProfileUpdated && !profile.isChurch && showProfileBroadcast){
+    } else if (!profile.isProfileUpdated &&
+        !profile.isChurch &&
+        showProfileBroadcast) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+              color: Colors.blue, borderRadius: BorderRadius.circular(10)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -752,7 +781,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   SizedBox(width: 10.0),
                   Text(
                     "Information Needed",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white.withOpacity(.7)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(.7)),
                   ),
                   SizedBox(width: 10.0),
                   Expanded(
@@ -760,7 +791,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     flex: 1,
                   ),
                   InkWell(
-                    onTap: (){
+                    onTap: () {
                       setState(() {
                         showProfileBroadcast = false;
                       });
@@ -785,12 +816,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 },
                 color: Colors.white,
                 padding: EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(side: BorderSide(color: Colors.white.withOpacity(0.4)), borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                    borderRadius: BorderRadius.circular(8)),
                 child: Center(
                   child: Text(
                     "Update Information",
-                    style:
-                    TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -798,7 +832,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
         ),
       );
-    }else{
+    } else {
       return Container();
     }
   }
@@ -806,7 +840,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _profile(ProfileState data) {
     return Column(
       children: <Widget>[
-        if(data.profile.isChurch) ...[
+        if (data.profile.isChurch) ...[
           Container(
             padding: EdgeInsets.all(15),
             decoration: BoxDecoration(
@@ -818,7 +852,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
             child: Column(
               children: <Widget>[
-                if((showChurchBroadcast || showProfileBroadcast) && !data.profile.isChurchUpdated) ...[
+                if ((showChurchBroadcast || showProfileBroadcast) &&
+                    !data.profile.isChurchUpdated) ...[
                   _profileStatusNotifier(data.profile),
                   SizedBox(height: 15.0)
                 ],
@@ -841,22 +876,29 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           children: <Widget>[
                             Text.rich(TextSpan(children: [
                               TextSpan(
-                                text: "Church ID:  ",
-                                style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(.5))
-                              ),
+                                  text: "Church ID:  ",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black.withOpacity(.5))),
                               TextSpan(
-                                text: data.profile.uid.substring(0, 7).toUpperCase(),
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-                              ),
+                                  text: data.profile.uid
+                                      .substring(0, 7)
+                                      .toUpperCase(),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
                             ])),
                             //Flexible(child: Text(userModel.getString(TIME_UPDATED))),
                             RaisedButton(
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: data.profile.uid.substring(0, 7).toUpperCase()));
+                                Clipboard.setData(ClipboardData(
+                                    text: data.profile.uid
+                                        .substring(0, 7)
+                                        .toUpperCase()));
                               },
                               color: Colors.blue,
-                              padding:
-                              EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                              padding: EdgeInsets.only(
+                                  left: 10, right: 10, top: 5, bottom: 5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 side: BorderSide(width: 1, color: Colors.blue),
@@ -885,41 +927,43 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                             "Bio",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black.withOpacity(0.5)
-                            ),
+                                color: Colors.black.withOpacity(0.5)),
                           ),
                           Text(
                             "${data.profile.type == 1 ? "Youth Ministry" : "Adult Ministry"}",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black.withOpacity(0.5)
-                            ),
+                                color: Colors.black.withOpacity(0.5)),
                           ),
                         ],
                       ),
                       SizedBox(height: 8),
-                      _bioRow(church_icon, data.profile.churchName, isAsset: true, color: Theme.of(context).primaryColor),
+                      _bioRow(church_icon, data.profile.churchName,
+                          isAsset: true, color: Theme.of(context).primaryColor),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.add_circle, data.profile.churchDenomination, color: Colors.purple),
+                      _bioRow(Icons.add_circle, data.profile.churchDenomination,
+                          color: Colors.purple),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.location_on, data.profile.churchAddress, color: Colors.blue),
+                      _bioRow(Icons.location_on, data.profile.churchAddress,
+                          color: Colors.blue),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.info, data.profile.aboutMe, color: Colors.orange)
+                      _bioRow(Icons.info, data.profile.aboutMe,
+                          color: Colors.orange)
                     ],
                   ),
                 ),
@@ -927,8 +971,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
           ),
         ],
-
-        if(!data.profile.isChurch) ...[
+        if (!data.profile.isChurch) ...[
           Container(
             padding: EdgeInsets.all(15),
             decoration: BoxDecoration(
@@ -940,7 +983,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
             child: Column(
               children: <Widget>[
-                if((showChurchBroadcast || showProfileBroadcast) && (!data.profile.isChurchUpdated || !data.profile.isProfileUpdated)) ...[
+                if ((showChurchBroadcast || showProfileBroadcast) &&
+                    (!data.profile.isChurchUpdated ||
+                        !data.profile.isProfileUpdated)) ...[
                   _profileStatusNotifier(data.profile),
                   SizedBox(height: 5.0)
                 ],
@@ -964,27 +1009,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           Text(
                             "Bio",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black.withOpacity(0.5)
-                            ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black.withOpacity(0.5)),
                           ),
                           if (data.profile.isVerified)
                             Container(
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5)),
                               padding: EdgeInsets.all(5),
                               child: Text(
                                 "Title: " + data.profile.title,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withOpacity(0.5)
-                                ),
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black.withOpacity(0.5)),
                               ),
                             ),
                         ],
                       ),
-
-                      if(data.profile.churchInfo != null) ...[
-                        _bioRow(church_icon, data.profile.churchInfo.churchName, isAsset: true),
+                      if (data.profile.churchInfo != null) ...[
+                        _bioRow(church_icon, data.profile.churchInfo.churchName,
+                            isAsset: true),
                         Container(
                           height: 1.0,
                           width: double.infinity,
@@ -992,21 +1037,30 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                         ),
                       ],
-                      _bioRow(Icons.location_on, data.profile.city, color: Colors.blue),
+                      _bioRow(Icons.location_on, data.profile.city,
+                          color: Colors.blue),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow((data.profile.relationStatus != 'Dating' ? data.profile.relationStatus != 'Married' ? single_icon : married_icon : dating_icon), data.profile.relationStatus, isAsset: true),
+                      _bioRow(
+                          (data.profile.relationStatus != 'Dating'
+                              ? data.profile.relationStatus != 'Married'
+                                  ? single_icon
+                                  : married_icon
+                              : dating_icon),
+                          data.profile.relationStatus,
+                          isAsset: true),
                       Container(
                         height: 1.0,
                         width: double.infinity,
                         color: Colors.black12,
                         margin: EdgeInsets.fromLTRB(40, 5, 0, 5),
                       ),
-                      _bioRow(Icons.info, data.profile.aboutMe, color: Colors.orange)
+                      _bioRow(Icons.info, data.profile.aboutMe,
+                          color: Colors.orange)
                     ],
                   ),
                 ),
@@ -1018,7 +1072,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _bioRow(icon, title, {Color color, bool isAsset = false}){
+  Widget _bioRow(icon, title, {Color color, bool isAsset = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
@@ -1027,27 +1081,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           width: 30,
           padding: EdgeInsets.all(2),
           child: Center(
-              child: isAsset ? Image.asset(
-                icon,
-                color: Theme.of(context).primaryColor,
-                height: 20,
-              ) : Icon(
-                icon,
-                size: 20,
-                color: color ?? Colors.black.withOpacity(0.6),
-              )
-          ),
+              child: isAsset
+                  ? Image.asset(
+                      icon,
+                      color: Theme.of(context).primaryColor,
+                      height: 20,
+                    )
+                  : Icon(
+                      icon,
+                      size: 20,
+                      color: color ?? Colors.black.withOpacity(0.6),
+                    )),
         ),
         SizedBox(width: 5),
         Flexible(
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Colors.black.withOpacity(0.7),
-              fontSize: 13,
-              fontWeight: FontWeight.w300
-            )
-          ),
+          child: Text(title,
+              style: TextStyle(
+                  color: Colors.black.withOpacity(0.7),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300)),
         ),
       ],
     );
@@ -1057,7 +1109,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        if(data.feedItems.length > 0) ...[
+        if (data.feedItems.length > 0) ...[
           Container(
               padding: EdgeInsets.all(15),
               alignment: Alignment.centerLeft,
@@ -1065,26 +1117,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 "Posts",
                 style: TextStyle(
                     color: Colors.black.withOpacity(0.4),
-                    fontWeight: FontWeight.bold
-                ),
-              )
-          ),
-          ...List.generate(
-            data.feedItems.length,
-            (index) {
-              return FeedListItem(
-                context: context,
-                tickerProvider: this,
-                feedItem: data.feedItems[index],
-                likeFeedItem: (item) {
-                  // TODO: finish saving like
-                  // _feedBloc.postToLikeChanged(item);
-                  // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
-                  // _feedBloc.saveLikeValue();
-                },
-              );
-            }
-          )
+                    fontWeight: FontWeight.bold),
+              )),
+          ...List.generate(data.feedItems.length, (index) {
+            return FeedListItem(
+              context: context,
+              tickerProvider: this,
+              feedItem: data.feedItems[index],
+              likeFeedItem: (item) {
+                // TODO: finish saving like
+                // _feedBloc.postToLikeChanged(item);
+                // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
+                // _feedBloc.saveLikeValue();
+              },
+            );
+          })
         ]
       ],
     );

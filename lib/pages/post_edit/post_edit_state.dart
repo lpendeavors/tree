@@ -98,3 +98,26 @@ class FeedPostItem extends Equatable {
   @override
   bool get stringify => true;
 }
+
+@immutable
+class TaggedItem extends Equatable {
+  final String id;
+  final String name;
+  final String image;
+
+  const TaggedItem({
+    @required this.id,
+    @required this.name,
+    @required this.image,
+  });
+
+  @override
+  List get props => [
+        id,
+        name,
+        image,
+      ];
+
+  @override
+  bool get stringify => true;
+}

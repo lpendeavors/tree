@@ -24,9 +24,9 @@ class EditPostBloc implements BaseBloc {
   final void Function(bool) postForConnectionsOnlyChanged;
   final void Function(String) postMessageChanged;
   final void Function(List<String>) postMediaChanged;
-  final void Function(List<String>) postTagsChanged;
   final void Function(int) postMediaTypeChanged;
   final void Function(String) postVideoThumbnailChanged;
+  final void Function(List<TaggedItem>) taggedChanged;
 
   ///
   /// Output streams
@@ -38,6 +38,7 @@ class EditPostBloc implements BaseBloc {
   final ValueStream<List<String>> postMedia$;
   final ValueStream<int> postMediaType$;
   final ValueStream<String> postVideoThumbnail$;
+  final ValueStream<List<TaggedItem>> tagged$;
 
   ///
   /// Clean up
@@ -50,14 +51,15 @@ class EditPostBloc implements BaseBloc {
     @required this.postForConnectionsOnlyChanged,
     @required this.postMessageChanged,
     @required this.postMediaChanged,
-    @required this.postTagsChanged,
     @required this.postMediaTypeChanged,
     @required this.postVideoThumbnailChanged,
+    @required this.taggedChanged,
     @required this.postEditState$,
     @required this.postIsPublic$,
     @required this.postMedia$,
     @required this.postMediaType$,
     @required this.postVideoThumbnail$,
+    @required this.tagged$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -84,7 +86,7 @@ class EditPostBloc implements BaseBloc {
     final isPublicSubject = BehaviorSubject<bool>.seeded(false);
     final isOnlyForConnectionsSubject = BehaviorSubject<bool>.seeded(false);
     final messageSubject = BehaviorSubject<String>.seeded('');
-    final tagsSubject = BehaviorSubject<List<String>>.seeded(List<String>());
+    final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
     final postMediaSubject =
         BehaviorSubject<List<String>>.seeded(List<String>());
     final postMediaTypeSubject = BehaviorSubject<int>.seeded(null);
@@ -105,7 +107,7 @@ class EditPostBloc implements BaseBloc {
             messageSubject.value,
             postMediaSubject.value,
             postVideoThumbnailSubject.value,
-            tagsSubject.value,
+            taggedSubject.value,
             groupId,
             postMediaTypeSubject.value,
             isLoadingSubject,
@@ -132,9 +134,9 @@ class EditPostBloc implements BaseBloc {
       isOnlyForConnectionsSubject,
       messageSubject,
       postMediaSubject,
-      tagsSubject,
       postMediaTypeSubject,
       postVideoThumbnailSubject,
+      taggedSubject,
       isLoadingSubject,
     ];
 
@@ -144,13 +146,14 @@ class EditPostBloc implements BaseBloc {
         postForConnectionsOnlyChanged: isOnlyForConnectionsSubject.add,
         postMessageChanged: messageSubject.add,
         postMediaChanged: postMediaSubject.add,
-        postTagsChanged: tagsSubject.add,
         postMediaTypeChanged: postMediaTypeSubject.add,
         postVideoThumbnailChanged: postVideoThumbnailSubject.add,
+        taggedChanged: taggedSubject.add,
         postIsPublic$: isPublicSubject.stream,
         postMedia$: postMediaSubject.stream,
         postMediaType$: postMediaTypeSubject.stream,
         postVideoThumbnail$: postVideoThumbnailSubject.stream,
+        tagged$: taggedSubject.stream,
         isLoading$: isLoadingSubject,
         message$: message$,
         postEditState$: postEditState$,
@@ -253,7 +256,7 @@ class EditPostBloc implements BaseBloc {
     String message,
     List<String> postMedia,
     String postVideoThumbnail,
-    List<String> tags,
+    List<TaggedItem> tags,
     String groupId,
     int mediaType,
     Sink<bool> isLoadingSubject,
@@ -272,7 +275,7 @@ class EditPostBloc implements BaseBloc {
           loginState.isChurch,
           groupId != null ? true : false,
           isPublic,
-          0,
+          isPublic ? 1 : 0,
           false,
           loginState.isVerified,
           loginState.uid,
@@ -283,7 +286,7 @@ class EditPostBloc implements BaseBloc {
           loginState.token,
           0,
           groupId,
-          tags,
+          tags.map((t) => t.id),
         );
         yield PostAddedMessageSuccess();
       } catch (e) {
