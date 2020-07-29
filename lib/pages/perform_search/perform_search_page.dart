@@ -8,6 +8,7 @@ import 'package:treeapp/data/event/firestore_event_repository.dart';
 import 'package:treeapp/data/user/firestore_user_repository.dart';
 import 'package:treeapp/data/group/firestore_group_repository.dart';
 import 'package:treeapp/models/old/event_entity.dart';
+import 'package:treeapp/models/old/group_member.dart';
 import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/models/old/group_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_bloc.dart';
@@ -317,7 +318,8 @@ class _PerformSearchState extends State<PerformSearch> {
       stream: _searchBloc.searchState$,
       initialData: _searchBloc.searchState$.value,
       builder: (context, snapshot) {
-        SearchState state = snapshot.data;
+        SearchState state = snapshot.data ?? SearchState(results: [], user: null, isLoading: false, error: null);
+        print('build ${state.results}, ${state.isLoading}');
         var results = state.results;
 
         if(state.isLoading){
@@ -327,15 +329,22 @@ class _PerformSearchState extends State<PerformSearch> {
         }
 
         if(widget.searchType == SearchType.CHAT){
+          print('CHAT, change results');
           results = results.where((item){
             item = (item as GroupEntity);
             String groupId = item.groupId;
             List<ChatData> myChats = state.user.myChatsList13;
             bool matching = false;
 
+            if(!item.isGroupPrivate){
+              return true;
+            }
+
+            print(groupId);
             for (ChatData chat in myChats) {
               String chatId = chat.chatId;
               if (groupId == chatId) {
+                print(chatId);
                 matching = true;
                 break;
               }
@@ -346,6 +355,7 @@ class _PerformSearchState extends State<PerformSearch> {
         }
 
         if(results.length == 0){
+          print('bad');
           return Container(
             color: Colors.white,
             child: Center(
@@ -439,6 +449,7 @@ class _PerformSearchState extends State<PerformSearch> {
           );
         }
 
+        print('good');
         return Column(
           children: <Widget>[
             Flexible(
@@ -918,7 +929,7 @@ class _PerformSearchState extends State<PerformSearch> {
                     String groupId = item2.groupId;
                     List<ChatData> myChats = user.myChatsList13;
 
-                    List<UserChatGroupMember> members;
+                    List<dynamic> members;
                     var isConversation;
                     var isRoom;
                     var isGroup;
@@ -927,17 +938,27 @@ class _PerformSearchState extends State<PerformSearch> {
                     var groupName = item2.groupName ?? "";
                     var groupDescription = item2.groupDescription ?? "";
 
-                    for (ChatData chat in myChats) {
-                      String chatId = chat.chatId;
-                      if (groupId == chatId) {
-                        isConversation = chat.isConversation;
-                        isRoom = chat.isRoom;
-                        isGroup = chat.isGroup;
+                    if(!item2.isGroupPrivate){
+                      isConversation = item2.isConversation;
+                      isRoom = item2.isRoom;
+                      isGroup = item2.isGroup;
 
-                        if (isGroup && isConversation) {
-                          members = chat.groupMembers;
+                      if (isGroup && isConversation) {
+                        members = item2.groupMembers;
+                      }
+                    }else{
+                      for (ChatData chat in myChats) {
+                        String chatId = chat.chatId;
+                        if (groupId == chatId) {
+                          isConversation = chat.isConversation;
+                          isRoom = chat.isRoom;
+                          isGroup = chat.isGroup;
+
+                          if (isGroup && isConversation) {
+                            members = chat.groupMembers;
+                          }
+                          break;
                         }
-                        break;
                       }
                     }
 
