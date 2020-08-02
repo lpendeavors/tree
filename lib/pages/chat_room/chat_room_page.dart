@@ -90,6 +90,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               var me = (widget.userBloc.loginState$.value as LoggedInUser).uid;
               otherMembers =
                   data.details.members.where((m) => m.uid != me).toList();
+
+              _chatRoomBloc.membersChanged(
+                  data.details.members.map((m) => m.uid).toList());
             }
 
             return Column(
@@ -450,7 +453,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 SizedBox(height: 3),
                 Text(
-                  messageItem.sentDate.toString(),
+                  timeago.format(messageItem.sentDate),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.3),

@@ -29,6 +29,9 @@ class ChatRoomBloc implements BaseBloc {
   final void Function() sendMessage;
   final void Function(String) messageChanged;
   final void Function(int) messageTypeChanged;
+  final void Function(bool) isGifChanged;
+  final void Function(String) gifChanged;
+  final void Function(List<String>) membersChanged;
 
   ///
   /// Output streams
@@ -38,6 +41,10 @@ class ChatRoomBloc implements BaseBloc {
   final Stream<ChatRoomMessage> message$;
   final ValueStream<bool> isLoading$;
 
+  final ValueStream<List<String>> members$;
+  final ValueStream<String> gif$;
+  final ValueStream<bool> isGif$;
+
   ///
   /// Clean up
   ///
@@ -45,8 +52,14 @@ class ChatRoomBloc implements BaseBloc {
 
   ChatRoomBloc._({
     @required this.sendMessage,
+    @required this.gifChanged,
+    @required this.isGifChanged,
+    @required this.membersChanged,
     @required this.messageChanged,
     @required this.messageTypeChanged,
+    @required this.isGif$,
+    @required this.gif$,
+    @required this.members$,
     @required this.chatRoomState$,
     @required this.messageError$,
     @required this.message$,
@@ -72,16 +85,17 @@ class ChatRoomBloc implements BaseBloc {
     assert(isRoom != null, 'isRoom cannot be null');
     assert(isGroup != null, 'isGroup cannot by null');
 
-    print(roomId);
-    print(isRoom);
-
     ///
     /// Stream controllers
     ///
-    final sendMessageSubject = PublishSubject<void>();
+    final isGifSubject = BehaviorSubject<bool>.seeded(false);
+    final gifSubject = BehaviorSubject<String>.seeded('');
+    final membersSubject = BehaviorSubject<List<String>>.seeded([]);
     final messageSubject = BehaviorSubject<String>.seeded('');
     final messageTypeSubject = BehaviorSubject<int>.seeded(null);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
+    final sendMessageSubject = PublishSubject<void>();
+    final markReadSubject = PublishSubject<void>();
 
     ///
     /// Streams
@@ -118,6 +132,9 @@ class ChatRoomBloc implements BaseBloc {
             chatRepository,
             messageSubject.value,
             messageTypeSubject.value,
+            gifSubject.value,
+            isGifSubject.value,
+            membersSubject.value,
             isLoadingSubject,
             roomId,
             isRoom,
@@ -137,12 +154,21 @@ class ChatRoomBloc implements BaseBloc {
       messageSubject,
       messageTypeSubject,
       isLoadingSubject,
+      membersSubject,
+      gifSubject,
+      isGifSubject,
     ];
 
     return ChatRoomBloc._(
+        gifChanged: gifSubject.add,
+        isGifChanged: isGifSubject.add,
+        membersChanged: membersSubject.add,
         messageChanged: messageSubject.add,
         messageTypeChanged: messageTypeSubject.add,
         sendMessage: () => sendMessageSubject.add(null),
+        gif$: gifSubject.stream,
+        isGif$: isGifSubject.stream,
+        members$: membersSubject.stream,
         chatRoomState$: chatRoomState$,
         messageError$: messageError$,
         isLoading$: isLoadingSubject,
@@ -256,6 +282,9 @@ class ChatRoomBloc implements BaseBloc {
     FirestoreChatRepository chatRepository,
     String message,
     int messageType,
+    String gif,
+    bool isGif,
+    List<String> members,
     Sink<bool> isLoading,
     String chatId,
     bool isRoom,
@@ -271,6 +300,7 @@ class ChatRoomBloc implements BaseBloc {
           messageType,
           loginState.isAdmin,
           chatId,
+          loginState.uid,
           loginState.fullName,
           loginState.email,
           loginState.image,
@@ -279,6 +309,9 @@ class ChatRoomBloc implements BaseBloc {
           isRoom,
           loginState.token,
           false,
+          members,
+          isGif,
+          gif,
         );
         yield ChatMessageAddedSuccess();
       } catch (e) {
