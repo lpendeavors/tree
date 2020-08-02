@@ -187,9 +187,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   children: <Widget>[
                                     if (data.details != null)
                                       Text(
-                                        data.details.isGroup
-                                            ? data.details.name
-                                            : otherMembers[0].fullName,
+                                        otherMembers[0].fullName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
