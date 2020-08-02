@@ -264,6 +264,7 @@ class MyApp extends StatelessWidget {
               groupRepository: Injector.of(context).groupRepository,
               roomId: args['roomId'],
               isRoom: args['isRoom'],
+              isGroup: args['isGroup'],
             );
           },
         );

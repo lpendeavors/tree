@@ -147,13 +147,13 @@ class _CommentsPageState extends State<CommentsPage> {
                 );
               }
 
-              return Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Flexible(
-                  child: ListView.builder(
-                    itemCount: data.comments.length,
-                    itemBuilder: (context, index) {
-                      return Column(
+              return Flexible(
+                child: ListView.builder(
+                  itemCount: data.comments.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
@@ -163,9 +163,9 @@ class _CommentsPageState extends State<CommentsPage> {
                             isReply: false,
                           ),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               );
             },
@@ -193,13 +193,13 @@ class _CommentsPageState extends State<CommentsPage> {
                     ),
                   ),
                 );
-              } else {
-                return CommentInput(
-                  userImage:
-                      (widget.userBloc.loginState$.value as LoggedInUser).image,
-                  commentsBloc: _commentsBloc,
-                );
               }
+
+              return CommentInput(
+                userImage:
+                    (widget.userBloc.loginState$.value as LoggedInUser).image,
+                commentsBloc: _commentsBloc,
+              );
             },
           ),
         ],

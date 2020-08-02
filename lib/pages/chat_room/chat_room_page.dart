@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:treeapp/models/old/group_member.dart';
 import '../../widgets/empty_list_view.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -67,7 +69,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           initialData: _chatRoomBloc.chatRoomState$.value,
           builder: (context, snapshot) {
             var data = snapshot.data;
-            print(data);
 
             if (data.error != null) {
               print(data.error);
@@ -82,6 +83,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               return Center(
                 child: CircularProgressIndicator(),
               );
+            }
+
+            List<GroupMember> otherMembers;
+            if (data.details != null) {
+              var me = (widget.userBloc.loginState$.value as LoggedInUser).uid;
+              otherMembers =
+                  data.details.members.where((m) => m.uid != me).toList();
             }
 
             return Column(
@@ -153,14 +161,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         ),
                                       ),
                                     ),
-                                    Image(
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      image: CacheImage(data.details == null
-                                          ? "" //data.messages.where((m) => m.isMine == false).toList()[0].image
-                                          : data.details.groupImage),
-                                    ),
+                                    if (otherMembers.length == 1 &&
+                                        otherMembers[0].image.isNotEmpty)
+                                      CachedNetworkImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        imageUrl: otherMembers[0].image,
+                                      ),
+                                    if (data.details.groupImage != null)
+                                      CachedNetworkImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        imageUrl: data.details.groupImage,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -170,9 +185,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    if (data.details == null)
+                                    if (data.details != null)
                                       Text(
-                                        "", //data.messages.where((m) => m.isMine == false).toList()[0].name,
+                                        data.details.isGroup
+                                            ? data.details.name
+                                            : otherMembers[0].fullName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(

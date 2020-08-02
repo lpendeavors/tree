@@ -566,8 +566,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                           Divider(),
                           TextFormField(
-                            initialValue:
-                                existingEvent.eventDetails.description,
+                            initialValue: existingEvent.eventDetails != null
+                                ? existingEvent.eventDetails.description
+                                : '',
                             onChanged: _eventEditBloc.descriptionChanged,
                             keyboardType: TextInputType.multiline,
                             maxLines: 4,

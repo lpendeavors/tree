@@ -172,7 +172,7 @@ class CommentsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(commentRepository.getByPost(postId),
+      return Rx.combineLatest2(commentRepository.getByPost(postId),
           postRepository.postById(postId: postId), (comments, post) {
         (comments as List<CommentEntity>)
             .sort((a, b) => a.time.compareTo(b.time));
