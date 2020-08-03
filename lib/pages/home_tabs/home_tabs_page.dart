@@ -101,6 +101,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
               userBloc: widget.userBloc,
               userRepository: widget.userRepository,
               postRepository: widget.postRepository,
+              groupRepository: widget.groupRepository,
               userId: (widget.userBloc.loginState$.value as LoggedInUser).uid,
             ),
           ),

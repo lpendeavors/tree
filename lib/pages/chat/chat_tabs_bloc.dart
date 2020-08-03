@@ -98,6 +98,7 @@ class ChatTabsBloc implements BaseBloc {
       return Rx.zip2(
           chatRepository.getByUser(uid: loginState.uid), groupRepository.get(),
           (chats, groups) {
+            print('hey ${chats.length} ${groups.length}');
         Tuple2 sortedGroups =
             _sortGroups(_entitiesToGroupItems(groups), loginState);
 
@@ -108,6 +109,7 @@ class ChatTabsBloc implements BaseBloc {
           groups: sortedGroups.item2,
         );
       }).startWith(_kInitialChatState).onErrorReturnWith((e) {
+        print('error $e');
         return _kInitialChatState.copyWith(
           error: e,
           isLoading: false,

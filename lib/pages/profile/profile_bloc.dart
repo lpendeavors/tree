@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/data/group/firestore_group_repository.dart';
+import 'package:treeapp/pages/create_message/create_message_state.dart';
 import '../../util/post_utils.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
@@ -35,12 +37,14 @@ class ProfileBloc implements BaseBloc {
   final void Function() disconnect;
   final void Function() approveAccount;
   final void Function(File file) setPhoto;
+  final void Function() createOrLaunchDM;
 
   ///
   /// Output streams
   ///
   final ValueStream<ProfileState> profileState$;
   final ValueStream<RecentFeedState> recentFeedState$;
+  final Stream<MessageCreateMessage> dmState$;
 
   ///
   /// Clean up
@@ -50,12 +54,14 @@ class ProfileBloc implements BaseBloc {
   ProfileBloc._({
     @required this.profileState$,
     @required this.recentFeedState$,
+    @required this.dmState$,
     @required this.sendConnectRequest,
     @required this.cancelConnectRequest,
     @required this.acceptConnectRequest,
     @required this.disconnect,
     @required this.approveAccount,
     @required this.setPhoto,
+    @required this.createOrLaunchDM,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -64,6 +70,7 @@ class ProfileBloc implements BaseBloc {
     @required String userId,
     @required FirestoreUserRepository userRepository,
     @required FirestorePostRepository postRepository,
+    @required FirestoreGroupRepository groupRepository,
   }) {
     ///
     /// Assert
@@ -71,6 +78,7 @@ class ProfileBloc implements BaseBloc {
     assert(userBloc != null, 'userBloc cannot be null');
     assert(userRepository != null, 'userRepository cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
+    assert(groupRepository != null, 'groupRepository cannot be null');
 
     ///
     /// Controllers
@@ -81,6 +89,7 @@ class ProfileBloc implements BaseBloc {
     final disconnectController = PublishSubject<void>();
     final approveController = PublishSubject<void>();
     final setPhotoController = BehaviorSubject<File>();
+    final createOrLaunchDMController = PublishSubject<void>();
 
     final sendConnectRequest$ = sendConnectRequestController
         .exhaustMap((_) => _sendConnectRequest(
@@ -106,6 +115,11 @@ class ProfileBloc implements BaseBloc {
             (_) => _upload(userRepository, userId, setPhotoController.value))
         .publish();
 
+    final dm$ = createOrLaunchDMController
+      .exhaustMap(
+        (_) => _createOrLaunch(userRepository, groupRepository, userId, userBloc.loginState$.value)
+      ).publish();
+
     ///
     /// Streams
     ///
@@ -130,6 +144,7 @@ class ProfileBloc implements BaseBloc {
       disconnect$.connect(),
       approveAccount$.connect(),
       photo$.connect(),
+      dm$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -139,25 +154,49 @@ class ProfileBloc implements BaseBloc {
       disconnectController,
       approveController,
       setPhotoController,
+      createOrLaunchDMController
     ];
 
     return ProfileBloc._(
-        profileState$: profileState$,
-        recentFeedState$: recentFeedState$,
-        sendConnectRequest: () => sendConnectRequestController.add(null),
-        cancelConnectRequest: () => cancelConnectRequestController.add(null),
-        acceptConnectRequest: () => acceptConnectRequestController.add(null),
-        disconnect: () => disconnectController.add(null),
-        approveAccount: () => approveController.add(null),
-        setPhoto: (file) => setPhotoController.add(file),
-        dispose: () async {
-          await Future.wait(subscriptions.map((s) => s.cancel()));
-          await Future.wait(controllers.map((c) => c.close()));
-        });
+      profileState$: profileState$,
+      recentFeedState$: recentFeedState$,
+      dmState$: dm$,
+      sendConnectRequest: () => sendConnectRequestController.add(null),
+      cancelConnectRequest: () => cancelConnectRequestController.add(null),
+      acceptConnectRequest: () => acceptConnectRequestController.add(null),
+      disconnect: () => disconnectController.add(null),
+      approveAccount: () => approveController.add(null),
+      setPhoto: (file) => setPhotoController.add(file),
+      createOrLaunchDM: () => createOrLaunchDMController.add(null),
+      dispose: () async {
+        await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
+      });
   }
 
   @override
   void dispose() => _dispose();
+
+  static Stream<MessageCreateMessage> _createOrLaunch(
+    FirestoreUserRepository userRepository,
+    FirestoreGroupRepository groupRepository,
+    String userID,
+    LoginState loginState,
+  ) async* {
+    if(loginState is LoggedInUser){
+      try{
+        var details = await groupRepository.launchDM(
+          userID,
+          loginState
+        );
+        yield MessageCreateSuccess(details);
+      }catch(e){
+        yield MessageCreateError(e);
+      }
+    } else {
+      yield MessageCreateError(ProfileNotLoggedInError());
+    }
+  }
 
   static _sendConnectRequest(
     FirestoreUserRepository userRepository,

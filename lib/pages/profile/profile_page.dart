@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:treeapp/pages/create_message/create_message_state.dart';
 import '../../util/permission_utils.dart';
 import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
@@ -52,7 +53,17 @@ class _ProfilePageState extends State<ProfilePage>
           .where((state) => state is Unauthenticated)
           .listen((_) =>
               Navigator.popUntil(context, ModalRoute.withName('/login'))),
+      _profileBloc.dmState$.listen(_dmResult)
     ];
+  }
+
+  void _dmResult(MessageCreateMessage message) {
+    if (message is MessageCreateSuccess) {
+      Navigator.of(context).pushReplacementNamed(
+        '/chat_room',
+        arguments: message.details,
+      );
+    }
   }
 
   @override
@@ -413,8 +424,7 @@ class _ProfilePageState extends State<ProfilePage>
                       SizedBox(width: 10),
                       Text(
                         "Send Direct Message",
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       )
                     ],
                   ),
@@ -427,7 +437,7 @@ class _ProfilePageState extends State<ProfilePage>
               ),
               color: Theme.of(context).primaryColor,
               onPressed: () {
-                //TODO: Action
+                _profileBloc.createOrLaunchDM();
               }),
         Container(
           child: Column(
