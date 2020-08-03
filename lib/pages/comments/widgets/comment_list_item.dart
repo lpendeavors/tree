@@ -1,12 +1,17 @@
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../comments_state.dart';
 
 class CommentListItem extends StatelessWidget {
   final CommentItem comment;
+  final bool isPage;
+  final bool isReply;
 
   const CommentListItem({
     @required this.comment,
+    @required this.isPage,
+    @required this.isReply,
   });
 
   @override
@@ -20,6 +25,7 @@ class CommentListItem extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(
               left: 10,
+              bottom: 10,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,26 +54,80 @@ class CommentListItem extends StatelessWidget {
                       ),
                       SizedBox(height: 5),
                       comment.isGif
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: Image(
-                            height: 150,
-                            width: 250,
-                            fit: BoxFit.cover,
-                            image: CacheImage(comment.gif),
-                          ),
-                        )
-                        : Text(
-                          comment.message,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black,
-                          ),
-                        ),
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image(
+                                height: 150,
+                                width: 250,
+                                fit: BoxFit.cover,
+                                image: CacheImage(comment.gif),
+                              ),
+                            )
+                          : Text(
+                              comment.message,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
                     ],
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 5),
+                if (isPage && !isReply)
+                  Padding(
+                    padding: EdgeInsets.only(left: 10, bottom: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          timeago.format(comment.datePosted),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        GestureDetector(
+                          onTap: () {},
+                          child: Text(
+                            'Like',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.3),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        GestureDetector(
+                          onTap: () {},
+                          child: Text(
+                            'Reply',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black.withOpacity(0.3),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (comment.replies.isNotEmpty)
+                  ...List.generate(
+                    comment.replies.length,
+                    (index) {
+                      return GestureDetector(
+                        onLongPress: () {},
+                        child: CommentListItem(
+                          isPage: isPage,
+                          isReply: true,
+                          comment: comment.replies[index],
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
@@ -105,9 +165,9 @@ class CommentListItem extends StatelessWidget {
                             height: 35,
                             child: Center(
                               child: Icon(
-                                 Icons.person,
-                                 size: 14,
-                                 color: Colors.white,
+                                Icons.person,
+                                size: 14,
+                                color: Colors.white,
                               ),
                             ),
                           ),

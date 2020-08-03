@@ -169,6 +169,7 @@ class FeedBloc implements BaseBloc {
         isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
         isShared: entity.isPostPrivate == 1,
+        pollData: entity.pollData ?? [],
       );
     }).toList();
   }

@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/poll_data.dart';
 
 ///
 /// Enums
-/// 
+///
 enum PostType { feed, quiz, poll, group, ad, user }
 enum PostOption { edit, delete, unconnect, report }
 enum ShareOption { withComment, withoutComment }
@@ -97,6 +98,7 @@ class FeedItem extends Equatable {
   final bool isLiked;
   final String abbreviatedPost;
   final bool isShared;
+  final List<PollData> pollData;
 
   const FeedItem({
     @required this.id,
@@ -113,25 +115,27 @@ class FeedItem extends Equatable {
     @required this.isLiked,
     @required this.abbreviatedPost,
     @required this.isShared,
+    @required this.pollData,
   });
 
   @override
   List get props => [
-    id, 
-    tags, 
-    timePosted,
-    timePostedString,
-    message, 
-    name, 
-    userImage, 
-    userId,
-    isPoll,
-    postImages,
-    isMine,
-    isLiked,
-    abbreviatedPost,
-    isShared,
-  ];
+        id,
+        tags,
+        timePosted,
+        timePostedString,
+        message,
+        name,
+        userImage,
+        userId,
+        isPoll,
+        postImages,
+        isMine,
+        isLiked,
+        abbreviatedPost,
+        isShared,
+        pollData,
+      ];
 
   @override
   bool get stringify => true;

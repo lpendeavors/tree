@@ -24,7 +24,6 @@ class _ChatRoomsState extends State<ChatRooms> {
   @override
   void initState() {
     super.initState();
-
     _chatBloc = widget.bloc;
   }
 
@@ -106,16 +105,16 @@ class _ChatRoomsState extends State<ChatRooms> {
                     Align(
                       alignment: Alignment.center,
                       child: room.image != null
-                        ? Image( 
-                          image: CacheImage(room.image),
-                          height: 150,
-                          width: MediaQuery.of(context).size.width,
-                          alignment: Alignment.center,
-                          fit: BoxFit.cover,
-                        )
-                        : Container(
-                          color: Theme.of(context).primaryColor,
-                        ),
+                          ? Image(
+                              image: CacheImage(room.image),
+                              height: 150,
+                              width: MediaQuery.of(context).size.width,
+                              alignment: Alignment.center,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              color: Theme.of(context).primaryColor,
+                            ),
                     ),
                     Container(
                       color: Color(color).withOpacity(0.7),

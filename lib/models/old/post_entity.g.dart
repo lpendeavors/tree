@@ -35,6 +35,10 @@ PostEntity _$PostEntityFromJson(Map<String, dynamic> json) {
     ownerId: json['ownerId'] as String,
     parties: (json['parties'] as List)?.map((e) => e as String)?.toList(),
     phoneNo: json['phoneNo'] as String,
+    pollData: (json['pollData'] as List)
+        ?.map((e) =>
+            e == null ? null : PollData.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
     postData: (json['postData'] as List)
         ?.map((e) =>
             e == null ? null : PostData.fromJson(e as Map<String, dynamic>))
@@ -46,6 +50,9 @@ PostEntity _$PostEntityFromJson(Map<String, dynamic> json) {
     username: json['username'] as String,
     time: json['time'] as int,
     likes: (json['likes'] as List)?.map((e) => e as String)?.toList(),
+    muted: (json['muted'] as List)?.map((e) => e as String)?.toList(),
+    pollDuration:
+        (json['pollDuration'] as List)?.map((e) => e as int)?.toList(),
   );
 }
 
@@ -77,6 +84,7 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'tags': instance.tags,
       'tokenID': instance.tokenID,
       'postData': instance.postData?.map((e) => e?.toJson())?.toList(),
+      'pollData': instance.pollData?.map((e) => e?.toJson())?.toList(),
       'type': instance.type,
       'uid': instance.uid,
       'userImage': instance.userImage,
@@ -84,6 +92,8 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'visibility': instance.visibility,
       'time': instance.time,
       'likes': instance.likes,
+      'muted': instance.muted,
+      'pollDuration': instance.pollDuration,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

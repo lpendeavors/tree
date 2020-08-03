@@ -97,6 +97,7 @@ class _ChatMessagesState extends State<ChatMessages> {
           arguments: {
             'roomId': message.roomId,
             'isRoom': message.isRoom,
+            'isGroup': message.isGroup,
           },
         );
       },
@@ -114,7 +115,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                   padding: EdgeInsets.all(3),
                   child: ImageHolder(
                     size: 40,
-                    image: group == null ? message.image : group.image,
+                    image:
+                        group == null ? message.image ?? '' : group.image ?? '',
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,

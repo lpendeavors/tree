@@ -21,6 +21,7 @@ abstract class FirestoreChatRepository {
     int messageType,
     bool byAdmin,
     String chatId,
+    String ownerId,
     String ownerName,
     String ownerEmail,
     String ownerImage,
@@ -29,5 +30,8 @@ abstract class FirestoreChatRepository {
     bool isRoom,
     String token,
     bool showDate,
+    List<String> members,
+    bool isGif,
+    String gif,
   );
 }

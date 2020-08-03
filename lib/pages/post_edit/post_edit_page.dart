@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -33,6 +34,9 @@ class _EditPostPageState extends State<EditPostPage> {
   EditPostBloc _editPostBloc;
   List<StreamSubscription> _subscriptions;
 
+  var _postMessageController = TextEditingController();
+  var _editLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +62,7 @@ class _EditPostPageState extends State<EditPostPage> {
   void dispose() {
     _subscriptions.forEach((s) => s.cancel());
     _editPostBloc.dispose();
+    _postMessageController.dispose();
     print('[DEBUG] _EditPostPageState#dispose');
 
     super.dispose();
@@ -71,7 +76,12 @@ class _EditPostPageState extends State<EditPostPage> {
       stream: _editPostBloc.postEditState$,
       initialData: _editPostBloc.postEditState$.value,
       builder: (context, snapshot) {
-        var data = snapshot.data;
+        var existingPost = snapshot.data;
+
+        if (existingPost.postItem != null && !_editLoaded) {
+          _updateFields(existingPost.postItem);
+          _editLoaded = true;
+        }
 
         return WillPopScope(
           onWillPop: () async {
@@ -160,7 +170,8 @@ class _EditPostPageState extends State<EditPostPage> {
                             ),
                             SizedBox(width: 10),
                             Flexible(
-                              child: TextField(
+                              child: TextFormField(
+                                controller: _postMessageController,
                                 onChanged: _editPostBloc.postMessageChanged,
                                 keyboardType: TextInputType.multiline,
                                 style: TextStyle(
@@ -223,7 +234,7 @@ class _EditPostPageState extends State<EditPostPage> {
                           stream: _editPostBloc.postMedia$,
                           initialData: _editPostBloc.postMedia$.value,
                           builder: (context, snapshot) {
-                            var media = snapshot.data ?? [];
+                            var media = snapshot.data;
 
                             if (media.isNotEmpty) {
                               return Container(
@@ -255,7 +266,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                               var mediaType =
                                                   snapshot.data ?? null;
 
-                                              if (mediaType ==
+                                              if (mediaType - 1 ==
                                                   PostMediaType.image.index) {
                                                 return Container(
                                                   margin: EdgeInsets.only(
@@ -284,9 +295,13 @@ class _EditPostPageState extends State<EditPostPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.5),
                                                       image: DecorationImage(
-                                                        image: FileImage(
-                                                          File(media[0]),
-                                                        ),
+                                                        image: _editLoaded
+                                                            ? NetworkImage(
+                                                                media[0],
+                                                              )
+                                                            : FileImage(
+                                                                File(media[0]),
+                                                              ),
                                                         fit: BoxFit.contain,
                                                         alignment:
                                                             Alignment.center,
@@ -296,7 +311,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                                 );
                                               }
 
-                                              if (mediaType ==
+                                              if (mediaType - 1 ==
                                                   PostMediaType.video.index) {
                                                 return Container(
                                                   margin: EdgeInsets.only(
@@ -384,27 +399,27 @@ class _EditPostPageState extends State<EditPostPage> {
                                               _editPostBloc
                                                   .postMediaChanged(media);
                                               _editPostBloc
-                                                  .postMediaTypeChanged(
-                                                      PostMediaType
-                                                          .image.index);
+                                                  .postMediaTypeChanged(null);
                                             },
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 20, top: 20),
-                                              child: Container(
-                                                height: 30,
-                                                width: 30,
-                                                child: Icon(
-                                                  Icons.clear,
-                                                  size: 15,
-                                                  color: Colors.white,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            ),
+                                            child: _editLoaded
+                                                ? Container()
+                                                : Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20, top: 20),
+                                                    child: Container(
+                                                      height: 30,
+                                                      width: 30,
+                                                      child: Icon(
+                                                        Icons.clear,
+                                                        size: 15,
+                                                        color: Colors.white,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                    ),
+                                                  ),
                                           ),
                                         ],
                                       ),
@@ -446,6 +461,8 @@ class _EditPostPageState extends State<EditPostPage> {
                             var cropped = await ImageCropper.cropImage(
                                 sourcePath: image.path);
                             _editPostBloc.postMediaChanged([cropped.path]);
+                            _editPostBloc.postMediaTypeChanged(
+                                PostMediaType.image.index);
                           }
                         },
                         child: Row(
@@ -491,13 +508,15 @@ class _EditPostPageState extends State<EditPostPage> {
                               video: video,
                               thumbnailPath:
                                   (await getTemporaryDirectory()).path,
-                              imageFormat: ImageFormat.JPEG,
+                              imageFormat: ImageFormat.PNG,
                               maxHeight: 350,
                               quality: 75,
                             );
 
                             _editPostBloc.postMediaChanged([video]);
                             _editPostBloc.postVideoThumbnailChanged(thumbnail);
+                            _editPostBloc.postMediaTypeChanged(
+                                PostMediaType.video.index);
                           }
                         },
                         child: Row(
@@ -534,8 +553,13 @@ class _EditPostPageState extends State<EditPostPage> {
                           ),
                           borderRadius: BorderRadius.circular(25),
                         ),
-                        onPressed: () {
-                          // TODO add tags
+                        onPressed: () async {
+                          var tagged = await Navigator.of(context).pushNamed(
+                            '/tag_connections',
+                          );
+
+                          if (tagged != null)
+                            _editPostBloc.taggedChanged(tagged);
                         },
                         child: Row(
                           children: <Widget>[
@@ -572,6 +596,27 @@ class _EditPostPageState extends State<EditPostPage> {
         );
       },
     );
+  }
+
+  void _updateFields(FeedPostItem post) {
+    _editPostBloc.postMessageChanged(post.message);
+    _postMessageController.text = post.message;
+
+    _editPostBloc.postIsPublicChanged(post.isPublic);
+
+    if (post.images.isNotEmpty) {
+      _editPostBloc.postMediaTypeChanged(PostMediaType.image.index);
+      _editPostBloc.postMediaChanged(post.images);
+    }
+
+    if (post.videos.isNotEmpty) {
+      _editPostBloc.postMediaTypeChanged(PostMediaType.video.index);
+      _editPostBloc.postMediaChanged(post.videos);
+    }
+
+    if (post.tagged.isNotEmpty) {
+      // _editPostBloc.taggedChanged(post.tagged);
+    }
   }
 
   Widget _menuItem({

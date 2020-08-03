@@ -52,7 +52,7 @@ class _CommentInputState extends State<CommentInput> {
                 children: <Widget>[
                   ImageHolder(
                     size: 30,
-                    image: widget.userImage,
+                    image: widget.userImage ?? '',
                   ),
                   Container(
                     child: IconButton(
@@ -131,6 +131,7 @@ class _CommentInputState extends State<CommentInput> {
                               });
                             } else {
                               widget.commentsBloc.addComment();
+                              _keyboardFocus.unfocus();
                             }
                           },
                         ),

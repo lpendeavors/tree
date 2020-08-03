@@ -67,6 +67,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     int messageType,
     bool byAdmin,
     String chatId,
+    String ownerId,
     String ownerName,
     String ownerEmail,
     String ownerImage,
@@ -75,5 +76,51 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     bool isRoom,
     String token,
     bool showDate,
-  ) async {}
+    List<String> members,
+    bool isGif,
+    String gif,
+  ) async {
+    print(message);
+    print(messageType);
+    print(byAdmin);
+    print(chatId);
+    print(ownerName);
+    print(ownerEmail);
+    print(ownerImage);
+    print(isVerified);
+    print(isChurch);
+    print(isRoom);
+    print(token);
+    print(showDate);
+    var newMessage = <String, dynamic>{
+      'byAdmin': byAdmin,
+      'chatId': chatId,
+      'churchName': isChurch ? ownerName : '',
+      'country': '',
+      'email': ownerEmail,
+      'fullName': ownerName,
+      'image': ownerImage,
+      'isChurch': isChurch,
+      'isRoom': isRoom,
+      'isVerified': isVerified,
+      'message': message,
+      'ownerId': ownerId,
+      'parties': members,
+      'pushNotificationToken': token,
+      'readBy': [ownerId],
+      'showDate': showDate,
+      'timeUpdated': DateTime.now().millisecondsSinceEpoch,
+      'tokenID': token,
+      'type': 0,
+      'uid': ownerId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'userImage': '',
+      'username': '',
+      'visibility': 0,
+      'time': DateTime.now().millisecondsSinceEpoch,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    await _firestore.collection('chatBase').add(newMessage);
+  }
 }

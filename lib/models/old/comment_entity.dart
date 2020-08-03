@@ -4,11 +4,12 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
+import './comment_reply.dart';
 
 part 'comment_entity.g.dart';
 
 @immutable
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class CommentEntity extends Equatable implements FirebaseModel {
   final String documentId;
   final bool isAdmin;
@@ -36,6 +37,7 @@ class CommentEntity extends Equatable implements FirebaseModel {
   final int visibility;
   final bool isGIF;
   final String imagePath;
+  final List<CommentReply> replies;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -77,6 +79,7 @@ class CommentEntity extends Equatable implements FirebaseModel {
     this.updatedAt,
     this.isGIF,
     this.imagePath,
+    this.replies,
   });
 
   String get id => this.documentId;
@@ -117,6 +120,7 @@ class CommentEntity extends Equatable implements FirebaseModel {
       updatedAt,
       isGIF,
       imagePath,
+      replies,
     ];
   }
 }

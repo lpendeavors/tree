@@ -22,14 +22,20 @@ class EditPollBloc implements BaseBloc {
   final void Function(int) typeChanged;
   final void Function(List<TaggedItem>) taggedChanged;
   final void Function(List<PollAnswerItem>) answersChanged;
+  final void Function(int) correctAnswerChanged;
+  final void Function(DateTime) endDateChanged;
+  final void Function(String) questionChanged;
   final void Function() savePoll;
 
   ///
   /// Output streams
   ///
+  final ValueStream<String> question$;
   final ValueStream<int> type$;
   final ValueStream<List<TaggedItem>> tagged$;
   final ValueStream<List<PollAnswerItem>> answers$;
+  final ValueStream<int> correctAnswer$;
+  final ValueStream<DateTime> endDate$;
   final ValueStream<EditPollState> pollEditState$;
   final Stream<PollAddedMessage> message$;
   final ValueStream<bool> isLoading$;
@@ -42,12 +48,18 @@ class EditPollBloc implements BaseBloc {
   EditPollBloc._({
     @required this.savePoll,
     @required this.pollEditState$,
+    @required this.questionChanged,
     @required this.typeChanged,
     @required this.taggedChanged,
     @required this.answersChanged,
+    @required this.correctAnswerChanged,
+    @required this.endDateChanged,
+    @required this.question$,
     @required this.type$,
     @required this.tagged$,
     @required this.answers$,
+    @required this.correctAnswer$,
+    @required this.endDate$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -58,6 +70,7 @@ class EditPollBloc implements BaseBloc {
 
   factory EditPollBloc({
     String pollId,
+    String groupId,
     @required UserBloc userBloc,
     @required FirestorePostRepository postRepository,
   }) {
@@ -70,9 +83,12 @@ class EditPollBloc implements BaseBloc {
     ///
     /// Stream controller
     ///
+    final questionSubject = BehaviorSubject<String>.seeded('');
     final typeSubject = BehaviorSubject<int>.seeded(0);
     final answersSubject = BehaviorSubject<List<PollAnswerItem>>.seeded([]);
+    final correctAnswerSubject = BehaviorSubject<int>.seeded(0);
     final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
+    final endDateSubject = BehaviorSubject<DateTime>.seeded(null);
     final savePollSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
@@ -83,8 +99,15 @@ class EditPollBloc implements BaseBloc {
         .switchMap(
           (_) => performSave(
             pollId,
+            groupId,
             userBloc,
             postRepository,
+            questionSubject.value,
+            answersSubject.value,
+            correctAnswerSubject.value,
+            typeSubject.value,
+            endDateSubject.value,
+            taggedSubject.value.map((t) => t.id).toList(),
             isLoadingSubject,
           ),
         )
@@ -108,17 +131,25 @@ class EditPollBloc implements BaseBloc {
       typeSubject,
       taggedSubject,
       answersSubject,
+      correctAnswerSubject,
+      endDateSubject,
       isLoadingSubject,
     ];
 
     return EditPollBloc._(
         savePoll: () => savePollSubject.add(null),
+        questionChanged: questionSubject.add,
         typeChanged: typeSubject.add,
         taggedChanged: taggedSubject.add,
         answersChanged: answersSubject.add,
+        correctAnswerChanged: correctAnswerSubject.add,
+        endDateChanged: endDateSubject.add,
+        question$: questionSubject.stream,
         type$: typeSubject.stream,
         tagged$: taggedSubject.stream,
         answers$: answersSubject.stream,
+        correctAnswer$: correctAnswerSubject.stream,
+        endDate$: endDateSubject.stream,
         isLoading$: isLoadingSubject,
         message$: message$,
         pollEditState$: pollEditState$,
@@ -183,7 +214,15 @@ class EditPollBloc implements BaseBloc {
     return FeedPollItem(
       id: entity.documentId,
       type: entity.type,
-      answers: [],
+      answers: entity.pollData.map((data) {
+        var item = PollAnswerItem();
+        item.label = data.label;
+        item.answer = data.answerTitle;
+        item.isCorrect = item.isCorrect;
+        return item;
+      }).toList(),
+      question: entity.postMessage,
+      endDate: DateTime.fromMillisecondsSinceEpoch(entity.pollDuration[1]),
     );
   }
 
@@ -203,8 +242,15 @@ class EditPollBloc implements BaseBloc {
 
   static Stream<PollAddedMessage> performSave(
     String pollId,
+    String groupId,
     UserBloc userBloc,
     FirestorePostRepository postRepository,
+    String question,
+    List<PollAnswerItem> answers,
+    int correctAnswer,
+    int pollType,
+    DateTime endDate,
+    List<String> tagged,
     Sink<bool> isLoadingSubject,
   ) async* {
     print('[DEBUG] EditPollBloc#performSave');
@@ -212,6 +258,33 @@ class EditPollBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
+        await postRepository.savePoll(
+          pollId,
+          groupId,
+          loginState.isAdmin,
+          loginState.uid,
+          loginState.fullName,
+          loginState.image,
+          loginState.token,
+          loginState.isVerified,
+          groupId != null,
+          false,
+          pollType == 1,
+          loginState.isVerified,
+          loginState.connections,
+          answers.map((a) {
+            return <String, dynamic>{
+              'answerTitle': a.answer,
+              'answerPosition': -1,
+              'label': a.label,
+              'isAnswer': answers.indexOf(a) == correctAnswer,
+            };
+          }).toList(),
+          endDate,
+          question,
+          tagged,
+          pollType,
+        );
         yield PollAddedMessageSuccess();
       } catch (e) {
         yield PollAddedMessageError(e);

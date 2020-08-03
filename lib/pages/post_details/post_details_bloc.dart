@@ -146,6 +146,7 @@ class PostDetailsBloc extends BaseBloc {
       isMine: entity.ownerId == uid,
       abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       isShared: entity.isPostPrivate == 1,
+      pollData: entity.pollData ?? [],
     );
   }
 
@@ -155,16 +156,17 @@ class PostDetailsBloc extends BaseBloc {
   ) {
     return entities.map((entity) {
       return CommentItem(
-        id: entity.documentId,
-        fullName: (entity.fullName ?? entity.churchName) ?? "",
-        message: entity.postMessage,
-        image: entity.image ?? "",
-        datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-        isGif: entity.isGIF ?? false,
-        gif: entity.imagePath,
-        owner: entity.ownerId,
-        userId: entity.uid,
-      );
+          id: entity.documentId,
+          fullName: (entity.fullName ?? entity.churchName) ?? "",
+          message: entity.postMessage,
+          image: entity.image ?? "",
+          datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+          isGif: entity.isGIF ?? false,
+          gif: entity.imagePath,
+          owner: entity.ownerId,
+          userId: entity.uid,
+          isMine: entity.uid == uid,
+          replies: entity.replies ?? []);
     }).toList();
   }
 

@@ -47,8 +47,9 @@ class _EventEditPageState extends State<EventEditPage> {
     _eventEditBloc = widget.initEventEditBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _eventEditBloc.message$.listen(_showMessageResult),
     ];
   }
@@ -85,9 +86,7 @@ class _EventEditPageState extends State<EventEditPage> {
               color: Colors.black,
             ),
             title: Text(
-              eventTypes[
-                widget.eventType
-              ].eventTitle,
+              eventTypes[widget.eventType].eventTitle,
               style: TextStyle(
                 color: Colors.black,
               ),
@@ -101,29 +100,28 @@ class _EventEditPageState extends State<EventEditPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: StreamBuilder<bool>(
-                    stream: _eventEditBloc.isLoading$,
-                    initialData: _eventEditBloc.isLoading$.value,
-                    builder: (context, snapshot) {
-                      bool loading = snapshot.data ?? false;
+                      stream: _eventEditBloc.isLoading$,
+                      initialData: _eventEditBloc.isLoading$.value,
+                      builder: (context, snapshot) {
+                        bool loading = snapshot.data ?? false;
 
-                      if (loading) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
+                        if (loading) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            ),
+                          );
+                        }
+
+                        return Text(
+                          existingEvent.eventDetails == null
+                              ? s.event_create_title
+                              : s.event_save_title,
+                          style: TextStyle(
+                            color: Colors.white,
                           ),
                         );
-                      }
-
-                      return Text(
-                        existingEvent.eventDetails == null
-                        ? s.event_create_title
-                        : s.event_save_title,
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      );
-                    }
-                  ),
+                      }),
                   onPressed: _eventEditBloc.saveEvent,
                 ),
               ),
@@ -143,20 +141,19 @@ class _EventEditPageState extends State<EventEditPage> {
                       initialData: _eventEditBloc.images$.value,
                       builder: (context, snapshot) {
                         var newImages = snapshot.data;
-                        if (newImages.isEmpty && existingEvent.eventDetails == null) {
+                        if (newImages.isEmpty &&
+                            existingEvent.eventDetails == null) {
                           return Container();
                         } else {
                           return Container(
                             height: 400,
                             margin: EdgeInsets.only(top: 15, bottom: 10),
                             child: PageView.builder(
-                              controller: PageController(
-                                viewportFraction: 0.9
-                              ),
+                              controller: PageController(viewportFraction: 0.9),
                               scrollDirection: Axis.horizontal,
                               itemCount: existingEvent.eventDetails != null
-                                ? existingEvent.eventDetails.media.length
-                                : newImages.length,
+                                  ? existingEvent.eventDetails.media.length
+                                  : newImages.length,
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: EdgeInsets.only(
@@ -183,7 +180,8 @@ class _EventEditPageState extends State<EventEditPage> {
                                                 color: Colors.transparent,
                                                 clipBehavior: Clip.antiAlias,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
                                                 ),
                                                 child: Stack(
                                                   alignment: Alignment.center,
@@ -197,16 +195,26 @@ class _EventEditPageState extends State<EventEditPage> {
                                                         size: 14,
                                                       ),
                                                     ),
-                                                    existingEvent.eventDetails == null
-                                                      ? Image.file(
-                                                          File(newImages[index]),
-                                                        )
-                                                      : Image(
-                                                          height: double.infinity,
-                                                          width: double.infinity,
-                                                          fit: BoxFit.cover,
-                                                          image: CacheImage(existingEvent.eventDetails.media[index].url),
-                                                        ),
+                                                    existingEvent
+                                                                .eventDetails ==
+                                                            null
+                                                        ? Image.file(
+                                                            File(newImages[
+                                                                index]),
+                                                          )
+                                                        : Image(
+                                                            height:
+                                                                double.infinity,
+                                                            width:
+                                                                double.infinity,
+                                                            fit: BoxFit.cover,
+                                                            image: CacheImage(
+                                                                existingEvent
+                                                                    .eventDetails
+                                                                    .media[
+                                                                        index]
+                                                                    .url),
+                                                          ),
                                                   ],
                                                 ),
                                               ),
@@ -287,14 +295,13 @@ class _EventEditPageState extends State<EventEditPage> {
                         if (hasPermission) {
                           // Get image file
                           var file = await ImagePicker.pickImage(
-                            source: ImageSource.gallery
-                          );
+                              source: ImageSource.gallery);
 
                           // Allow cropping
                           var cropped = await ImageCropper.cropImage(
                             sourcePath: file.path,
                           );
-                          
+
                           // Add to image list
                           var eventImages = _eventEditBloc.images$.value;
                           eventImages.add(cropped.path);
@@ -307,16 +314,13 @@ class _EventEditPageState extends State<EventEditPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(
-                  left: 12, 
-                  right: 12
-                ),
+                padding: EdgeInsets.only(left: 12, right: 12),
                 child: Column(
                   children: <Widget>[
                     TextFormField(
-                      initialValue: existingEvent.eventDetails != null 
-                        ? existingEvent.eventDetails.title
-                        : '',
+                      initialValue: existingEvent.eventDetails != null
+                          ? existingEvent.eventDetails.title
+                          : '',
                       onChanged: _eventEditBloc.titleChanged,
                       keyboardType: TextInputType.text,
                       style: TextStyle(
@@ -367,17 +371,18 @@ class _EventEditPageState extends State<EventEditPage> {
                               children: <Widget>[
                                 GestureDetector(
                                   onTap: () {
-                                    DatePicker.showDateTimePicker(
-                                      context,
-                                      showTitleActions: true,
-                                      onConfirm: (selectedDate) {
-                                        _eventEditBloc.startDateChanged(selectedDate);
-                                        _eventEditBloc.startTimeChanged(selectedDate);
-                                      }
-                                    );
+                                    DatePicker.showDateTimePicker(context,
+                                        showTitleActions: true,
+                                        onConfirm: (selectedDate) {
+                                      _eventEditBloc
+                                          .startDateChanged(selectedDate);
+                                      _eventEditBloc
+                                          .startTimeChanged(selectedDate);
+                                    });
                                   },
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: <Widget>[
                                       Flexible(
                                         child: Container(
@@ -385,19 +390,26 @@ class _EventEditPageState extends State<EventEditPage> {
                                           alignment: Alignment.centerLeft,
                                           child: StreamBuilder<DateTime>(
                                             stream: _eventEditBloc.startDate$,
-                                            initialData: _eventEditBloc.startDate$.value,
+                                            initialData:
+                                                _eventEditBloc.startDate$.value,
                                             builder: (context, snapshot) {
-                                              var date = existingEvent.eventDetails == null
-                                                ? snapshot.data
-                                                : existingEvent.eventDetails.startDate;
-                                              
+                                              var date =
+                                                  existingEvent.eventDetails ==
+                                                          null
+                                                      ? snapshot.data
+                                                      : existingEvent
+                                                          .eventDetails
+                                                          .startDate;
+
                                               return Text(
                                                 date != null
-                                                  ? DateFormat.yMMMMd().format(date)
-                                                  : "Start date",
+                                                    ? DateFormat.yMMMMd()
+                                                        .format(date)
+                                                    : "Start date",
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: Colors.black.withOpacity(1),
+                                                  color: Colors.black
+                                                      .withOpacity(1),
                                                 ),
                                               );
                                             },
@@ -410,19 +422,26 @@ class _EventEditPageState extends State<EventEditPage> {
                                           alignment: Alignment.center,
                                           child: StreamBuilder<DateTime>(
                                             stream: _eventEditBloc.startTime$,
-                                            initialData: _eventEditBloc.startTime$.value,
+                                            initialData:
+                                                _eventEditBloc.startTime$.value,
                                             builder: (context, snapshot) {
-                                              var time = existingEvent.eventDetails == null
-                                                  ? snapshot.data
-                                                  : existingEvent.eventDetails.startTime;
+                                              var time =
+                                                  existingEvent.eventDetails ==
+                                                          null
+                                                      ? snapshot.data
+                                                      : existingEvent
+                                                          .eventDetails
+                                                          .startTime;
 
                                               return Text(
-                                                time != null 
-                                                  ? DateFormat.jm().format(time)
-                                                  : 'Start time',
+                                                time != null
+                                                    ? DateFormat.jm()
+                                                        .format(time)
+                                                    : 'Start time',
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: Colors.black.withOpacity(1),
+                                                  color: Colors.black
+                                                      .withOpacity(1),
                                                 ),
                                               );
                                             },
@@ -435,17 +454,18 @@ class _EventEditPageState extends State<EventEditPage> {
                                 SizedBox(height: 10),
                                 GestureDetector(
                                   onTap: () async {
-                                    DatePicker.showDateTimePicker(
-                                      context,
-                                      showTitleActions: true,
-                                      onConfirm: (selectedDate) {
-                                        _eventEditBloc.endDateChanged(selectedDate);
-                                        _eventEditBloc.endTimeChanged(selectedDate);
-                                      }
-                                    );
+                                    DatePicker.showDateTimePicker(context,
+                                        showTitleActions: true,
+                                        onConfirm: (selectedDate) {
+                                      _eventEditBloc
+                                          .endDateChanged(selectedDate);
+                                      _eventEditBloc
+                                          .endTimeChanged(selectedDate);
+                                    });
                                   },
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: <Widget>[
                                       Flexible(
                                         child: Container(
@@ -453,19 +473,25 @@ class _EventEditPageState extends State<EventEditPage> {
                                           alignment: Alignment.centerLeft,
                                           child: StreamBuilder<DateTime>(
                                             stream: _eventEditBloc.endDate$,
-                                            initialData: _eventEditBloc.endDate$.value,
+                                            initialData:
+                                                _eventEditBloc.endDate$.value,
                                             builder: (context, snapshot) {
-                                              var date = existingEvent.eventDetails == null
-                                                ? snapshot.data
-                                                : existingEvent.eventDetails.endDate;
-                                              
+                                              var date =
+                                                  existingEvent.eventDetails ==
+                                                          null
+                                                      ? snapshot.data
+                                                      : existingEvent
+                                                          .eventDetails.endDate;
+
                                               return Text(
                                                 date != null
-                                                  ? DateFormat.yMMMMd().format(date)
-                                                  : "End date",
+                                                    ? DateFormat.yMMMMd()
+                                                        .format(date)
+                                                    : "End date",
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: Colors.black.withOpacity(1),
+                                                  color: Colors.black
+                                                      .withOpacity(1),
                                                 ),
                                               );
                                             },
@@ -478,19 +504,25 @@ class _EventEditPageState extends State<EventEditPage> {
                                           alignment: Alignment.center,
                                           child: StreamBuilder<DateTime>(
                                             stream: _eventEditBloc.endTime$,
-                                            initialData: _eventEditBloc.endTime$.value,
+                                            initialData:
+                                                _eventEditBloc.endTime$.value,
                                             builder: (context, snapshot) {
-                                              var time = existingEvent.eventDetails == null
-                                                  ? snapshot.data
-                                                  : existingEvent.eventDetails.endTime;
+                                              var time =
+                                                  existingEvent.eventDetails ==
+                                                          null
+                                                      ? snapshot.data
+                                                      : existingEvent
+                                                          .eventDetails.endTime;
 
                                               return Text(
-                                                time != null 
-                                                  ? DateFormat.jm().format(time)
-                                                  : 'End time',
+                                                time != null
+                                                    ? DateFormat.jm()
+                                                        .format(time)
+                                                    : 'End time',
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  color: Colors.black.withOpacity(1),
+                                                  color: Colors.black
+                                                      .withOpacity(1),
                                                 ),
                                               );
                                             },
@@ -534,7 +566,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                           Divider(),
                           TextFormField(
-                            initialValue: existingEvent.eventDetails.description,
+                            initialValue: existingEvent.eventDetails != null
+                                ? existingEvent.eventDetails.description
+                                : '',
                             onChanged: _eventEditBloc.descriptionChanged,
                             keyboardType: TextInputType.multiline,
                             maxLines: 4,
@@ -585,8 +619,8 @@ class _EventEditPageState extends State<EventEditPage> {
                           Divider(),
                           TextFormField(
                             initialValue: existingEvent.eventDetails != null
-                              ? existingEvent.eventDetails.webAddress
-                              : '',
+                                ? existingEvent.eventDetails.webAddress
+                                : '',
                             onChanged: _eventEditBloc.webAddressChanged,
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
@@ -636,8 +670,9 @@ class _EventEditPageState extends State<EventEditPage> {
                           Divider(),
                           TextFormField(
                             initialValue: existingEvent.eventDetails != null
-                              ? existingEvent.eventDetails.eventCost.toStringAsFixed(2)
-                              : '',
+                                ? existingEvent.eventDetails.eventCost
+                                    .toStringAsFixed(2)
+                                : '',
                             onChanged: _eventEditBloc.costChanged,
                             keyboardType: TextInputType.numberWithOptions(
                               decimal: true,
@@ -703,51 +738,56 @@ class _EventEditPageState extends State<EventEditPage> {
                               }
 
                               return ListTile(
-                              onTap: () async {
-                                _eventEditBloc.geoLoadingChanged(true);
+                                onTap: () async {
+                                  _eventEditBloc.geoLoadingChanged(true);
 
-                                Position location = await Geolocator().getCurrentPosition(
-                                  desiredAccuracy: LocationAccuracy.high,
-                                );
+                                  Position location =
+                                      await Geolocator().getCurrentPosition(
+                                    desiredAccuracy: LocationAccuracy.high,
+                                  );
 
-                                LocationResult result = await showLocationPicker(
-                                  context, 
-                                  'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ',
-                                  initialCenter: LatLng(location.latitude, location.longitude),
-                                );
+                                  LocationResult result =
+                                      await showLocationPicker(
+                                    context,
+                                    'AIzaSyBJp2E8-Vsc6x9MFkQqD2_oGBskyVfV8xQ',
+                                    initialCenter: LatLng(
+                                        location.latitude, location.longitude),
+                                  );
 
-                                _eventEditBloc.geoLoadingChanged(false);
-                                
-                                if (result != null) {
-                                  _eventEditBloc.venueChanged(result.address);
-                                  _eventEditBloc.venueGeoChanged(
-                                    Tuple2(
-                                      result.latLng.latitude, 
+                                  _eventEditBloc.geoLoadingChanged(false);
+
+                                  if (result != null) {
+                                    _eventEditBloc.venueChanged(result.address);
+                                    _eventEditBloc.venueGeoChanged(
+                                      Tuple2(
+                                        result.latLng.latitude,
                                         result.latLng.longitude,
                                       ),
                                     );
                                   }
                                 },
                                 title: StreamBuilder<String>(
-                                  stream: _eventEditBloc.venue$,
-                                  initialData: _eventEditBloc.venue$.value,
-                                  builder: (context, snapshot) {
-                                    var venue = snapshot.data ?? "";
-                                    return Text(
-                                      _eventEditBloc.eventEditState$.value.eventDetails == null
-                                        ? venue.isEmpty 
-                                          ? s.event_venue_hint
-                                          : venue
-                                        : _eventEditBloc.eventEditState$.value.eventDetails.venue,
-                                      style: TextStyle(
-                                        color: venue.isEmpty 
-                                          ? Colors.grey
-                                          : null,
-                                        fontSize: 16,
-                                      ),
-                                    );
-                                  }
-                                ),
+                                    stream: _eventEditBloc.venue$,
+                                    initialData: _eventEditBloc.venue$.value,
+                                    builder: (context, snapshot) {
+                                      var venue = snapshot.data ?? "";
+                                      return Text(
+                                        _eventEditBloc.eventEditState$.value
+                                                    .eventDetails ==
+                                                null
+                                            ? venue.isEmpty
+                                                ? s.event_venue_hint
+                                                : venue
+                                            : _eventEditBloc.eventEditState$
+                                                .value.eventDetails.venue,
+                                        style: TextStyle(
+                                          color: venue.isEmpty
+                                              ? Colors.grey
+                                              : null,
+                                          fontSize: 16,
+                                        ),
+                                      );
+                                    }),
                               );
                             },
                           ),
@@ -755,7 +795,7 @@ class _EventEditPageState extends State<EventEditPage> {
                       ),
                     ),
                     SizedBox(height: 15),
-                    Container( 
+                    Container(
                       padding: EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
@@ -781,9 +821,10 @@ class _EventEditPageState extends State<EventEditPage> {
                               stream: _eventEditBloc.isSponsored$,
                               initialData: _eventEditBloc.isSponsored$.value,
                               builder: (context, snapshot) {
-                                var _isSponsored = existingEvent.eventDetails == null
-                                  ? _eventEditBloc.isSponsored$.value
-                                  : existingEvent.eventDetails.isSponsored;
+                                var _isSponsored = existingEvent.eventDetails ==
+                                        null
+                                    ? _eventEditBloc.isSponsored$.value
+                                    : existingEvent.eventDetails.isSponsored;
 
                                 return SwitchListTile(
                                   value: _isSponsored,
@@ -847,9 +888,10 @@ class _EventEditPageState extends State<EventEditPage> {
                             stream: _eventEditBloc.isSponsored$,
                             initialData: _eventEditBloc.isSponsored$.value,
                             builder: (context, snapshot) {
-                              var _isSponsored = existingEvent.eventDetails == null
-                                ? _eventEditBloc.isSponsored$.value
-                                : existingEvent.eventDetails.isSponsored;
+                              var _isSponsored =
+                                  existingEvent.eventDetails == null
+                                      ? _eventEditBloc.isSponsored$.value
+                                      : existingEvent.eventDetails.isSponsored;
 
                               if (!_isSponsored) {
                                 return Container();
@@ -857,7 +899,8 @@ class _EventEditPageState extends State<EventEditPage> {
                                 return Column(
                                   children: <Widget>[
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: <Widget>[
                                         Text(
                                           s.event_budget_label,
@@ -872,7 +915,8 @@ class _EventEditPageState extends State<EventEditPage> {
                                           child: Icon(
                                             Icons.help,
                                             size: 25,
-                                            color: Colors.black.withOpacity(0.4),
+                                            color:
+                                                Colors.black.withOpacity(0.4),
                                           ),
                                         ),
                                       ],
@@ -882,14 +926,19 @@ class _EventEditPageState extends State<EventEditPage> {
                                       stream: _eventEditBloc.budget$,
                                       initialData: _eventEditBloc.budget$.value,
                                       builder: (context, snapshot) {
-                                        var _cost = existingEvent.eventDetails == null
-                                          ? _eventEditBloc.budget$.value
-                                          : existingEvent.eventDetails.budget.toStringAsFixed(2);
-                                        
+                                        var _cost =
+                                            existingEvent.eventDetails == null
+                                                ? _eventEditBloc.budget$.value
+                                                : existingEvent
+                                                    .eventDetails.budget
+                                                    .toStringAsFixed(2);
+
                                         return TextFormField(
                                           initialValue: _cost,
-                                          onChanged: _eventEditBloc.budgetChanged,
-                                          keyboardType: TextInputType.numberWithOptions(
+                                          onChanged:
+                                              _eventEditBloc.budgetChanged,
+                                          keyboardType:
+                                              TextInputType.numberWithOptions(
                                             decimal: true,
                                           ),
                                           textInputAction: TextInputAction.done,
@@ -902,12 +951,14 @@ class _EventEditPageState extends State<EventEditPage> {
                                             fillColor: Colors.white,
                                             border: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: Colors.grey
+                                                    .withOpacity(0.2),
                                               ),
                                             ),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: Colors.grey
+                                                    .withOpacity(0.2),
                                               ),
                                             ),
                                           ),

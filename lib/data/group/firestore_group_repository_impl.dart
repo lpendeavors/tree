@@ -8,22 +8,19 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
   final Firestore _firestore;
 
   const FirestoreGroupRepositoryImpl(this._firestore);
-  
+
   @override
   Stream<List<GroupEntity>> get() {
-    return _firestore
-      .collection('groupBase')
-      .snapshots()
-      .map(_toEntities);
+    return _firestore.collection('groupBase').snapshots().map(_toEntities);
   }
 
   @override
   Stream<GroupEntity> getById({String groupId}) {
     return _firestore
-      .collection('groupBase')
-      .document(groupId)
-      .snapshots()
-      .map((snapshot) => GroupEntity.fromDocumentSnapshot(snapshot));
+        .collection('groupBase')
+        .document(groupId)
+        .snapshots()
+        .map((snapshot) => GroupEntity.fromDocumentSnapshot(snapshot));
   }
 
   List<GroupEntity> _toEntities(QuerySnapshot querySnapshot) {
@@ -34,11 +31,11 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
 
   @override
   Future<Map<String, dynamic>> save(
-    String groupId, 
-    List<MemberItem> members, 
-    bool isPrivate, 
-    bool isGroup, 
-    bool isRoom, 
+    String groupId,
+    List<MemberItem> members,
+    bool isPrivate,
+    bool isGroup,
+    bool isRoom,
     bool isConversation,
     String ownerId,
     bool byAdmin,
@@ -63,16 +60,15 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         'ownerId': ownerId,
         'updatedAt': FieldValue.serverTimestamp(),
       };
-      
-      var room = await _firestore
-        .collection('groupBase')
-        .add(group)
-        .then((doc) {
-          return <String, dynamic>{
-            'roomId': doc.documentID,
-            'isRoom': isRoom,
-          };
-        });
+
+      var room =
+          await _firestore.collection('groupBase').add(group).then((doc) {
+        return <String, dynamic>{
+          'roomId': doc.documentID,
+          'isRoom': isRoom,
+          'isGroup': isGroup,
+        };
+      });
 
       final chat = <String, dynamic>{
         'chatId': room['roomId'],
@@ -90,22 +86,20 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         'uid': ownerId,
         'userImage': '',
       };
-      
-      members.forEach((member) async {
-        await _firestore
-          .collection('userBase')
-          .document(member.id)
-          .updateData({
-            'myChatsList13': FieldValue.arrayUnion([chat]),
-          });
-      });
+
+      // members.forEach((member) async {
+      //   await _firestore.collection('userBase').document(member.id).updateData({
+      //     'myChatsList13': FieldValue.arrayUnion([chat]),
+      //   });
+      // });
 
       return room;
     };
-    
-    return _firestore.runTransaction(transactionHandler).then(
-      (result) => result is Map<String, dynamic> ? result : result.cast<String, dynamic>()
-    );
+
+    return _firestore.runTransaction(transactionHandler).then((result) =>
+        result is Map<String, dynamic>
+            ? result
+            : result.cast<String, dynamic>());
   }
 
   @override

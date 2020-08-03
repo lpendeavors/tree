@@ -161,6 +161,7 @@ class ChatRoomDetailsBloc implements BaseBloc {
         isMine: entity.ownerId == uid,
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
         isShared: entity.isPostPrivate == 1,
+        pollData: entity.pollData ?? [],
       );
     }).toList();
   }

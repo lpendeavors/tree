@@ -57,6 +57,10 @@ import '../pages/create_group/create_group_bloc.dart';
 import '../pages/create_group/create_group_page.dart';
 import '../pages/post_details/post_details_bloc.dart';
 import '../pages/post_details/post_details_page.dart';
+import '../pages/tag_connections/tag_connections_bloc.dart';
+import '../pages/tag_connections/tag_connections_page.dart';
+import '../pages/comments/comments_page.dart';
+import '../pages/comments/comments_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -146,10 +150,9 @@ class MyApp extends StatelessWidget {
           return PhoneVerificationPage(
             initPhoneVerificationBloc: () {
               return PhoneVerificationBloc(
-                userRepository: Injector.of(context).userRepository,
-                verificationId: args[0] as String,
-                update: args[1] as bool
-              );
+                  userRepository: Injector.of(context).userRepository,
+                  verificationId: args[0] as String,
+                  update: args[1] as bool);
             },
           );
         },
@@ -158,146 +161,128 @@ class MyApp extends StatelessWidget {
     }
 
     if (routerSettings.name == '/event_details') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return EventDetailsPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initEventDetailsBloc: () {
-              return EventDetailsBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                eventRepository: Injector.of(context).eventRepository,
-                eventId: routerSettings.arguments as String,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return EventDetailsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initEventDetailsBloc: () {
+            return EventDetailsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              eventRepository: Injector.of(context).eventRepository,
+              eventId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/edit_event') {
-      return MaterialPageRoute(
-        builder: (context) {
-          Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(builder: (context) {
+        Map<String, dynamic> args =
+            routerSettings.arguments as Map<String, dynamic>;
 
-          return EventEditPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initEventEditBloc: () {
-              return EventEditBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                eventRepository: Injector.of(context).eventRepository,
-                eventId: args['eventId'],
-                eventType: args['eventType'],
-              );
-            },
-            eventType: args['eventType'],
-          );
-        }
-      );
+        return EventEditPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initEventEditBloc: () {
+            return EventEditBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              eventRepository: Injector.of(context).eventRepository,
+              eventId: args['eventId'],
+              eventType: args['eventType'],
+            );
+          },
+          eventType: args['eventType'],
+        );
+      });
     }
 
     if (routerSettings.name == '/chat_room_details') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return ChatRoomDetailsPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initRoomDetailsBloc: () {
-              return ChatRoomDetailsBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                groupRepository: Injector.of(context).groupRepository,
-                postRepository: Injector.of(context).postRepository,
-                roomId: routerSettings.arguments as String,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return ChatRoomDetailsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initRoomDetailsBloc: () {
+            return ChatRoomDetailsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              groupRepository: Injector.of(context).groupRepository,
+              postRepository: Injector.of(context).postRepository,
+              roomId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/connections') {
-      return MaterialPageRoute(
-          builder: (context) {
-            return ConnectionsPage(
-              initConnectionsBloc: () {
-                return ConnectionsBloc(
-                  userBloc: BlocProvider.of<UserBloc>(context),
-                  userId: routerSettings.arguments as String,
-                  userRepository: Injector.of(context).userRepository
-                );
-              },
-            );
-          }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return ConnectionsPage(
+          initConnectionsBloc: () {
+            return ConnectionsBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userId: routerSettings.arguments as String,
+                userRepository: Injector.of(context).userRepository);
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/trophies') {
-      return MaterialPageRoute(
-          builder: (context) {
-            return TrophiesPage(
-              initTrophiesBloc: () {
-                return TrophiesBloc(
-                  userBloc: BlocProvider.of<UserBloc>(context),
-                  userId: routerSettings.arguments as String,
-                  userRepository: Injector.of(context).userRepository
-                );
-              },
-            );
-          }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return TrophiesPage(
+          initTrophiesBloc: () {
+            return TrophiesBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                userId: routerSettings.arguments as String,
+                userRepository: Injector.of(context).userRepository);
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/trophy_info') {
-      return MaterialPageRoute(
-          builder: (context) {
-            return TrophyInfoPage(
-              initTrophyInfoBloc: () {
-                return TrophyInfoBloc(
-                    userBloc: BlocProvider.of<UserBloc>(context),
-                    trophyIndex: routerSettings.arguments as int,
-                    userRepository: Injector
-                        .of(context)
-                        .userRepository
-                );
-              },
-            );
-          }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return TrophyInfoPage(
+          initTrophyInfoBloc: () {
+            return TrophyInfoBloc(
+                userBloc: BlocProvider.of<UserBloc>(context),
+                trophyIndex: routerSettings.arguments as int,
+                userRepository: Injector.of(context).userRepository);
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/chat_room') {
-      return MaterialPageRoute(
-        builder: (context) {
-          Map<String, dynamic> args = routerSettings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(builder: (context) {
+        Map<String, dynamic> args =
+            routerSettings.arguments as Map<String, dynamic>;
 
-          return ChatRoomPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initChatRoomBloc: () {
-              return ChatRoomBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                chatRepository: Injector.of(context).chatRepository,
-                groupRepository: Injector.of(context).groupRepository,
-                roomId: args['roomId'],
-                isRoom: args['isRoom'],
-              );
-            },
-          );
-        }
-      );
+        return ChatRoomPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initChatRoomBloc: () {
+            return ChatRoomBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              chatRepository: Injector.of(context).chatRepository,
+              groupRepository: Injector.of(context).groupRepository,
+              roomId: args['roomId'],
+              isRoom: args['isRoom'],
+              isGroup: args['isGroup'],
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/chat_settings') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return ChatSettingsPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initChatSettingsBloc: () {
-              return ChatSettingsBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                userRepository: Injector.of(context).userRepository,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return ChatSettingsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initChatSettingsBloc: () {
+            return ChatSettingsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              userRepository: Injector.of(context).userRepository,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/profile') {
@@ -329,12 +314,12 @@ class MyApp extends StatelessWidget {
       );
     }
 
-    if(routerSettings.name == '/update_info'){
+    if (routerSettings.name == '/update_info') {
       return MaterialPageRoute(
         builder: (context) {
           return ProfileSettingsPage(
             userRepository: Injector.of(context).userRepository,
-            initProfileSettingsBloc: (){
+            initProfileSettingsBloc: () {
               return ProfileSettingsBloc(
                 index: routerSettings.arguments as int,
                 userBloc: BlocProvider.of<UserBloc>(context),
@@ -348,119 +333,141 @@ class MyApp extends StatelessWidget {
     }
 
     if (routerSettings.name == '/edit_post') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return EditPostPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initEditPostBloc: () {
-              return EditPostBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                postRepository: Injector.of(context).postRepository,
-                postId: routerSettings.arguments as String,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return EditPostPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initEditPostBloc: () {
+            return EditPostBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              postRepository: Injector.of(context).postRepository,
+              postId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/edit_poll') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return EditPollPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initEditPollBloc: () {
-              return EditPollBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                postRepository: Injector.of(context).postRepository,
-                pollId: routerSettings.arguments as String,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return EditPollPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initEditPollBloc: () {
+            return EditPollBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              postRepository: Injector.of(context).postRepository,
+              pollId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/create_message') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return CreateMessagePage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initCreateMessageBloc: () {
-              return CreateMessageBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                groupRepository: Injector.of(context).groupRepository,
-                chatRepository: Injector.of(context).chatRepository,
-                userRepository: Injector.of(context).userRepository,
-                type: routerSettings.arguments as int,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return CreateMessagePage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initCreateMessageBloc: () {
+            return CreateMessageBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              groupRepository: Injector.of(context).groupRepository,
+              chatRepository: Injector.of(context).chatRepository,
+              userRepository: Injector.of(context).userRepository,
+              type: routerSettings.arguments as int,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/create_group') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return CreateGroupPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initCreateGroupBloc: () {
-              return CreateGroupBloc(
-                groupRepository: Injector.of(context).groupRepository,
-                members: routerSettings.arguments as List<MemberItem>,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return CreateGroupPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initCreateGroupBloc: () {
+            return CreateGroupBloc(
+              groupRepository: Injector.of(context).groupRepository,
+              members: routerSettings.arguments as List<MemberItem>,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/post_details') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return PostDetailsPage(
-            userBloc: BlocProvider.of<UserBloc>(context),
-            initPostDetailsBloc: () {
-              return PostDetailsBloc(
-                userBloc: BlocProvider.of<UserBloc>(context),
-                postRepository: Injector.of(context).postRepository,
-                commentRepository: Injector.of(context).commentRepository,
-                postId: routerSettings.arguments as String,
-              );
-            },
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return PostDetailsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initPostDetailsBloc: () {
+            return PostDetailsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              postRepository: Injector.of(context).postRepository,
+              commentRepository: Injector.of(context).commentRepository,
+              postId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
     }
 
     if (routerSettings.name == '/search') {
-      return MaterialPageRoute(
-        builder: (context) {
-          return PerformSearch(
-            userRepository: Injector.of(context).userRepository,
-            eventRepository: Injector.of(context).eventRepository,
-            groupRepository: Injector.of(context).groupRepository,
-            searchType: (routerSettings.arguments as Map)['searchType'],
-            searchFilter: (routerSettings.arguments as Map)['filter'],
-          );
-        }
-      );
+      return MaterialPageRoute(builder: (context) {
+        return PerformSearch(
+          userRepository: Injector.of(context).userRepository,
+          eventRepository: Injector.of(context).eventRepository,
+          groupRepository: Injector.of(context).groupRepository,
+          searchType: (routerSettings.arguments as Map)['searchType'],
+          searchFilter: (routerSettings.arguments as Map)['filter'],
+        );
+      });
     }
 
     if (routerSettings.name == '/info') {
       return MaterialPageRoute(
         builder: (context) {
           return InfoDialog(
-            title: "Profile Update",
-            message: (routerSettings.arguments as SettingsType) == SettingsType.updateChurch ? "Your Church information needs to be updated" : "Your Personal information needs to be updated",
-            btnTitle: "Update Now",
-            onClick: () {
-              Navigator.of(context).pushReplacementNamed('/update_info', arguments: (routerSettings.arguments as SettingsType) == SettingsType.updateChurch ? 1 : 0);
-            }
-          );
+              title: "Profile Update",
+              message: (routerSettings.arguments as SettingsType) ==
+                      SettingsType.updateChurch
+                  ? "Your Church information needs to be updated"
+                  : "Your Personal information needs to be updated",
+              btnTitle: "Update Now",
+              onClick: () {
+                Navigator.of(context).pushReplacementNamed('/update_info',
+                    arguments: (routerSettings.arguments as SettingsType) ==
+                            SettingsType.updateChurch
+                        ? 1
+                        : 0);
+              });
         },
       );
+    }
+
+    if (routerSettings.name == '/tag_connections') {
+      return MaterialPageRoute(builder: (context) {
+        return TagConnectionsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initTagConnectionsBloc: () {
+            return TagConnectionsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              userRepository: Injector.of(context).userRepository,
+            );
+          },
+        );
+      });
+    }
+
+    if (routerSettings.name == '/comments') {
+      return MaterialPageRoute(builder: (context) {
+        return CommentsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          commentsBloc: CommentsBloc(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            commentRepository: Injector.of(context).commentRepository,
+            postRepository: Injector.of(context).postRepository,
+            postId: routerSettings.arguments as String,
+          ),
+        );
+      });
     }
 
     return null;
@@ -528,7 +535,8 @@ class BodyChild extends StatefulWidget {
 class _BodyChildState extends State<BodyChild> {
   StreamSubscription _subscription;
 
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
     print('[DEBUG] _BodyChildState initState');
 

@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../widgets/empty_list_view.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -37,8 +35,9 @@ class _CommentsPanelState extends State<CommentsPanel> {
     _commentsBloc = widget.commentsBloc;
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _commentsBloc.message$.listen(_showMessageResult),
     ];
   }
@@ -96,7 +95,12 @@ class _CommentsPanelState extends State<CommentsPanel> {
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               FlatButton(
-                                onPressed: () => Navigator.pushNamed(context, '/comments'),
+                                onPressed: () =>
+                                    Navigator.of(context).pushNamed(
+                                  '/comments',
+                                  arguments: _commentsBloc
+                                      .commentsState$.value.postDetails.id,
+                                ),
                                 child: Center(
                                   child: Text(
                                     'View comments fullscreen',
@@ -112,10 +116,11 @@ class _CommentsPanelState extends State<CommentsPanel> {
                               Flexible(
                                 child: StreamBuilder<CommentsState>(
                                   stream: _commentsBloc.commentsState$,
-                                  initialData: _commentsBloc.commentsState$.value,
+                                  initialData:
+                                      _commentsBloc.commentsState$.value,
                                   builder: (context, snapshot) {
                                     var data = snapshot.data;
-                                    
+
                                     if (data.error != null) {
                                       print(data.error);
                                       return Center(
@@ -134,26 +139,33 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                     if (data.comments.isEmpty) {
                                       return Container(
                                         width: double.infinity,
-                                        height: MediaQuery.of(context).size.height - 150,
+                                        height:
+                                            MediaQuery.of(context).size.height -
+                                                150,
                                         child: Center(
                                           child: EmptyListView(
                                             title: 'No comments',
-                                            description: '~This post has not recieved any comment yet.~',
+                                            description:
+                                                '~This post has not recieved any comment yet.~',
                                             icon: Icons.comment,
                                           ),
                                         ),
                                       );
                                     }
 
-                                    return ListView.builder(
-                                      itemCount: data.comments.length,
-                                      itemBuilder: (context, index) {
-                                        return CommentListItem(
-                                          comment: data.comments[index],
-                                        );
-                                      }
+                                    return LayoutBuilder(
+                                      builder: (context, box) {
+                                        return ListView.builder(
+                                            itemCount: data.comments.length,
+                                            itemBuilder: (context, index) {
+                                              return CommentListItem(
+                                                comment: data.comments[index],
+                                                isReply: false,
+                                                isPage: false,
+                                              );
+                                            });
+                                      },
                                     );
-
                                   },
                                 ),
                               ),
@@ -163,7 +175,10 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                 color: Color(0xff14000000),
                               ),
                               CommentInput(
-                                userImage: (widget.userBloc.loginState$.value as LoggedInUser).image ?? "",
+                                userImage: (widget.userBloc.loginState$.value
+                                            as LoggedInUser)
+                                        .image ??
+                                    "",
                                 commentsBloc: widget.commentsBloc,
                               ),
                             ],
