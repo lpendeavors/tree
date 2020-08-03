@@ -49,7 +49,6 @@ class _ConnectionsPageState extends State<ConnectionsPage>{
             var data = snapshot.data;
 
             if (data.error != null) {
-              print('error ${data.error}');
               return Center(
                 child: Text(
                   S.of(context).error_occurred,

@@ -48,7 +48,6 @@ class _TrophiesPageState extends State<TrophiesPage>{
             var data = snapshot.data;
 
             if (data.error != null) {
-              print('error ${data.error}');
               return Center(
                 child: Text(
                   S.of(context).error_occurred,

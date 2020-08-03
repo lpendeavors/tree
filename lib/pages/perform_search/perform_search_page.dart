@@ -319,7 +319,6 @@ class _PerformSearchState extends State<PerformSearch> {
       initialData: _searchBloc.searchState$.value,
       builder: (context, snapshot) {
         SearchState state = snapshot.data ?? SearchState(results: [], user: null, isLoading: false, error: null);
-        print('build ${state.results}, ${state.isLoading}');
         var results = state.results;
 
         if(state.isLoading){
@@ -355,7 +354,6 @@ class _PerformSearchState extends State<PerformSearch> {
         }
 
         if(results.length == 0){
-          print('bad');
           return Container(
             color: Colors.white,
             child: Center(
@@ -699,7 +697,8 @@ class _PerformSearchState extends State<PerformSearch> {
                         ),
                       ),
                     );
-                  }else if(item is EventEntity){
+                  }
+                  else if(item is EventEntity){
                     List eventData = item.eventData;
                     DateTime startDate = DateTime.fromMillisecondsSinceEpoch(item.eventStartDate);
                     DateTime startTime = DateTime.fromMillisecondsSinceEpoch(item.eventStartTime);
@@ -922,7 +921,8 @@ class _PerformSearchState extends State<PerformSearch> {
                         ),
                       ),
                     );
-                  }else if(item is GroupEntity){
+                  }
+                  else if(item is GroupEntity){
                     GroupEntity item2 = item;
 
                     String groupId = item2.groupId;
@@ -963,16 +963,10 @@ class _PerformSearchState extends State<PerformSearch> {
 
                     return InkWell(
                       onTap: () {
-                        /*
-                        popUpWidgetAndDisposeCurrent(
-                            context,
-                            GroupDetails(
-                              groupDetails: chatModel,
-                              isGroup: true,
-                              isConversation: isConversation,
-                              chatId: chatId,
-                              canJoinGroup: true,
-                            ));*/
+                        Navigator.of(context).pushNamed(
+                          '/chat_room_details',
+                          arguments: item.documentId,
+                        );
                       },
                       child: Container(
                         padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
