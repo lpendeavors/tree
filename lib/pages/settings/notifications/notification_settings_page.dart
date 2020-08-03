@@ -45,26 +45,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage>{
               });
             }),
             _menuItemV(
-                "Public Email",
-                publicEmail
-                    ? "Your email is visible to everyone"
-                    : "Your email is not visible to everyone",
-                publicEmail, () {
-              setState(() {
-                publicEmail = !publicEmail;
-              });
-            }),
-            _menuItemV(
-                "Public Number",
-                publicNumber
-                    ? "Your phone number is visible to everyone"
-                    : "Your phone number is not visible to everyone",
-                publicNumber, () {
-              setState(() {
-                publicNumber = !publicNumber;
-              });
-            }),
-            _menuItemV(
                 "Hide Profile",
                 hideProfile
                     ? "Your profile is not shown to peoples pages"
@@ -74,6 +54,28 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage>{
                 hideProfile = !hideProfile;
               });
             }),
+            Padding(
+              padding: const EdgeInsets.only(left: 25.0, right: 25.0, top: 40.0),
+              child: Container(
+                height: 50,
+                width: double.infinity,
+                child: RaisedButton(
+                  onPressed: (){},
+                  color: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  child: Text(
+                    "Save",
+                    style: TextStyle(
+                      fontFamily: 'NirmalaB',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22.0,
+                      color: Colors.white
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                ),
+              ),
+            ),
           ],
         ),
       )
