@@ -219,7 +219,7 @@ class PhoneRegisterBloc implements BaseBloc {
   ) async* {
     try{
       if(authResult != null) {
-        if (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail")){
+        if (isChurch && (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))){
           yield RegisterMessageError(InvalidBusinessEmailError());
           return;
         }
