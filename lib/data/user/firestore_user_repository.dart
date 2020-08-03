@@ -55,6 +55,7 @@ abstract class FirestoreUserRepository {
   Future<void> registerWithPhone({
     @required FirebaseUser user,
     @required String email,
+    @required String churchName,
     @required String firstName,
     @required String lastName,
     @required String password

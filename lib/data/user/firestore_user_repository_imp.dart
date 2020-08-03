@@ -77,6 +77,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> registerWithPhone({
     FirebaseUser user,
     String email,
+    String churchName,
     String firstName,
     String lastName,
     String password
@@ -85,14 +86,13 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
     user.linkWithCredential(emailCredential);
 
-
-
     await updateUserData(
       user.uid,
       UserEntity.createWith({
         'joined': FieldValue.serverTimestamp(),
         'phoneNo': user.phoneNumber,
         'email': email,
+        'churchName': churchName == '' ? null : churchName,
         'firstName': firstName,
         'lastName': lastName,
         'password': password,
