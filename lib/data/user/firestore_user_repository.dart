@@ -12,6 +12,10 @@ import '../../models/old/user_entity.dart';
 abstract class FirestoreUserRepository {
   Stream<UserEntity> user();
 
+  List<UserEntity> users(
+    List<String> uids,
+  );
+
   Stream<List<UserEntity>> get();
 
   Stream<List<UserEntity>> getSuggestionsByCity({
@@ -22,9 +26,7 @@ abstract class FirestoreUserRepository {
     @required String church,
   });
 
-  Stream<List<UserEntity>> getMyConnections(
-    List<String> connections
-  );
+  Stream<List<UserEntity>> getMyConnections(List<String> connections);
 
   Future<void> signOut();
 
@@ -33,13 +35,9 @@ abstract class FirestoreUserRepository {
     @required String password,
   });
 
-  Future<Tuple2<String,bool>> phoneSignIn(
-    String phone
-  );
+  Future<Tuple2<String, bool>> phoneSignIn(String phone);
 
-  Future<Tuple2<String,bool>> phoneRegister(
-    String phone
-  );
+  Future<Tuple2<String, bool>> phoneRegister(String phone);
 
   Future<AuthResult> verifyPhoneCode(
     String verificationId,
@@ -52,27 +50,21 @@ abstract class FirestoreUserRepository {
     @required String password,
   });
 
-  Future<void> registerWithPhone({
-    @required FirebaseUser user,
-    @required String email,
-    @required String firstName,
-    @required String lastName,
-    @required String password
-  });
+  Future<void> registerWithPhone(
+      {@required FirebaseUser user,
+      @required String email,
+      @required String firstName,
+      @required String lastName,
+      @required String password});
 
   Future<void> updateUserData(String uid, [Map<String, dynamic> addition]);
 
   Future<void> updateUserPhone(
-    @required FirebaseUser user,
-    String smsCode,
-    String verificationId
-  );
+      @required FirebaseUser user, String smsCode, String verificationId);
 
   Future<void> sendPasswordResetEmail(String email);
 
-  Stream<UserEntity> getUserById({
-    @required String uid
-  });
+  Stream<UserEntity> getUserById({@required String uid});
 
   Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
 
@@ -87,7 +79,7 @@ abstract class FirestoreUserRepository {
   Future<void> uploadImage(String uid, File image);
 
   Future<void> approveAccount(String uid);
-  
+
   Future<void> saveNotifications({
     @required String user,
     @required bool messages,
@@ -98,8 +90,5 @@ abstract class FirestoreUserRepository {
 
   Stream<List<UserEntity>> getPublicFigures();
 
-  Future<List<UserEntity>> runSearchQuery(
-    String query,
-    SearchType type
-  );
+  Future<List<UserEntity>> runSearchQuery(String query, SearchType type);
 }

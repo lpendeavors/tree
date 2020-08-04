@@ -16,7 +16,7 @@ class ChatTabsPage extends StatefulWidget {
   final UserBloc userBloc;
 
   const ChatTabsPage({
-    Key key, 
+    Key key,
     @required this.userBloc,
     @required this.chatBloc,
   }) : super(key: key);
@@ -39,8 +39,9 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
     _chatBloc = widget.chatBloc;
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -71,11 +72,13 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
                     flex: 1,
                     child: RaisedButton(
                       onPressed: () async {
-                        Navigator.of(context).pushNamed('/search', arguments: {'searchType': SearchType.CHAT});
+                        Navigator.of(context).pushNamed('/search',
+                            arguments: {'searchType': SearchType.CHAT});
                       },
                       color: Colors.grey[50],
                       elevation: 0,
-                      padding: EdgeInsets.only(top: 12, bottom: 12, right: 10, left:10),
+                      padding: EdgeInsets.only(
+                          top: 12, bottom: 12, right: 10, left: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                         side: BorderSide(
@@ -158,6 +161,7 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
         children: <Widget>[
           ChatMessages(
             bloc: widget.chatBloc,
+            uid: (widget.userBloc.loginState$.value as LoggedInUser).uid,
           ),
           ChatRooms(
             bloc: widget.chatBloc,
@@ -226,9 +230,8 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: index == _currentPage.value
-              ? Colors.white
-              : Colors.transparent,
+            color:
+                index == _currentPage.value ? Colors.white : Colors.transparent,
           ),
         ),
       ),
@@ -240,8 +243,8 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: index == _currentPage.value
-        ? Theme.of(context).primaryColor
-        : Colors.white.withOpacity(0.7),
+          ? Theme.of(context).primaryColor
+          : Colors.white.withOpacity(0.7),
     );
   }
 }

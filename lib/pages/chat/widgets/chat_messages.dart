@@ -8,10 +8,12 @@ import '../chat_tabs_bloc.dart';
 
 class ChatMessages extends StatefulWidget {
   final ChatTabsBloc bloc;
+  final String uid;
 
   const ChatMessages({
     Key key,
     @required this.bloc,
+    @required this.uid,
   }) : super(key: key);
 
   @override
