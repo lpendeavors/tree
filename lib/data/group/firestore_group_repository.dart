@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:treeapp/user_bloc/user_login_state.dart';
 import '../../pages/create_message/create_message_state.dart';
 import '../../models/old/group_entity.dart';
 
@@ -19,6 +20,11 @@ abstract class FirestoreGroupRepository {
     String ownerId,
     bool byAdmin,
     bool isVerified,
+  );
+
+  Future<Map<String, dynamic>> launchDM(
+    String userID,
+    LoggedInUser loginState
   );
 
   Future<List<GroupEntity>> runSearchQuery(

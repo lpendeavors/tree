@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:treeapp/models/old/chat_entity.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
+import 'package:treeapp/user_bloc/user_login_state.dart';
 import './firestore_group_repository.dart';
 import '../../models/old/group_entity.dart';
 
@@ -100,6 +101,90 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         result is Map<String, dynamic>
             ? result
             : result.cast<String, dynamic>());
+  }
+
+  @override
+  Future<Map<String, dynamic>> launchDM(
+    String userID,
+    LoggedInUser loginState
+  ) async {
+    final TransactionHandler transactionHandler = (transaction) async {
+      var otherUser = await _firestore.document('userBase/$userID').get();
+
+      var personalMember = <String, String>{
+        'fullName': loginState.fullName,
+        'image': loginState.image,
+        'uid': loginState.uid,
+      };
+
+      var otherMember = <String, String>{
+        'fullName': otherUser.data['fullName'],
+        'image': otherUser.data['image'],
+        'uid': userID,
+      };
+
+      var check = await _firestore.collection('groupBase').where('groupMembers', isEqualTo: [personalMember, otherMember]).getDocuments();
+      if(check.documents.length != 0){
+        return <String, dynamic>{
+          'roomId': check.documents[0].documentID,
+          'isRoom': false,
+          'isGroup': true,
+        };
+      }else{
+        final group = <String, dynamic>{
+          'byAdmin': loginState.isAdmin,
+          'createdAt': FieldValue.serverTimestamp(),
+          'groupMembers': [
+            personalMember,
+            otherMember
+          ],
+          'isConversation': true,
+          'isGroup': true,
+          'isGroupPrivate': true,
+          'isRoom': false,
+          'isVerified': loginState.isVerified,
+          'ownerId': loginState.uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+
+        var room = await _firestore.collection('groupBase').add(group).then((doc) {
+          return <String, dynamic>{
+            'roomId': doc.documentID,
+            'isRoom': false,
+            'isGroup': true,
+          };
+        });
+
+        final chat = <String, dynamic>{
+          'chatId': room['roomId'],
+          'docId': room['roomId'],
+          'fullName': '',
+          'churchName': '',
+          'image': '',
+          'isChurch': false,
+          'isConversation': true,
+          'isGroup': true,
+          'isRoom': false,
+          'isTree': false,
+          'pushNotificationToken': '',
+          'tokenID': '',
+          'uid': loginState.uid,
+          'userImage': '',
+        };
+
+        await _firestore.collection('userBase').document(loginState.uid).updateData({
+          'myChatsList13': FieldValue.arrayUnion([chat]),
+        });
+
+        await _firestore.collection('userBase').document(userID).updateData({
+          'myChatsList13': FieldValue.arrayUnion([chat]),
+        });
+
+        return room;
+      }
+    };
+
+    return _firestore.runTransaction(transactionHandler).then((result) => result is Map<String, dynamic> ? result : result.cast<String, dynamic>());
   }
 
   @override

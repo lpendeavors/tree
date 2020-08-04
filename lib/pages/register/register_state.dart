@@ -124,6 +124,10 @@ class InvalidEmailAddress implements EmailError {
   const InvalidEmailAddress();
 }
 
+class ChurchNameMustBeAtLeast2Characters implements FirstNameError {
+  const ChurchNameMustBeAtLeast2Characters();
+}
+
 class FirstNameMustBeAtLeast2Characters implements FirstNameError {
   const FirstNameMustBeAtLeast2Characters();
 }

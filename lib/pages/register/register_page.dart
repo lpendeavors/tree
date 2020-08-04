@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:treeapp/util/asset_utils.dart';
 import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../models/country.dart';
 import '../../pages/register/register_state.dart';
@@ -283,7 +284,7 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'EMAIL ADDRESS',
+                  _isChurch ? 'CHURCH EMAIL ADDRESS' : 'EMAIL ADDRESS',
                   style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
                 ),
                 Row(
@@ -325,6 +326,59 @@ class _RegisterPageState extends State<RegisterPage> {
                 )
               ],
             ),
+            if(_isChurch) ...[
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(
+                        'CHURCH NAME',
+                        style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
+                    ),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Image.asset(
+                          church_icon,
+                          height: 23,
+                          width: 23,
+                          color: Colors.black38,
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: s.church_name_hint,
+                                hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
+                            ),
+                            style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
+                            cursorColor: Colors.black,
+                            cursorWidth: 1,
+                            keyboardType: TextInputType.text,
+                            onChanged: _registerBloc.churchNameChanged,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 6.0,
+                    thickness: 1.0,
+                    color: Colors.black26,
+                  )
+                ],
+              ),
+            ],
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,7 +386,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: Text(
-                      'FIRST NAME',
+                      _isChurch ? 'CONTACT FIRST NAME' : 'FIRST NAME',
                       style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
                   ),
                 ),
@@ -382,7 +436,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: Text(
-                      'LAST NAME',
+                      _isChurch ? 'CONTACT LAST NAME' : 'LAST NAME',
                       style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
                   ),
                 ),

@@ -31,18 +31,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             onClicked: null,
           ),
           _menuItem(
-            title: 'Public Email',
-            subTitle: 'Your email is not visibile to everyone',
-            isActive: false,
-            onClicked: null,
-          ),
-          _menuItem(
-            title: 'Public Number', 
-            subTitle: 'Your phone number is not visible to everyone', 
-            isActive: false, 
-            onClicked: null
-          ),
-          _menuItem(
             title: 'Hide Profile', 
             subTitle: 'Your profile is visible to others', 
             isActive: false, 

@@ -47,7 +47,6 @@ class _TrophyInfoPageState extends State<TrophyInfoPage>{
             var unlocked = trophy.trophyCount.length == trophy.trophyUnlockAt;
 
             if (data.error != null) {
-              print('error ${data.error}');
               return Center(
                 child: Text(
                   S.of(context).error_occurred,

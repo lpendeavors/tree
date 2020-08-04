@@ -21,6 +21,7 @@ class PhoneRegisterBloc implements BaseBloc {
   final void Function(String) countryCodeChanged;
   final void Function(String) phoneNumberChanged;
   final void Function(String) emailAddressChanged;
+  final void Function(String) churchNameChanged;
   final void Function(String) firstNameChanged;
   final void Function(String) lastNameChanged;
   final void Function(String) passwordChanged;
@@ -45,6 +46,7 @@ class PhoneRegisterBloc implements BaseBloc {
     @required this.phoneNumberChanged,
     @required this.countryCodeChanged,
     @required this.emailAddressChanged,
+    @required this.churchNameChanged,
     @required this.firstNameChanged,
     @required this.lastNameChanged,
     @required this.passwordChanged,
@@ -74,6 +76,7 @@ class PhoneRegisterBloc implements BaseBloc {
     final countryCodeController = BehaviorSubject<String>.seeded('+1');
     final phoneController = BehaviorSubject<String>.seeded('');
     final emailController = BehaviorSubject<String>.seeded('');
+    final churchNameController = BehaviorSubject<String>.seeded('');
     final firstNameController = BehaviorSubject<String>.seeded('');
     final lastNameController = BehaviorSubject<String>.seeded('');
     final passwordController = BehaviorSubject<String>.seeded('');
@@ -94,6 +97,11 @@ class PhoneRegisterBloc implements BaseBloc {
     final emailError$ = emailController.map((email) {
       if (isValidEmail(email)) return null;
       return const InvalidEmailAddress();
+    });
+
+    final churchNameError$ = churchNameController.map((name) {
+      if (isValidName(name)) return null;
+      return const ChurchNameMustBeAtLeast2Characters();
     });
 
     final firstNameError$ = firstNameController.map((name) {
@@ -142,6 +150,20 @@ class PhoneRegisterBloc implements BaseBloc {
       return error == null;
     }));
 
+    final allChurchInfoIsValid$ = Rx.combineLatest(
+    [
+      emailError$,
+      churchNameError$,
+      firstNameError$,
+      lastNameError$,
+      passwordError$,
+      confirmPasswordError$
+    ],
+    (allErrors) => allErrors.every((error) {
+      print(error);
+      return error == null;
+    }));
+
     final message$ = submitRegisterController
       .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
       .where((isValid) => isValid)
@@ -155,12 +177,14 @@ class PhoneRegisterBloc implements BaseBloc {
       ).publish();
 
     final saveResult$ = submitUserController
-      .withLatestFrom(allInfoIsValid$, (_, bool isValid) => isValid)
+      .withLatestFrom(allInfoIsValid$, (isChurch, bool isValid) => isChurch || isValid)
+      .withLatestFrom(allChurchInfoIsValid$, (isChurch, bool isValid) => !isChurch || isValid)
       .exhaustMap(
         (isChurch) => saveUserToDatabase(
           userRepository,
           verificationResultController.value,
           emailController.value,
+          churchNameController.value,
           firstNameController.value,
           lastNameController.value,
           passwordController.value,
@@ -177,6 +201,7 @@ class PhoneRegisterBloc implements BaseBloc {
       isLoadingController,
       phoneController,
       emailController,
+      churchNameController,
       firstNameController,
       lastNameController,
       passwordController,
@@ -190,6 +215,7 @@ class PhoneRegisterBloc implements BaseBloc {
       phoneNumberChanged: phoneController.add,
       verificationResultChanged: verificationResultController.add,
       emailAddressChanged: emailController.add,
+      churchNameChanged: churchNameController.add,
       firstNameChanged: firstNameController.add,
       lastNameChanged: lastNameController.add,
       passwordChanged: passwordController.add,
@@ -212,6 +238,7 @@ class PhoneRegisterBloc implements BaseBloc {
       FirestoreUserRepository userRepository,
       AuthResult authResult,
       String email,
+      String churchName,
       String firstName,
       String lastName,
       String password,
@@ -219,7 +246,7 @@ class PhoneRegisterBloc implements BaseBloc {
   ) async* {
     try{
       if(authResult != null) {
-        if (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail")){
+        if (isChurch && (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))){
           yield RegisterMessageError(InvalidBusinessEmailError());
           return;
         }
@@ -227,6 +254,7 @@ class PhoneRegisterBloc implements BaseBloc {
         await userRepository.registerWithPhone(
           user: authResult.user,
           email: email,
+          churchName: churchName,
           firstName: firstName,
           lastName: lastName,
           password: password,

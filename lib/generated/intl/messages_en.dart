@@ -30,6 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cancel" : MessageLookupByLibrary.simpleMessage("Cancel"),
     "chat_tab_title" : MessageLookupByLibrary.simpleMessage("Chat"),
     "church" : MessageLookupByLibrary.simpleMessage("Church"),
+    "church_name_hint" : MessageLookupByLibrary.simpleMessage("Enter Church Name"),
     "connections_empty_desc" : MessageLookupByLibrary.simpleMessage(""),
     "connections_empty_title" : MessageLookupByLibrary.simpleMessage("No Request Found"),
     "create_account" : MessageLookupByLibrary.simpleMessage("Create Account"),

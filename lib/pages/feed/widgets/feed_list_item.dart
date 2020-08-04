@@ -256,7 +256,7 @@ class FeedListItem extends StatelessWidget {
                             // TODO: preview image
                           },
                           child: CachedNetworkImage(
-                            imageUrl: feedItem.postImages[0],
+                            imageUrl: feedItem.postImages[0] ?? "",
                             alignment: Alignment.center,
                           ),
                         )

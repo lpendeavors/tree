@@ -39,11 +39,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
   Stream<List<ChatEntity>> getByUser({
     @required String uid,
   }) {
-    return _firestore
-        .collection('chatBase')
-        .where('parties', arrayContains: uid)
-        .snapshots()
-        .map(_toEntities);
+    return _firestore.collection('chatBase').where('parties', arrayContains: uid).snapshots().map(_toEntities);;
   }
 
   List<ChatEntity> _toEntities(QuerySnapshot querySnapshot) {

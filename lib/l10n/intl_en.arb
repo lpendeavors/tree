@@ -27,6 +27,7 @@
   "phone_number_mask": "(000) 000-0000",
   "phone_register_success": "Verification sent",
   "register_success": "Sign Up Completed",
+  "church_name_hint": "Enter Church Name",
   "f_name_hint": "Enter First Name",
   "l_name_hint": "Enter Last Name",
   "retype_hint": "Retype Password",
