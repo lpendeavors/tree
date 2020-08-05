@@ -120,7 +120,7 @@ class FeedBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(postRepository.getByAdmin(),
+      return Rx.combineLatest2(postRepository.getByAdmin(),
           postRepository.postsByUser(uid: loginState.uid), (byAdmin, userFeed) {
         var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
         var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);

@@ -85,16 +85,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               );
             }
 
-            List<GroupMember> otherMembers;
-            if (data.details != null) {
-              var me = (widget.userBloc.loginState$.value as LoggedInUser).uid;
-              otherMembers =
-                  data.details.members.where((m) => m.uid != me).toList();
-
-              _chatRoomBloc.membersChanged(
-                  data.details.members.map((m) => m.uid).toList());
-            }
-
             return Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,21 +154,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         ),
                                       ),
                                     ),
-                                    if (otherMembers.length == 1 &&
-                                        otherMembers[0].image.isNotEmpty)
-                                      CachedNetworkImage(
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                        imageUrl: otherMembers[0].image,
-                                      ),
-                                    if (data.details.groupImage != null)
-                                      CachedNetworkImage(
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                        imageUrl: data.details.groupImage,
-                                      ),
+                                    // if (otherMembers.length == 1 &&
+                                    //     otherMembers[0].image.isNotEmpty)
+                                    //   CachedNetworkImage(
+                                    //     width: 40,
+                                    //     height: 40,
+                                    //     fit: BoxFit.cover,
+                                    //     imageUrl: otherMembers[0].image,
+                                    //   ),
+                                    // if (data.details.groupImage != null)
+                                    //   CachedNetworkImage(
+                                    //     width: 40,
+                                    //     height: 40,
+                                    //     fit: BoxFit.cover,
+                                    //     imageUrl: data.details.groupImage,
+                                    //   ),
                                   ],
                                 ),
                               ),
@@ -188,57 +178,57 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    if (data.details != null)
-                                      Text(
-                                        otherMembers[0].fullName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      )
-                                    else if (!data.details.isGroup ||
-                                        !data.details.isConversation)
-                                      Text(
-                                        data.details.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      )
-                                    else if (data.details.members.length > 2 &&
-                                        data.details.isConversation)
-                                      Text.rich(
-                                        TextSpan(
-                                          children: List.generate(
-                                              data.details.members
-                                                  .where((m) =>
-                                                      m.uid !=
-                                                      (widget.userBloc
-                                                                  .loginState$
-                                                              as LoggedInUser)
-                                                          .uid)
-                                                  .length, (index) {
-                                            return TextSpan(
-                                              text:
-                                                  '${data.details.members[0].fullName} and ${data.details.members.length} more',
-                                            );
-                                          }),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    SizedBox(height: 5),
+                                    // if (data.details != null)
+                                    //   Text(
+                                    //     otherMembers[0].fullName,
+                                    //     maxLines: 1,
+                                    //     overflow: TextOverflow.ellipsis,
+                                    //     style: TextStyle(
+                                    //       fontSize: 17,
+                                    //       fontWeight: FontWeight.bold,
+                                    //       color: Colors.black,
+                                    //     ),
+                                    //   )
+                                    // else if (!data.details.isGroup ||
+                                    //     !data.details.isConversation)
+                                    //   Text(
+                                    //     data.details.name,
+                                    //     maxLines: 1,
+                                    //     overflow: TextOverflow.ellipsis,
+                                    //     style: TextStyle(
+                                    //       fontSize: 17,
+                                    //       fontWeight: FontWeight.bold,
+                                    //       color: Colors.black,
+                                    //     ),
+                                    //   )
+                                    // else if (data.details.members.length > 2 &&
+                                    //     data.details.isConversation)
+                                    //   Text.rich(
+                                    //     TextSpan(
+                                    //       children: List.generate(
+                                    //           data.details.members
+                                    //               .where((m) =>
+                                    //                   m.uid !=
+                                    //                   (widget.userBloc
+                                    //                               .loginState$
+                                    //                           as LoggedInUser)
+                                    //                       .uid)
+                                    //               .length, (index) {
+                                    //         return TextSpan(
+                                    //           text:
+                                    //               '${data.details.members[0].fullName} and ${data.details.members.length} more',
+                                    //         );
+                                    //       }),
+                                    //     ),
+                                    //     maxLines: 1,
+                                    //     overflow: TextOverflow.ellipsis,
+                                    //     style: TextStyle(
+                                    //       fontSize: 17,
+                                    //       fontWeight: FontWeight.bold,
+                                    //       color: Colors.black,
+                                    //     ),
+                                    //   ),
+                                    // SizedBox(height: 5),
                                   ],
                                 ),
                               ),

@@ -95,7 +95,7 @@ class ChatTabsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
+      return Rx.combineLatest2(
           chatRepository.getByUser(uid: loginState.uid), groupRepository.get(),
           (chats, groups) {
             print('hey ${chats.length} ${groups.length}');
@@ -230,6 +230,6 @@ class ChatTabsBloc implements BaseBloc {
             .toList() ??
         []);
 
-    return Tuple2(roomsList, groupsList);
+    return Tuple2(roomsList, <GroupItem>[]);
   }
 }

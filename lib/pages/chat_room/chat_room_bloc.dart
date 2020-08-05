@@ -199,11 +199,16 @@ class ChatRoomBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.combineLatest2(groupRepository.getById(groupId: roomId),
+      return Rx.combineLatest2(
+          isGroup
+              ? groupRepository.getById(groupId: roomId)
+              : Stream.value(null),
           chatRepository.getByGroup(roomId), (group, chats) {
         return _kInitialChatRoomState.copyWith(
           isLoading: false,
-          details: _entityToChatRoomItem(group, loginState.mutedChats),
+          details: group != null
+              ? _entityToChatRoomItem(group, loginState.mutedChats)
+              : null,
           messages: _entitiesToChatMessageItems(chats, loginState.uid),
         );
       }).startWith(_kInitialChatRoomState).onErrorReturnWith((e) {

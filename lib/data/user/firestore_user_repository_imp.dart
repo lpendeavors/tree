@@ -25,17 +25,18 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
 
   @override
-  Stream<List<UserPreviewEntity>> getUserConnections({String uid}) => _getUserConnections$(uid);
+  Stream<List<UserPreviewEntity>> getUserConnections({String uid}) =>
+      _getUserConnections$(uid);
 
   @override
   Stream<List<UserEntity>> get() {
     return _firestore
-      .collection('userBase')
-      .where('isChurch', isEqualTo: false)
-      //.orderBy('time', descending: true)
-      .limit(50)
-      .snapshots()
-      .map(_toEntities);
+        .collection('userBase')
+        .where('isChurch', isEqualTo: false)
+        //.orderBy('time', descending: true)
+        .limit(50)
+        .snapshots()
+        .map(_toEntities);
   }
 
   List<UserEntity> _toEntities(QuerySnapshot querySnapshot) {
@@ -45,19 +46,16 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<void> registerWithEmail({
-    String fullName,
-    String email,
-    String password
-  }) async {
+  Future<void> registerWithEmail(
+      {String fullName, String email, String password}) async {
     if (fullName == null) return Future.error('fullName must not be null');
     if (email == null) return Future.error('email must not be null');
     if (password == null) return Future.error('password must not be null');
     print(
-      '[USER_REPO] registerWithEmail fullName=$fullName, email=$email, password=$password'
-    );
+        '[USER_REPO] registerWithEmail fullName=$fullName, email=$email, password=$password');
 
-    var result = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    var result = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email, password: password);
     var firebaseUser = result.user;
 
     await updateUserData(
@@ -65,7 +63,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       <String, dynamic>{
         'joined': FieldValue.serverTimestamp(),
         'firstName': firebaseUser.displayName.split(' ')[0],
-        'lastName': firebaseUser.displayName.split(' ').length > 1 ? firebaseUser.displayName.split(' ')[1] : '',
+        'lastName': firebaseUser.displayName.split(' ').length > 1
+            ? firebaseUser.displayName.split(' ')[1]
+            : '',
         'email': email
       },
     );
@@ -74,16 +74,16 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<void> registerWithPhone({
-    FirebaseUser user,
-    String email,
-    String churchName,
-    String firstName,
-    String lastName,
-    String password
-  }) async {
+  Future<void> registerWithPhone(
+      {FirebaseUser user,
+      String email,
+      String churchName,
+      String firstName,
+      String lastName,
+      String password}) async {
     print('[USER_REPO] registerWithPhone phone=${user.phoneNumber}');
-    AuthCredential emailCredential = EmailAuthProvider.getCredential(email: email, password: password);
+    AuthCredential emailCredential =
+        EmailAuthProvider.getCredential(email: email, password: password);
     user.linkWithCredential(emailCredential);
 
     await updateUserData(
@@ -119,9 +119,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Future<void> signInWithEmailAndPassword({String email, String password}) {
     return _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password
-    );
+        email: email, password: password);
   }
 
   @override
@@ -132,7 +130,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Stream<UserEntity> user() {
     return _firebaseAuth.onAuthStateChanged
-      .switchMap((user) => _getUserByUid$(user?.uid));
+        .switchMap((user) => _getUserByUid$(user?.uid));
   }
 
   Stream<UserEntity> _getUserByUid$(String uid) {
@@ -140,78 +138,98 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       return null;
     }
     return _firestore.collection('userBase').document(uid).snapshots().map(
-      (snapshot) => snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
+        (snapshot) =>
+            snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
   }
 
   Stream<List<UserPreviewEntity>> _getUserConnections$(String uid) {
     if (uid == null) {
       return null;
     }
-    return _firestore.collection('userBase')
+    return _firestore
+        .collection('userBase')
         .document(uid)
         .snapshots()
         .asyncMap((snapshot) {
-          return Future.wait((snapshot.data['connections'] as List<dynamic>).map((uid){
-            return _firestore.collection('userBase').document(uid).get().then((snapshot) => snapshot.exists ? UserPreviewEntity.fromDocumentSnapshot(snapshot) : null);
-          }));
-        });
+      return Future.wait(
+          (snapshot.data['connections'] as List<dynamic>).map((uid) {
+        return _firestore.collection('userBase').document(uid).get().then(
+            (snapshot) => snapshot.exists
+                ? UserPreviewEntity.fromDocumentSnapshot(snapshot)
+                : null);
+      }));
+    });
   }
 
   @override
-  Future<Tuple2<String,bool>> phoneSignIn(String phone) async {
-    var completer = Completer<Tuple2<String,bool>>();
+  Future<Tuple2<String, bool>> phoneSignIn(String phone) async {
+    var completer = Completer<Tuple2<String, bool>>();
 
-    await _firebaseAuth.verifyPhoneNumber(
-      phoneNumber: phone,
-      timeout: Duration(seconds: 60),
-      verificationCompleted: (phoneAuthCredential) => completer.complete(Tuple2(null, true)),
-      verificationFailed: (authException) => completer.completeError(authException.message),
-      codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
-      codeAutoRetrievalTimeout: (timeout) => print(timeout),
-    ).catchError((error) => Future.error(error));
+    await _firebaseAuth
+        .verifyPhoneNumber(
+          phoneNumber: phone,
+          timeout: Duration(seconds: 60),
+          verificationCompleted: (phoneAuthCredential) =>
+              completer.complete(Tuple2(null, true)),
+          verificationFailed: (authException) =>
+              completer.completeError(authException.message),
+          codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
+          codeAutoRetrievalTimeout: (timeout) => print(timeout),
+        )
+        .catchError((error) => Future.error(error));
 
     return completer.future;
   }
 
   @override
-  Future<Tuple2<String,bool>> phoneRegister(String phone) async {
-    var completer = Completer<Tuple2<String,bool>>();
+  Future<Tuple2<String, bool>> phoneRegister(String phone) async {
+    var completer = Completer<Tuple2<String, bool>>();
 
     print(phone);
-    var exists = await _firestore.collection('userBase')
-      .where('phoneNo', isEqualTo: phone.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", ""))
-      .limit(1)
-      .getDocuments().then((value) => value.documents.length > 0);
+    var exists = await _firestore
+        .collection('userBase')
+        .where('phoneNo',
+            isEqualTo: phone
+                .replaceAll(" ", "")
+                .replaceAll("-", "")
+                .replaceAll("(", "")
+                .replaceAll(")", ""))
+        .limit(1)
+        .getDocuments()
+        .then((value) => value.documents.length > 0);
 
-    if(exists){
-      Timer(Duration(milliseconds: 100), (){
+    if (exists) {
+      Timer(Duration(milliseconds: 100), () {
         completer.completeError("already_in_use");
       });
       return completer.future;
     }
 
-    await _firebaseAuth.verifyPhoneNumber(
-      phoneNumber: phone,
-      timeout: Duration(seconds: 60),
-      verificationCompleted: (phoneAuthCredential) => completer.complete(Tuple2(null, true)),
-      verificationFailed: (authException) => completer.completeError(authException.message),
-      codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
-      codeAutoRetrievalTimeout: (timeout) => print(timeout),
-    ).catchError((error) => Future.error(error));
+    await _firebaseAuth
+        .verifyPhoneNumber(
+          phoneNumber: phone,
+          timeout: Duration(seconds: 60),
+          verificationCompleted: (phoneAuthCredential) =>
+              completer.complete(Tuple2(null, true)),
+          verificationFailed: (authException) =>
+              completer.completeError(authException.message),
+          codeSent: (s, [x]) => completer.complete(Tuple2(s, false)),
+          codeAutoRetrievalTimeout: (timeout) => print(timeout),
+        )
+        .catchError((error) => Future.error(error));
 
     return completer.future;
   }
 
   @override
   Future<AuthResult> verifyPhoneCode(
-    String smsCode,
-    String verificationId
-  ) async {
-    AuthCredential credential = PhoneAuthProvider
-      .getCredential(verificationId: verificationId, smsCode: smsCode);
+      String smsCode, String verificationId) async {
+    AuthCredential credential = PhoneAuthProvider.getCredential(
+        verificationId: verificationId, smsCode: smsCode);
 
-    return _firebaseAuth.signInWithCredential(credential)
-      .catchError((error) => Future.error(error));
+    return _firebaseAuth
+        .signInWithCredential(credential)
+        .catchError((error) => Future.error(error));
   }
 
   @override
@@ -219,12 +237,12 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     String city,
   }) {
     return _firestore
-      .collection('userBase')
-      .where('isChurch', isEqualTo: false)
-      .where('city', isEqualTo: city)
-      .limit(50)
-      .snapshots()
-      .map(_toEntities);
+        .collection('userBase')
+        .where('isChurch', isEqualTo: false)
+        .where('city', isEqualTo: city)
+        .limit(50)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
@@ -232,21 +250,16 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     String church,
   }) {
     return _firestore
-      .collection('userBase')
-      .where('churchInfo.churchName', isEqualTo: church)
-      .limit(50)
-      .snapshots()
-      .map(_toEntities);
+        .collection('userBase')
+        .where('churchInfo.churchName', isEqualTo: church)
+        .limit(50)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
-  Future<void> saveNotifications({
-    String user, 
-    bool messages,
-    bool chat,
-    bool group, 
-    bool online
-  }) {
+  Future<void> saveNotifications(
+      {String user, bool messages, bool chat, bool group, bool online}) {
     var addition = <String, dynamic>{
       'messageNotification': messages,
       'chatNotification': chat,
@@ -254,16 +267,14 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       'chatOnlineStatus': online,
     };
 
-    return _firestore
-      .document('userBase/$user')
-      .setData(addition, merge: true);
+    return _firestore.document('userBase/$user').setData(addition, merge: true);
   }
 
   @override
   Future<void> sendConnectionRequest(String from, String to) {
     return _firestore.document('userBase/$from').updateData({
       'sentRequests': FieldValue.arrayUnion([to])
-    }).then((value){
+    }).then((value) {
       return _firestore.document('userBase/$to').updateData({
         'receivedRequests': FieldValue.arrayUnion([from])
       });
@@ -274,7 +285,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> cancelConnectionRequest(String from, String to) {
     return _firestore.document('userBase/$from').updateData({
       'sentRequests': FieldValue.arrayRemove([to])
-    }).then((value){
+    }).then((value) {
       return _firestore.document('userBase/$to').updateData({
         'receivedRequests': FieldValue.arrayRemove([from])
       });
@@ -286,7 +297,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     return _firestore.document('userBase/$to').updateData({
       'receivedRequests': FieldValue.arrayRemove([from]),
       'connections': FieldValue.arrayUnion([from])
-    }).then((value){
+    }).then((value) {
       return _firestore.document('userBase/$from').updateData({
         'sentRequests': FieldValue.arrayRemove([to]),
         'connections': FieldValue.arrayUnion([to])
@@ -298,7 +309,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> disconnect(String from, String to) {
     return _firestore.document('userBase/$from').updateData({
       'connections': FieldValue.arrayRemove([to])
-    }).then((value){
+    }).then((value) {
       return _firestore.document('userBase/$to').updateData({
         'connections': FieldValue.arrayRemove([from])
       });
@@ -308,68 +319,78 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Future<void> uploadImage(String uid, File image) {
     var refId = new Uuid().v1();
-    StorageReference storageReference = FirebaseStorage.instance.ref().child(refId);
+    StorageReference storageReference =
+        FirebaseStorage.instance.ref().child(refId);
     StorageUploadTask uploadTask = storageReference.putFile(image);
-    return uploadTask.onComplete.then((value) => value.ref.getDownloadURL()).then((url){
-      _firestore.document('userBase/$uid').updateData({
-        'image': url
-      });
+    return uploadTask.onComplete
+        .then((value) => value.ref.getDownloadURL())
+        .then((url) {
+      _firestore.document('userBase/$uid').updateData({'image': url});
     });
   }
 
   @override
   Future<void> approveAccount(String uid) {
-    return _firestore.document('userBase/$uid').updateData({
-      'isVerified': true
-    });
-  }
-  
-  Stream<List<UserEntity>> getMyConnections(
-    List<String> connections
-  ) {
     return _firestore
-      .collection('userBase')
-      .where('docId', whereIn: connections)
-      .snapshots()
-      .map(_toEntities);
+        .document('userBase/$uid')
+        .updateData({'isVerified': true});
+  }
+
+  Stream<List<UserEntity>> getMyConnections(List<String> connections) {
+    return _firestore
+        .collection('userBase')
+        .where('docId', whereIn: connections)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
   Stream<List<UserEntity>> getPublicFigures() {
     return _firestore
-      .collection('userBase')
-      .where('isVerified', isEqualTo: true)
-      .snapshots()
-      .map(_toEntities);
+        .collection('userBase')
+        .where('isVerified', isEqualTo: true)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
   Future<void> updateUserPhone(
-      FirebaseUser user,
-      String smsCode,
-      String verificationId
-  ) async {
-    var credential = PhoneAuthProvider.getCredential(verificationId: verificationId, smsCode: smsCode);
+      FirebaseUser user, String smsCode, String verificationId) async {
+    var credential = PhoneAuthProvider.getCredential(
+        verificationId: verificationId, smsCode: smsCode);
     return await user.updatePhoneNumberCredential(credential);
   }
 
   @override
   Future<List<UserEntity>> runSearchQuery(String query, SearchType searchType) {
-    if(searchType == SearchType.CHURCH){
+    if (searchType == SearchType.CHURCH) {
       return _firestore
-        .collection('userBase')
-        .where('searchData', arrayContains: query)
-        .where('isChurch', isEqualTo: true)
-        .limit(30)
-        .getDocuments()
-        .then(_toEntities);
-    }else if(searchType == SearchType.USERS){
+          .collection('userBase')
+          .where('searchData', arrayContains: query)
+          .where('isChurch', isEqualTo: true)
+          .limit(30)
+          .getDocuments()
+          .then(_toEntities);
+    } else if (searchType == SearchType.USERS) {
       return _firestore
-        .collection('userBase')
-        .where('searchData', arrayContains: query)
-        .limit(30)
-        .getDocuments()
-        .then(_toEntities);
+          .collection('userBase')
+          .where('searchData', arrayContains: query)
+          .limit(30)
+          .getDocuments()
+          .then(_toEntities);
     }
+  }
+
+  @override
+  List<UserEntity> users(
+    List<String> uids,
+  ) {
+    var entities = <UserEntity>[];
+    uids.forEach((id) async {
+      var user = await _firestore.collection('userBase').document(id).get();
+      entities.add(UserEntity.fromDocumentSnapshot(user));
+    });
+
+    return entities;
   }
 }

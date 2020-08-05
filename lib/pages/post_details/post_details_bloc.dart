@@ -100,7 +100,7 @@ class PostDetailsBloc extends BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(
+      return Rx.combineLatest2(
         postRepository.postById(postId: postId),
         commentRepository.getByPost(postId),
         (post, comments) {

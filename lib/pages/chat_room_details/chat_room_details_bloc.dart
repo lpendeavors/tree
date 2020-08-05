@@ -100,7 +100,7 @@ class ChatRoomDetailsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip2(groupRepository.getById(groupId: roomId),
+      return Rx.combineLatest2(groupRepository.getById(groupId: roomId),
           postRepository.getByGroup(roomId), (group, posts) {
         return _kInitialChatRoomDetailsState.copyWith(
           chatRoomDetails: _entityToRoomDetailsItem(group, loginState.uid),

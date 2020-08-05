@@ -156,7 +156,7 @@ class ExploreBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.zip6(
+      return Rx.combineLatest6(
           userRepository.getSuggestionsByChurch(church: loginState.church),
           userRepository.getSuggestionsByCity(city: loginState.city),
           userRepository.getPublicFigures(),
