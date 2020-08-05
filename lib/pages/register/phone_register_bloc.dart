@@ -83,7 +83,7 @@ class PhoneRegisterBloc implements BaseBloc {
     final confirmPasswordController = BehaviorSubject<String>.seeded('');
     final verificationResultController = BehaviorSubject<AuthResult>.seeded(null);
     final submitRegisterController = PublishSubject<void>();
-    final submitUserController = PublishSubject<bool>();
+    final submitUserController = BehaviorSubject<bool>();
     final isLoadingController = BehaviorSubject<bool>.seeded(false);
 
     ///
@@ -123,7 +123,6 @@ class PhoneRegisterBloc implements BaseBloc {
       passwordController,
       confirmPasswordController
     ], (values) {
-      print(values);
       if(values[0] == values[1]){return null;}
       return const PasswordsMustMatch();
     });
@@ -140,19 +139,6 @@ class PhoneRegisterBloc implements BaseBloc {
     final allInfoIsValid$ = Rx.combineLatest(
     [
       emailError$,
-      firstNameError$,
-      lastNameError$,
-      passwordError$,
-      confirmPasswordError$
-    ],
-    (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
-
-    final allChurchInfoIsValid$ = Rx.combineLatest(
-    [
-      emailError$,
       churchNameError$,
       firstNameError$,
       lastNameError$,
@@ -163,6 +149,7 @@ class PhoneRegisterBloc implements BaseBloc {
       print(error);
       return error == null;
     }));
+
 
     final message$ = submitRegisterController
       .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
@@ -177,10 +164,10 @@ class PhoneRegisterBloc implements BaseBloc {
       ).publish();
 
     final saveResult$ = submitUserController
-      .withLatestFrom(allInfoIsValid$, (isChurch, bool isValid) => isChurch || isValid)
-      .withLatestFrom(allChurchInfoIsValid$, (isChurch, bool isValid) => !isChurch || isValid)
+      .withLatestFrom(allInfoIsValid$, (isChurch, bool isValid){print('$isChurch $isValid'); return !isChurch || isValid;})
+      .where((isValid) => isValid)
       .exhaustMap(
-        (isChurch) => saveUserToDatabase(
+        (_) => saveUserToDatabase(
           userRepository,
           verificationResultController.value,
           emailController.value,
@@ -188,7 +175,7 @@ class PhoneRegisterBloc implements BaseBloc {
           firstNameController.value,
           lastNameController.value,
           passwordController.value,
-          isChurch
+          submitUserController.value
         ),
       ).publish();
 
@@ -247,6 +234,7 @@ class PhoneRegisterBloc implements BaseBloc {
     try{
       if(authResult != null) {
         if (isChurch && (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))){
+          print('$isChurch ${(email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))}');
           yield RegisterMessageError(InvalidBusinessEmailError());
           return;
         }

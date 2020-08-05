@@ -433,7 +433,7 @@ class MyApp extends StatelessWidget {
                   : "Your Personal information needs to be updated",
               btnTitle: "Update Now",
               onClick: () {
-                Navigator.of(context).pushReplacementNamed('/update_info',
+                Navigator.of(context).pushNamed('/update_info',
                     arguments: (routerSettings.arguments as SettingsType) ==
                             SettingsType.updateChurch
                         ? 1

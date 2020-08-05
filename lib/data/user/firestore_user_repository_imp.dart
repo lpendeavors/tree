@@ -93,6 +93,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
         'phoneNo': user.phoneNumber,
         'email': email,
         'churchName': churchName == '' ? null : churchName,
+        'isChurch' : churchName == '' ? false : true,
         'firstName': firstName,
         'lastName': lastName,
         'password': password,
