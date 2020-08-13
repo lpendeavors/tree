@@ -9,18 +9,31 @@ import '../../../user_bloc/user_bloc.dart';
 import '../../../bloc/bloc_provider.dart';
 import '../feed_state.dart';
 
-class FeedListItem extends StatelessWidget {
+class FeedListItem extends StatefulWidget {
   final FeedItem feedItem;
   final Function(String) likeFeedItem;
   final BuildContext context;
   final TickerProvider tickerProvider;
+  final Function() deletePost;
+  final Function() reportPost;
+  final Function() unconnect;
 
   const FeedListItem({
     @required this.feedItem,
     @required this.likeFeedItem,
     @required this.context,
     @required this.tickerProvider,
+    @required this.deletePost,
+    @required this.reportPost,
+    @required this.unconnect,
   });
+
+  @override
+  _FeedListItemState createState() => _FeedListItemState();
+}
+
+class _FeedListItemState extends State<FeedListItem> {
+  var _expanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +47,7 @@ class FeedListItem extends StatelessWidget {
       onTap: () {
         Navigator.of(context).pushNamed(
           '/post_details',
-          arguments: feedItem.id,
+          arguments: widget.feedItem.id,
         );
       },
       child: ClipRRect(
@@ -42,7 +55,7 @@ class FeedListItem extends StatelessWidget {
         child: Container(
           margin: EdgeInsets.only(left: 10, right: 10, bottom: 10),
           decoration: BoxDecoration(
-            color: feedItem.isShared
+            color: widget.feedItem.isShared
                 ? Colors.black.withOpacity(0.01)
                 : Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -66,10 +79,10 @@ class FeedListItem extends StatelessWidget {
                         children: <Widget>[
                           InkWell(
                             onTap: () {
-                              if (!feedItem.isMine) {
+                              if (!widget.feedItem.isMine) {
                                 Navigator.of(context).pushNamed(
                                   '/profile',
-                                  arguments: feedItem.userId,
+                                  arguments: widget.feedItem.userId,
                                 );
                               }
                             },
@@ -111,13 +124,17 @@ class FeedListItem extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
-                                            if (feedItem.userImage != null)
+                                            if (widget.feedItem.userImage !=
+                                                null)
                                               CachedNetworkImage(
-                                                imageUrl: feedItem.userImage,
-                                                width:
-                                                    feedItem.isShared ? 40 : 50,
-                                                height:
-                                                    feedItem.isShared ? 40 : 50,
+                                                imageUrl:
+                                                    widget.feedItem.userImage,
+                                                width: widget.feedItem.isShared
+                                                    ? 40
+                                                    : 50,
+                                                height: widget.feedItem.isShared
+                                                    ? 40
+                                                    : 50,
                                                 fit: BoxFit.cover,
                                               ),
                                           ],
@@ -133,14 +150,14 @@ class FeedListItem extends StatelessWidget {
                           Flexible(
                             child: GestureDetector(
                               onTap: () {
-                                if (feedItem.tags.isNotEmpty) {
+                                if (widget.feedItem.tags.isNotEmpty) {
                                   // Tag screen
                                 }
 
-                                if (!feedItem.isMine) {
+                                if (!widget.feedItem.isMine) {
                                   Navigator.of(context).pushNamed(
                                     '/profile',
-                                    arguments: feedItem.userId,
+                                    arguments: widget.feedItem.userId,
                                   );
                                 }
                               },
@@ -150,7 +167,7 @@ class FeedListItem extends StatelessWidget {
                                   Text.rich(
                                     TextSpan(children: [
                                       TextSpan(
-                                          text: feedItem.name,
+                                          text: widget.feedItem.name,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
@@ -158,7 +175,7 @@ class FeedListItem extends StatelessWidget {
                                     ]),
                                   ),
                                   Text(
-                                    feedItem.timePostedString,
+                                    widget.feedItem.timePostedString,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey,
@@ -169,7 +186,7 @@ class FeedListItem extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 10),
-                          if (feedItem.isPoll) ...[
+                          if (widget.feedItem.isPoll) ...[
                             Container(
                               padding: EdgeInsets.only(
                                 left: 10,
@@ -204,7 +221,7 @@ class FeedListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              if ((feedItem.message ?? "").isNotEmpty) ...[
+              if ((widget.feedItem.message ?? "").isNotEmpty) ...[
                 Padding(
                   padding: EdgeInsets.only(left: 10, right: 10, top: 10),
                   child: Row(
@@ -214,17 +231,22 @@ class FeedListItem extends StatelessWidget {
                         flex: 1,
                         fit: FlexFit.tight,
                         child: AnimatedSize(
-                          vsync: tickerProvider,
+                          vsync: widget.tickerProvider,
                           duration: Duration(
                             milliseconds: 500,
                           ),
                           child: GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              _expanded = !_expanded;
+                              setState(() {});
+                            },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 SmartText(
-                                  text: feedItem.message,
+                                  text: _expanded
+                                      ? widget.feedItem.message
+                                      : widget.feedItem.abbreviatedPost,
                                   onTagClick: (tag) {
                                     // TODO: hash tag screen
                                   },
@@ -237,6 +259,15 @@ class FeedListItem extends StatelessWidget {
                                     fontSize: 16,
                                   ),
                                 ),
+                                if (widget.feedItem.message !=
+                                    widget.feedItem.abbreviatedPost)
+                                  Text(
+                                    _expanded ? 'Read Less' : 'Read More',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 SizedBox(height: 15),
                               ],
                             ),
@@ -247,16 +278,16 @@ class FeedListItem extends StatelessWidget {
                   ),
                 ),
               ],
-              if (feedItem.postImages.length > 0) ...[
+              if (widget.feedItem.postImages.length > 0) ...[
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  child: feedItem.postImages.length == 1
+                  child: widget.feedItem.postImages.length == 1
                       ? GestureDetector(
                           onTap: () {
                             // TODO: preview image
                           },
                           child: CachedNetworkImage(
-                            imageUrl: feedItem.postImages[0] ?? "",
+                            imageUrl: widget.feedItem.postImages[0] ?? "",
                             alignment: Alignment.center,
                           ),
                         )
@@ -266,7 +297,7 @@ class FeedListItem extends StatelessWidget {
                             children: <Widget>[
                               PageView.builder(
                                 controller: _imagesController,
-                                itemCount: feedItem.postImages.length,
+                                itemCount: widget.feedItem.postImages.length,
                                 itemBuilder: (context, index) {
                                   return GestureDetector(
                                     onTap: () {
@@ -276,7 +307,8 @@ class FeedListItem extends StatelessWidget {
                                       fit: StackFit.expand,
                                       children: <Widget>[
                                         CachedNetworkImage(
-                                          imageUrl: feedItem.postImages[index],
+                                          imageUrl:
+                                              widget.feedItem.postImages[index],
                                           fit: BoxFit.cover,
                                           alignment: Alignment.center,
                                         ),
@@ -299,7 +331,7 @@ class FeedListItem extends StatelessWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: List<Widget>.generate(
-                                          feedItem.postImages.length,
+                                          widget.feedItem.postImages.length,
                                           (int index) {
                                         if (index == _currentPage) {
                                           return Container(
@@ -337,7 +369,7 @@ class FeedListItem extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(25),
                                   ),
                                   child: Text(
-                                    '${_currentPage + 1}/${feedItem.postImages.length}',
+                                    '${_currentPage + 1}/${widget.feedItem.postImages.length}',
                                     style: TextStyle(
                                       color: Colors.white,
                                     ),
@@ -349,7 +381,7 @@ class FeedListItem extends StatelessWidget {
                         ),
                 ),
               ],
-              if (feedItem.isPoll) ...[
+              if (widget.feedItem.isPoll) ...[
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -365,9 +397,61 @@ class FeedListItem extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         ...List.generate(
-                          feedItem.pollData.length,
+                          widget.feedItem.pollData.length,
                           (index) {
-                            return Container();
+                            return GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Stack(
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.all(5),
+                                      padding: EdgeInsets.all(5),
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Container(
+                                            height: 25,
+                                            width: 25,
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.check,
+                                                size: 15,
+                                                color: widget
+                                                        .feedItem
+                                                        .pollData[index]
+                                                        .isAnswer
+                                                    ? Colors.white
+                                                    : Colors.white
+                                                        .withOpacity(0.5),
+                                              ),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.transparent,
+                                              border: Border.all(
+                                                color: Theme.of(context)
+                                                    .primaryColor,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 10),
+                                          Text(widget.feedItem.pollData[index]
+                                              .answerTitle),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ],
@@ -386,12 +470,12 @@ class FeedListItem extends StatelessWidget {
                     _feedButton(
                       title: 'Like',
                       icon: Icons.favorite,
-                      color: !feedItem.isLiked
+                      color: !widget.feedItem.isLiked
                           ? Colors.grey
                           : Theme.of(context).primaryColor,
                       textAlign: null,
                       alignment: MainAxisAlignment.start,
-                      onTap: () => likeFeedItem(feedItem.id),
+                      onTap: () => widget.likeFeedItem(widget.feedItem.id),
                     ),
                     _feedButton(
                       title: 'Comment',
@@ -414,7 +498,7 @@ class FeedListItem extends StatelessWidget {
                                         Injector.of(context).commentRepository,
                                     postRepository:
                                         Injector.of(context).postRepository,
-                                    postId: feedItem.id,
+                                    postId: widget.feedItem.id,
                                   ),
                                 );
                               }),
@@ -553,7 +637,7 @@ class FeedListItem extends StatelessWidget {
                           child: ListView(
                             children: <Widget>[
                               SizedBox(height: 5),
-                              if (feedItem.isMine) ...[
+                              if (widget.feedItem.isMine) ...[
                                 SimpleDialogOption(
                                   child: Text('Edit Post'),
                                   onPressed: () =>
@@ -578,7 +662,7 @@ class FeedListItem extends StatelessWidget {
                                   color: Colors.black.withOpacity(0.1),
                                 ),
                               ],
-                              if (!feedItem.isMine) ...[
+                              if (!widget.feedItem.isMine) ...[
                                 SimpleDialogOption(
                                   child: Text('Unconnect with this person'),
                                   onPressed: () => Navigator.pop(
@@ -614,26 +698,26 @@ class FeedListItem extends StatelessWidget {
           );
         })) {
       case PostOption.edit:
-        if (feedItem.isPoll) {
+        if (widget.feedItem.isPoll) {
           Navigator.of(context).pushNamed(
             '/edit_poll',
-            arguments: feedItem.id,
+            arguments: widget.feedItem.id,
           );
         } else {
           Navigator.of(context).pushNamed(
             '/edit_post',
-            arguments: feedItem.id,
+            arguments: widget.feedItem.id,
           );
         }
         break;
       case PostOption.delete:
-        print('delete');
+        widget.deletePost();
         break;
       case PostOption.unconnect:
-        print('unconnect');
+        widget.unconnect();
         break;
       case PostOption.report:
-        print('report');
+        widget.reportPost();
         break;
     }
   }

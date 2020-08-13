@@ -69,4 +69,6 @@ abstract class FirestorePostRepository {
     @required String postId,
     @required String userId,
   });
+
+  Future<void> deletePost(String postId);
 }

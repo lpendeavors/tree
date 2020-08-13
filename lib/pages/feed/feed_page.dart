@@ -55,10 +55,12 @@ class _FeedPageState extends State<FeedPage>
                   }
               }),
       _feedBloc.message$.listen(_showMessageResult),
+      _feedBloc.deleteMessage$.listen(_showMessageResult),
+      _feedBloc.unconnectMessage$.listen(_showMessageResult),
     ];
   }
 
-  void _showMessageResult(FeedItemLikeMessage message) {
+  void _showMessageResult(FeedMessage message) {
     print('[DEBUG] FeedItemLikeMessage=$message');
   }
 
@@ -202,6 +204,11 @@ class _FeedPageState extends State<FeedPage>
                     _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
                     _feedBloc.saveLikeValue();
                   },
+                  deletePost: () =>
+                      _feedBloc.deletePost(data.feedItems[index].id),
+                  unconnect: () =>
+                      _feedBloc.unconnect(data.feedItems[index].userId),
+                  reportPost: () => print('report'),
                 );
               },
             );

@@ -9,6 +9,7 @@ import './comments_bloc.dart';
 import './comments_state.dart';
 import './widgets/comment_list_item.dart';
 import './widgets/comment_input.dart';
+import 'widgets/reply_screen.dart';
 
 class CommentsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -157,10 +158,37 @@ class _CommentsPageState extends State<CommentsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          CommentListItem(
-                            comment: data.comments[index],
-                            isPage: true,
-                            isReply: false,
+                          Stack(
+                            alignment: Alignment.bottomLeft,
+                            children: <Widget>[
+                              CommentListItem(
+                                comment: data.comments[index],
+                                onLike: (like) {
+                                  _commentsBloc.commentToLikeChanged(
+                                      data.comments[index].id);
+                                  _commentsBloc.likeComment(like);
+                                },
+                                isPage: true,
+                                isReply: false,
+                                onReply: () {
+                                  _commentsBloc.commentToLikeChanged(
+                                    data.comments[index].id,
+                                  );
+
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ReplyScreen(
+                                        comment: data.comments[index],
+                                        commentsBloc: _commentsBloc,
+                                        userImage: (widget.userBloc.loginState$
+                                                .value as LoggedInUser)
+                                            .image,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -199,6 +227,7 @@ class _CommentsPageState extends State<CommentsPage> {
                 userImage:
                     (widget.userBloc.loginState$.value as LoggedInUser).image,
                 commentsBloc: _commentsBloc,
+                isReply: false,
               );
             },
           ),

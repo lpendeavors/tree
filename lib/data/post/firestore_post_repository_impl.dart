@@ -252,4 +252,9 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
       await _firestore.collection('postBase').add(poll);
     }
   }
+
+  @override
+  Future<void> deletePost(String postId) {
+    return _firestore.collection('postBase').document(postId).delete();
+  }
 }

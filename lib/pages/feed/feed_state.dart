@@ -42,6 +42,32 @@ class FeedItemLikeError implements FeedItemLikeMessage {
   const FeedItemLikeError(this.error);
 }
 
+class FeedUnconnectMessage implements FeedMessage {
+  const FeedUnconnectMessage();
+}
+
+class FeedUnconnectSuccess implements FeedUnconnectMessage {
+  const FeedUnconnectSuccess();
+}
+
+class FeedUnconnectError implements FeedUnconnectMessage {
+  final Object error;
+  const FeedUnconnectError(this.error);
+}
+
+class FeedDeleteMessage implements FeedMessage {
+  const FeedDeleteMessage();
+}
+
+class FeedDeleteSuccess implements FeedDeleteMessage {
+  const FeedDeleteSuccess();
+}
+
+class FeedDeleteError implements FeedDeleteMessage {
+  final Object error;
+  const FeedDeleteError(this.error);
+}
+
 ///
 /// Error
 ///
@@ -58,25 +84,28 @@ class NotLoggedInError {
 @immutable
 class FeedListState extends Equatable {
   final List<FeedItem> feedItems;
+  final bool hasNotifications;
   final bool isLoading;
   final Object error;
 
   const FeedListState({
     @required this.feedItems,
+    @required this.hasNotifications,
     @required this.isLoading,
     @required this.error,
   });
 
-  FeedListState copyWith({feedItems, isLoading, error}) {
+  FeedListState copyWith({feedItems, hasNotifications, isLoading, error}) {
     return FeedListState(
       feedItems: feedItems ?? this.feedItems,
+      hasNotifications: hasNotifications ?? this.hasNotifications,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
   }
 
   @override
-  List get props => [feedItems, isLoading, error];
+  List get props => [feedItems, hasNotifications, isLoading, error];
 
   @override
   bool get stringify => true;

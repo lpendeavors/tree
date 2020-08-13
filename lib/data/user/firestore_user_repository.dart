@@ -92,4 +92,9 @@ abstract class FirestoreUserRepository {
   Stream<List<UserEntity>> getPublicFigures();
 
   Future<List<UserEntity>> runSearchQuery(String query, SearchType type);
+
+  Future<void> removeConnection(
+    String uid,
+    String userId,
+  );
 }

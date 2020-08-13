@@ -1,18 +1,22 @@
 import 'dart:async';
 
+import 'package:treeapp/data/user/firestore_user_repository.dart';
+
 import '../../util/post_utils.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
+import '../../data/notification/firestore_notification_repository.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../models/old/post_entity.dart';
+import '../../models/old/notification_entity.dart';
 import './feed_state.dart';
-import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:rxdart/rxdart.dart';
+import 'package:meta/meta.dart';
 
-const _kInitialFeedListState =
-    FeedListState(error: null, isLoading: true, feedItems: []);
+const _kInitialFeedListState = FeedListState(
+    error: null, hasNotifications: false, isLoading: true, feedItems: []);
 
 class FeedBloc implements BaseBloc {
   ///
@@ -21,12 +25,16 @@ class FeedBloc implements BaseBloc {
   final Function(String) postToLikeChanged;
   final Function(bool) likePostChanged;
   final Function() saveLikeValue;
+  final Function(String) deletePost;
+  final Function(String) unconnect;
 
   ///
   /// Output streams
   ///
   final ValueStream<FeedListState> feedListState$;
   final Stream<FeedItemLikeMessage> message$;
+  final Stream<FeedUnconnectMessage> unconnectMessage$;
+  final Stream<FeedDeleteMessage> deleteMessage$;
   final ValueStream isLoading$;
 
   ///
@@ -35,10 +43,14 @@ class FeedBloc implements BaseBloc {
   final void Function() _dispose;
 
   FeedBloc._({
+    @required this.unconnect,
+    @required this.deletePost,
     @required this.saveLikeValue,
     @required this.postToLikeChanged,
     @required this.likePostChanged,
     @required this.feedListState$,
+    @required this.unconnectMessage$,
+    @required this.deleteMessage$,
     @required this.message$,
     @required this.isLoading$,
     @required void Function() dispose,
@@ -47,12 +59,17 @@ class FeedBloc implements BaseBloc {
   factory FeedBloc({
     @required UserBloc userBloc,
     @required FirestorePostRepository postRepository,
+    @required FirestoreNotificationRepository notificationRepository,
+    @required FirestoreUserRepository userRepository,
   }) {
     ///
     /// Assert
     ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
+    assert(notificationRepository != null,
+        'notificationRepository cannot be null');
+    assert(userRepository != null, 'userRepository cannot be null');
 
     ///
     /// Stream controllers
@@ -61,6 +78,8 @@ class FeedBloc implements BaseBloc {
     final postLikeSubject = BehaviorSubject<bool>.seeded(false);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
     final savePostLikeSubject = PublishSubject<void>();
+    final unconnectSubject = PublishSubject<String>();
+    final deletePostSubject = PublishSubject<String>();
 
     ///
     /// Streams
@@ -75,9 +94,25 @@ class FeedBloc implements BaseBloc {
             ))
         .publish();
 
+    final deleteMessage$ = deletePostSubject
+        .switchMap((post) => performDelete(
+              postRepository,
+              post,
+            ))
+        .publish();
+
+    final unconnectMessage$ = unconnectSubject
+        .switchMap((user) => performUnconnect(
+              userRepository,
+              (userBloc.loginState$.value as LoggedInUser).uid,
+              user,
+            ))
+        .publish();
+
     final feedListState$ = _getFeedList(
       userBloc,
       postRepository,
+      notificationRepository,
     ).publishValueSeeded(_kInitialFeedListState);
 
     final subscriptions = <StreamSubscription>[
@@ -88,14 +123,19 @@ class FeedBloc implements BaseBloc {
     final controllers = <StreamController>[
       postLikeSubject,
       isLoadingSubject,
+      feedItemToLikeSubject,
     ];
 
     return FeedBloc._(
+        unconnect: (user) => unconnectSubject.add(user),
+        deletePost: (post) => deletePostSubject.add(post),
         saveLikeValue: () => savePostLikeSubject.add(null),
         likePostChanged: postLikeSubject.add,
         postToLikeChanged: feedItemToLikeSubject.add,
         isLoading$: isLoadingSubject,
         message$: message$,
+        deleteMessage$: deleteMessage$,
+        unconnectMessage$: unconnectMessage$,
         feedListState$: feedListState$,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -109,6 +149,7 @@ class FeedBloc implements BaseBloc {
   static Stream<FeedListState> _toState(
     LoginState loginState,
     FirestorePostRepository postRepository,
+    FirestoreNotificationRepository notificationRepository,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -120,10 +161,15 @@ class FeedBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.combineLatest2(postRepository.getByAdmin(),
-          postRepository.postsByUser(uid: loginState.uid), (byAdmin, userFeed) {
+      return Rx.combineLatest3(
+          postRepository.getByAdmin(),
+          postRepository.postsByUser(uid: loginState.uid),
+          notificationRepository.getByOwner(loginState.uid),
+          (byAdmin, userFeed, newNotifications) {
         var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
         var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
+        var hasNotifications =
+            _entitiesToNewNotifications(newNotifications, loginState.uid);
 
         feed.addAll(userPosts);
         feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
@@ -131,6 +177,7 @@ class FeedBloc implements BaseBloc {
         return _kInitialFeedListState.copyWith(
           isLoading: false,
           feedItems: feed,
+          hasNotifications: hasNotifications,
         );
       }).startWith(_kInitialFeedListState).onErrorReturnWith((e) {
         return _kInitialFeedListState.copyWith(
@@ -174,14 +221,27 @@ class FeedBloc implements BaseBloc {
     }).toList();
   }
 
+  static bool _entitiesToNewNotifications(
+    List<NotificationEntity> notifications,
+    String uid,
+  ) {
+    return notifications
+            .map((n) => !(n.readBy ?? []).contains(uid))
+            .toList()
+            .length >
+        0;
+  }
+
   static Stream<FeedListState> _getFeedList(
     UserBloc userBloc,
     FirestorePostRepository postRepository,
+    FirestoreNotificationRepository notificationRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
         loginState,
         postRepository,
+        notificationRepository,
       );
     });
   }
@@ -218,6 +278,33 @@ class FeedBloc implements BaseBloc {
       yield FeedItemLikeError(e);
     } finally {
       isLoadingSink.add(false);
+    }
+  }
+
+  static Stream<FeedUnconnectMessage> performUnconnect(
+    FirestoreUserRepository userRepository,
+    String userId,
+    String userToUnfollow,
+  ) async* {
+    print('[DEBUG] FeedBloc#performUnconnect');
+    try {
+      await userRepository.removeConnection(userId, userToUnfollow);
+      yield FeedUnconnectSuccess();
+    } catch (e) {
+      yield FeedUnconnectError(e);
+    }
+  }
+
+  static Stream<FeedDeleteMessage> performDelete(
+    FirestorePostRepository postRepository,
+    String postId,
+  ) async* {
+    print('[DEBUG] FeedBloc#performDelete');
+    try {
+      await postRepository.deletePost(postId);
+      yield FeedDeleteSuccess();
+    } catch (e) {
+      yield FeedDeleteError(e);
     }
   }
 }

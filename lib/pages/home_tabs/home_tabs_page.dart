@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:popup_menu/popup_menu.dart';
+import 'package:treeapp/data/notification/firestore_notification_repository.dart';
+import 'package:treeapp/pages/home_tabs/home_tabs_bloc.dart';
 import '../../data/request/firestore_request_repository.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../data/room/firestore_room_repository.dart';
@@ -19,25 +21,30 @@ import '../explore/explore_bloc.dart';
 import '../explore/explore_tabs_page.dart';
 import '../profile/profile_bloc.dart';
 import '../profile/profile_page.dart';
+import 'home_tabs_state.dart';
 
 class HomeTabsPage extends StatefulWidget {
   final UserBloc userBloc;
+  final HomeTabsBloc Function() initHomeTabsBloc;
   final FirestorePostRepository postRepository;
   final FirestoreUserRepository userRepository;
   final FirestoreRoomRepository roomRepository;
   final FirestoreGroupRepository groupRepository;
   final FirestoreChatRepository chatRepository;
   final FirestoreRequestRepository requestRepository;
+  final FirestoreNotificationRepository notificationRepository;
 
   const HomeTabsPage({
     Key key,
     @required this.userBloc,
+    @required this.initHomeTabsBloc,
     @required this.postRepository,
     @required this.roomRepository,
     @required this.userRepository,
     @required this.groupRepository,
     @required this.chatRepository,
     @required this.requestRepository,
+    @required this.notificationRepository,
   }) : super(key: key);
 
   @override
@@ -49,6 +56,19 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   int _currentPage = 0;
 
   GlobalKey _popupMenuKey = GlobalKey();
+  HomeTabsBloc _homeTabsBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeTabsBloc = widget.initHomeTabsBloc();
+  }
+
+  @override
+  void dispose() {
+    _homeTabsBloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +87,9 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       padding: EdgeInsets.only(bottom: 60),
       child: PageView(
         controller: _controller,
-        onPageChanged: (page) => setState(() { _currentPage = page; }),
+        onPageChanged: (page) => setState(() {
+          _currentPage = page;
+        }),
         physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
           FeedPage(
@@ -75,6 +97,8 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
             feedBloc: FeedBloc(
               userBloc: widget.userBloc,
               postRepository: widget.postRepository,
+              notificationRepository: widget.notificationRepository,
+              userRepository: widget.userRepository,
             ),
           ),
           ExploreTabsPage(
@@ -111,137 +135,149 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   }
 
   _bottomNavigation() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        height: 80,
-        child: Stack(
-          children: <Widget>[
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 65,
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.4),
-                  )
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    TreeTabItem(
-                      title: S.of(context).home_tab_title,
-                      iconImage: 'assets/images/tree.png',
-                      onTap: () => _changePage(0),
-                      isActive: _currentPage == 0,
-                      type: 1,
-                      icon: null,
-                    ),
-                    TreeTabItem(
-                      title: S.of(context).explore_tab_title,
-                      icon: Icons.search,
-                      onTap: () => _changePage(1),
-                      isActive: _currentPage == 1,
-                      type: 0,
-                      iconImage: null,
-                    ),
-                    Spacer(),
-                    TreeTabItem(
-                      title: S.of(context).chat_tab_title,
-                      icon: Icons.forum,
-                      onTap: () => _changePage(2),
-                      isActive: _currentPage == 2,
-                      type: 0,
-                      iconImage: null,
-                    ),
-                    TreeTabItem(
-                      title: S.of(context).profile_tab_title,
-                      icon: Icons.person,
-                      onTap: () => _changePage(3),
-                      isActive: _currentPage == 3,
-                      type: 0,
-                      iconImage: null,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Align(
-              key: _popupMenuKey,
-              alignment: Alignment.topCenter,
-              child: GestureDetector(
-                onTap: () {
-                  _showAddPopupMenu(context);
-                },
-                child: Container(
-                  margin: EdgeInsets.only(top: 5),
-                  width: 60,
-                  height: 60,
-                  child: Center(
-                    child: Icon(
-                      Icons.add,
-                      color: Colors.white,
+    return StreamBuilder<HomeTabsState>(
+      stream: _homeTabsBloc.homeTabsState$,
+      initialData: _homeTabsBloc.homeTabsState$.value,
+      builder: (context, snapshot) {
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            height: 80,
+            child: Stack(
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 65,
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.4),
+                        )),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        TreeTabItem(
+                          title: S.of(context).home_tab_title,
+                          iconImage: whiteAppIcon,
+                          onTap: () => _changePage(0),
+                          isActive: _currentPage == 0,
+                          type: 1,
+                          icon: null,
+                          hasNew: false,
+                        ),
+                        TreeTabItem(
+                          title: S.of(context).explore_tab_title,
+                          icon: Icons.search,
+                          onTap: () => _changePage(1),
+                          isActive: _currentPage == 1,
+                          type: 0,
+                          iconImage: null,
+                          hasNew: snapshot.data.hasRequests,
+                        ),
+                        Spacer(),
+                        TreeTabItem(
+                          title: S.of(context).chat_tab_title,
+                          icon: Icons.forum,
+                          onTap: () => _changePage(2),
+                          isActive: _currentPage == 2,
+                          type: 1,
+                          iconImage: ic_chat,
+                          hasNew: snapshot.data.hasMessages,
+                        ),
+                        TreeTabItem(
+                          title: S.of(context).profile_tab_title,
+                          icon: Icons.person,
+                          onTap: () => _changePage(3),
+                          isActive: _currentPage == 3,
+                          type: 3,
+                          iconImage:
+                              widget.userBloc.loginState$.value is LoggedInUser
+                                  ? (widget.userBloc.loginState$.value
+                                          as LoggedInUser)
+                                      .image
+                                  : null,
+                          hasNew: false,
+                        ),
+                      ],
                     ),
                   ),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(context).primaryColor,
+                ),
+                Align(
+                  key: _popupMenuKey,
+                  alignment: Alignment.topCenter,
+                  child: GestureDetector(
+                    onTap: () {
+                      _showAddPopupMenu(context);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(top: 5),
+                      width: 60,
+                      height: 60,
+                      child: Center(
+                        child: Icon(
+                          Icons.add,
+                          color: Colors.white,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   void _showAddPopupMenu(BuildContext context) {
     var menu = PopupMenu(
-      context: context,
-      backgroundColor: Theme.of(context).primaryColor,
-      lineColor: Colors.white.withOpacity(0.5),
-      items: [
-        MenuItem(
-          title: 'Post',
-          textStyle: _menuItemTextStyle(),
-          image: _menuItemIconImage(post_icon)
-        ),
-        MenuItem(
-          title: 'Poll',
-          textStyle: _menuItemTextStyle(),
-          image: _menuItemIconImage(poll_icon),
-        ),
-        MenuItem(
-          title: 'Event',
-          textStyle: _menuItemTextStyle(),
-          image: _menuItemIconImage(event_icon),
-        ),
-      ],
-      onClickMenu: (item) {
-        switch (item.menuTitle) {
-          case 'Post':
-            Navigator.of(context).pushNamed(
-              '/edit_post',
-              arguments: null,
-            );
-          break;
-          case 'Poll':
-            Navigator.of(context).pushNamed(
-              '/edit_poll',
-              arguments: null,
-            );
-          break;
-          case 'Event':
-            Navigator.of(context).pushNamed(
-              '/event_types',
-            );
-          break;
-        }
-      }
-    );
+        context: context,
+        backgroundColor: Theme.of(context).primaryColor,
+        lineColor: Colors.white.withOpacity(0.5),
+        items: [
+          MenuItem(
+              title: 'Post',
+              textStyle: _menuItemTextStyle(),
+              image: _menuItemIconImage(post_icon)),
+          MenuItem(
+            title: 'Poll',
+            textStyle: _menuItemTextStyle(),
+            image: _menuItemIconImage(poll_icon),
+          ),
+          MenuItem(
+            title: 'Event',
+            textStyle: _menuItemTextStyle(),
+            image: _menuItemIconImage(event_icon),
+          ),
+        ],
+        onClickMenu: (item) {
+          switch (item.menuTitle) {
+            case 'Post':
+              Navigator.of(context).pushNamed(
+                '/edit_post',
+                arguments: null,
+              );
+              break;
+            case 'Poll':
+              Navigator.of(context).pushNamed(
+                '/edit_poll',
+                arguments: null,
+              );
+              break;
+            case 'Event':
+              Navigator.of(context).pushNamed(
+                '/event_types',
+              );
+              break;
+          }
+        });
 
     menu.show(widgetKey: _popupMenuKey);
   }

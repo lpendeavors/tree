@@ -30,6 +30,8 @@ CommentReply _$CommentReplyFromJson(Map<String, dynamic> json) {
     userImage: json['userImage'] as String,
     username: json['username'] as String,
     visibility: json['visibility'] as int,
+    imagePath: json['imagePath'] as String,
+    isGIF: json['isGIF'] as bool,
   );
 }
 
@@ -55,6 +57,8 @@ Map<String, dynamic> _$CommentReplyToJson(CommentReply instance) =>
       'userImage': instance.userImage,
       'username': instance.username,
       'visibility': instance.visibility,
+      'imagePath': instance.imagePath,
+      'isGIF': instance.isGIF,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

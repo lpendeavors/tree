@@ -3,6 +3,12 @@ import '../../models/old/comment_entity.dart';
 abstract class FirestoreCommentRepository {
   Stream<List<CommentEntity>> getByPost(String postId);
 
+  Future<void> likeOrUnlikeComment(
+    String commentId,
+    bool shouldLike,
+    String uid,
+  );
+
   Future<Map<String, String>> saveComment(
     String commentId,
     bool byAdmin,
@@ -17,5 +23,6 @@ abstract class FirestoreCommentRepository {
     bool isGif,
     String gif,
     String ownerToken,
+    bool isReply,
   );
 }

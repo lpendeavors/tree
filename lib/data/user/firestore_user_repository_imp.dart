@@ -87,20 +87,19 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     user.linkWithCredential(emailCredential);
 
     await updateUserData(
-      user.uid,
-      UserEntity.createWith({
-        'joined': FieldValue.serverTimestamp(),
-        'phoneNo': user.phoneNumber,
-        'email': email,
-        'churchName': churchName == '' ? null : churchName,
-        'isChurch' : churchName == '' ? false : true,
-        'firstName': firstName,
-        'lastName': lastName,
-        'password': password,
-        'fullName': "$firstName $lastName",
-        'uid': user.uid
-      })
-    );
+        user.uid,
+        UserEntity.createWith({
+          'joined': FieldValue.serverTimestamp(),
+          'phoneNo': user.phoneNumber,
+          'email': email,
+          'churchName': churchName == '' ? null : churchName,
+          'isChurch': churchName == '' ? false : true,
+          'firstName': firstName,
+          'lastName': lastName,
+          'password': password,
+          'fullName': "$firstName $lastName",
+          'uid': user.uid
+        }));
 
     print('[USER_REPO] registerWithPhone firebaseUser=$user');
   }
@@ -387,10 +386,21 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   ) {
     var entities = <UserEntity>[];
     uids.forEach((id) async {
-      var user = await _firestore.collection('userBase').document(id).get();
+      var user = await _firestore
+          .collection('userBase')
+          .document(id)
+          .snapshots()
+          .first;
       entities.add(UserEntity.fromDocumentSnapshot(user));
     });
 
     return entities;
+  }
+
+  @override
+  Future<void> removeConnection(String uid, String userId) {
+    return _firestore.collection('userBase').document(uid).updateData({
+      'connections': FieldValue.arrayRemove([userId]),
+    });
   }
 }

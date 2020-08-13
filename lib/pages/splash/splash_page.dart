@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/bloc/bloc_provider.dart';
+import 'package:treeapp/pages/home_tabs/home_tabs_bloc.dart';
+import 'package:treeapp/pages/home_tabs/home_tabs_page.dart';
+import '../../dependency_injection.dart';
 import '../../util/asset_utils.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -18,7 +22,8 @@ class SplashPage extends StatefulWidget {
   _SplashPageState createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
   AnimationController _animationController;
   Animation _animation;
 
@@ -48,9 +53,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: Image.asset(
-                splashText
-              ),
+              child: Image.asset(splashText),
             ),
             Align(
               alignment: Alignment.center,
@@ -88,18 +91,31 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 
   void _setupRedirect() {
-    Future.delayed(
-      Duration(milliseconds: 3000), 
-      () async {
-        var loginState = widget.userBloc.loginState$.value;
+    Future.delayed(Duration(milliseconds: 3000), () async {
+      var loginState = widget.userBloc.loginState$.value;
 
-        if (loginState is LoggedInUser) {
-          Navigator.pushReplacementNamed(context, '/');
-        } else {
-          Navigator.pushReplacementNamed(context, '/getting_started');
-        }
+      if (loginState is LoggedInUser) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
+          return HomeTabsPage(
+            initHomeTabsBloc: () => HomeTabsBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              requestRepository: Injector.of(context).requestRepository,
+              chatRepository: Injector.of(context).chatRepository,
+            ),
+            userBloc: BlocProvider.of<UserBloc>(context),
+            postRepository: Injector.of(context).postRepository,
+            roomRepository: Injector.of(context).roomRepository,
+            userRepository: Injector.of(context).userRepository,
+            chatRepository: Injector.of(context).chatRepository,
+            groupRepository: Injector.of(context).groupRepository,
+            requestRepository: Injector.of(context).requestRepository,
+            notificationRepository: Injector.of(context).notificationRepository,
+          );
+        }));
+      } else {
+        Navigator.pushReplacementNamed(context, '/getting_started');
       }
-    );
+    });
   }
-  
 }

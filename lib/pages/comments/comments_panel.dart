@@ -160,8 +160,10 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                             itemBuilder: (context, index) {
                                               return CommentListItem(
                                                 comment: data.comments[index],
+                                                onLike: null,
                                                 isReply: false,
                                                 isPage: false,
+                                                onReply: null,
                                               );
                                             });
                                       },
@@ -180,6 +182,7 @@ class _CommentsPanelState extends State<CommentsPanel> {
                                         .image ??
                                     "",
                                 commentsBloc: widget.commentsBloc,
+                                isReply: false,
                               ),
                             ],
                           ),

@@ -1,24 +1,31 @@
 import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../comments_state.dart';
+import 'reply_screen.dart';
 
 class CommentListItem extends StatelessWidget {
   final CommentItem comment;
   final bool isPage;
   final bool isReply;
+  final Function(bool) onLike;
+  final Function() onReply;
 
   const CommentListItem({
     @required this.comment,
     @required this.isPage,
     @required this.isReply,
+    @required this.onLike,
+    @required this.onReply,
   });
 
   @override
   Widget build(BuildContext context) {
+    print(comment.id);
     return GestureDetector(
       onLongPress: () {
-        // TODO: delete/edit
+        _showCommentOptions();
       },
       child: Stack(
         children: <Widget>[
@@ -44,23 +51,37 @@ class CommentListItem extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        comment.fullName,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            '/profile',
+                            arguments: comment.userId,
+                          );
+                        },
+                        child: Text(
+                          comment.fullName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 5),
+                      SizedBox(height: 10),
                       comment.isGif
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(15),
-                              child: Image(
-                                height: 150,
+                              child: CachedNetworkImage(
                                 width: 250,
+                                height: 150,
+                                imageUrl: comment.gif,
                                 fit: BoxFit.cover,
-                                image: CacheImage(comment.gif),
+                                placeholder: (_, s) => Container(
+                                  width: 250,
+                                  height: 150,
+                                  alignment: Alignment.center,
+                                  color: Colors.black.withOpacity(0.01),
+                                ),
                               ),
                             )
                           : Text(
@@ -80,6 +101,35 @@ class CommentListItem extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
+                        if (comment.likes.isNotEmpty)
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                '${comment.likes.length}',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Container(
+                                height: 20,
+                                width: 20,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: SizedBox(
+                                    child: Icon(
+                                      Icons.favorite,
+                                      size: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                            ],
+                          ),
                         Text(
                           timeago.format(comment.datePosted),
                           style: TextStyle(
@@ -89,7 +139,9 @@ class CommentListItem extends StatelessWidget {
                         ),
                         SizedBox(width: 20),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            onLike(!comment.isLiked);
+                          },
                           child: Text(
                             'Like',
                             style: TextStyle(
@@ -101,7 +153,7 @@ class CommentListItem extends StatelessWidget {
                         ),
                         SizedBox(width: 20),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: onReply,
                           child: Text(
                             'Reply',
                             style: TextStyle(
@@ -124,6 +176,8 @@ class CommentListItem extends StatelessWidget {
                           isPage: isPage,
                           isReply: true,
                           comment: comment.replies[index],
+                          onLike: null,
+                          onReply: onReply,
                         ),
                       );
                     },
@@ -190,5 +244,9 @@ class CommentListItem extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showCommentOptions() {
+    print('options');
   }
 }

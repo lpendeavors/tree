@@ -28,7 +28,8 @@ class PostDetailsPage extends StatefulWidget {
   _PostDetailsPageState createState() => _PostDetailsPageState();
 }
 
-class _PostDetailsPageState extends State<PostDetailsPage> with TickerProviderStateMixin {
+class _PostDetailsPageState extends State<PostDetailsPage>
+    with TickerProviderStateMixin {
   PostDetailsBloc _postDetailsBloc;
   List<StreamSubscription> _subscriptions;
 
@@ -39,8 +40,9 @@ class _PostDetailsPageState extends State<PostDetailsPage> with TickerProviderSt
     _postDetailsBloc = widget.initPostDetailsBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -81,163 +83,49 @@ class _PostDetailsPageState extends State<PostDetailsPage> with TickerProviderSt
           appBar: AppBar(
             title: Text('Post'),
           ),
-          body: Column(
-            children: <Widget>[
-              Flexible(
-                child: ListView(
-                  children: <Widget>[
-                    FeedListItem(
-                      feedItem: data.postDetails,
-                      context: context,
-                      tickerProvider: this,
-                      likeFeedItem: (id) => print(id),
-                    ),
-                    ListView.builder(
-                      reverse: true,
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      itemCount: data.commentItems.length,
-                      padding: EdgeInsets.all(2),
-                      itemBuilder: (context, index) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            _commentItem(
-                              item: data.commentItems[index],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+          body: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              children: <Widget>[
+                Flexible(
+                  child: ListView(
+                    children: <Widget>[
+                      FeedListItem(
+                        feedItem: data.postDetails,
+                        context: context,
+                        tickerProvider: this,
+                        likeFeedItem: (id) => print(id),
+                      ),
+                      ListView.builder(
+                        reverse: true,
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
+                        itemCount: data.commentItems.length,
+                        padding: EdgeInsets.all(2),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              CommentListItem(
+                                comment: data.commentItems[index],
+                                isPage: false,
+                                isReply: false,
+                                onLike: null,
+                                onReply: null,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
-    );
-  }
-
-  Widget _commentItem({
-    CommentItem item,
-  }) {
-    return GestureDetector(
-      onLongPress: () {
-        // TODO: report comment
-      },
-      child: Padding(
-        padding: EdgeInsets.all(8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Flexible(
-              child: Stack(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Stack(
-                              alignment: Alignment.bottomLeft,
-                              children: <Widget>[
-                                if (!item.isGif)
-                                  Container(
-                                    padding: EdgeInsets.all(18),
-                                    margin: EdgeInsets.only(left: 14),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          item.fullName,
-                                          textAlign: TextAlign.start,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        SizedBox(height: 5),
-                                        Flexible(
-                                          child: Text(
-                                            item.message,
-                                            maxLines: 4,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  Container(
-                                    padding: EdgeInsets.all(18),
-                                    margin: EdgeInsets.only(left: 14),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.01),
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          item.fullName,
-                                          textAlign: TextAlign.start,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        SizedBox(height: 5),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(15),
-                                          child: Image(
-                                            width: 250,
-                                            height: 150,
-                                            fit: BoxFit.cover,
-                                            image: CacheImage(item.image),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(
-                        '/profile',
-                        arguments: item.owner,
-                      );
-                    },
-                    child: AbsorbPointer(
-                      absorbing: true,
-                      child: ImageHolder(
-                        size: 40,
-                        image: item.image,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

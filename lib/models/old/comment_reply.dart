@@ -29,6 +29,8 @@ class CommentReply extends Equatable {
   final String userImage;
   final String username;
   final int visibility;
+  final String imagePath;
+  final bool isGIF;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -64,6 +66,8 @@ class CommentReply extends Equatable {
     this.userImage,
     this.username,
     this.visibility,
+    this.imagePath,
+    this.isGIF,
   });
 
   factory CommentReply.fromJson(Map<String, dynamic> json) =>
@@ -94,6 +98,8 @@ class CommentReply extends Equatable {
         userImage,
         username,
         visibility,
+        imagePath,
+        isGIF,
       ];
 
   @override

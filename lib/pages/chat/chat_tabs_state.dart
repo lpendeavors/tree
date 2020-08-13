@@ -115,6 +115,7 @@ class MessageItem extends Equatable {
   final String roomId;
   final bool isRead;
   final bool isMine;
+  final List<MemberItem> membersInfo;
 
   const MessageItem({
     @required this.id,
@@ -129,6 +130,7 @@ class MessageItem extends Equatable {
     @required this.roomId,
     @required this.isRead,
     @required this.isMine,
+    @required this.membersInfo,
   });
 
   @override
@@ -145,6 +147,30 @@ class MessageItem extends Equatable {
         roomId,
         isRead,
         isMine,
+        membersInfo,
+      ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
+class MemberItem extends Equatable {
+  final String id;
+  final String name;
+  final String image;
+
+  const MemberItem({
+    @required this.id,
+    @required this.name,
+    @required this.image,
+  });
+
+  @override
+  List get props => [
+        id,
+        name,
+        image,
       ];
 
   @override

@@ -98,7 +98,6 @@ class ChatTabsBloc implements BaseBloc {
       return Rx.combineLatest2(
           chatRepository.getByUser(uid: loginState.uid), groupRepository.get(),
           (chats, groups) {
-            print('hey ${chats.length} ${groups.length}');
         Tuple2 sortedGroups =
             _sortGroups(_entitiesToGroupItems(groups), loginState);
 

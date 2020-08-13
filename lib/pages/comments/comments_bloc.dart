@@ -12,8 +12,8 @@ import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import './comments_state.dart';
 
-bool _isCommentValid(String comment) {
-  return comment.isNotEmpty;
+bool _isCommentValid(String comment, bool isGif) {
+  return comment.isNotEmpty && !isGif;
 }
 
 const _kInitialCommentsState = CommentsState(
@@ -28,9 +28,12 @@ class CommentsBloc implements BaseBloc {
   /// Input functions
   ///
   Function() addComment;
+  Function(bool) likeComment;
   Function(String) commentChanged;
+  Function(String) commentToLikeChanged;
   Function(String) gifChanged;
   Function(bool) isGifChanged;
+  Function(bool) isReplyChanged;
 
   ///
   /// Output streams
@@ -38,10 +41,12 @@ class CommentsBloc implements BaseBloc {
   final ValueStream<CommentsState> commentsState$;
   final Stream<CommentEmptyError> commentError$;
   final Stream<CommentAddedMessage> message$;
+  final Stream<CommentLikeMessage> likeMessage$;
   final ValueStream<bool> isLoading$;
 
   final ValueStream<bool> isGif$;
   final ValueStream<String> gif$;
+  final ValueStream<bool> isReply$;
 
   ///
   /// Clean up
@@ -50,15 +55,20 @@ class CommentsBloc implements BaseBloc {
 
   CommentsBloc._({
     @required this.addComment,
+    @required this.likeComment,
     @required this.commentChanged,
+    @required this.commentToLikeChanged,
     @required this.gifChanged,
     @required this.isGifChanged,
+    @required this.isReplyChanged,
     @required this.commentsState$,
     @required this.commentError$,
     @required this.message$,
+    @required this.likeMessage$,
     @required this.isLoading$,
     @required this.isGif$,
     @required this.gif$,
+    @required this.isReply$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -80,17 +90,21 @@ class CommentsBloc implements BaseBloc {
     /// Stream controllers
     ///
     final addCommentSubject = PublishSubject<void>(sync: true);
+    final likeCommentSubject = PublishSubject<bool>(sync: true);
+    final commentToLikeSubject = BehaviorSubject<String>.seeded('');
     final commentSubject = BehaviorSubject<String>.seeded('');
     final gifSubject = BehaviorSubject<String>.seeded('');
     final isGifSubject = BehaviorSubject<bool>.seeded(false);
+    final isReplySubject = BehaviorSubject<bool>.seeded(false);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     ///
     /// Streams
     ///
-    final commentError$ = commentSubject.map((comment) {
-      if (_isCommentValid(comment)) return null;
-      return const CommentEmptyError();
+    final commentError$ =
+        Rx.combineLatest2(commentSubject, isGifSubject, (comment, isGif) {
+      if (comment.isNotEmpty || isGif) return null;
+      return CommentEmptyError();
     });
 
     final allFieldsAreValid$ = Rx.combineLatest(
@@ -107,6 +121,8 @@ class CommentsBloc implements BaseBloc {
         .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
         .where((isValid) => isValid)
         .exhaustMap((_) => saveComment(
+              commentToLikeSubject.value,
+              isReplySubject.value,
               userBloc,
               commentRepository,
               postId,
@@ -114,6 +130,15 @@ class CommentsBloc implements BaseBloc {
               isGifSubject.value,
               gifSubject.value,
               isLoadingSubject,
+            ))
+        .publish();
+
+    final likeMessage$ = likeCommentSubject
+        .switchMap((shouldLike) => likeOrUnlikeComment(
+              userBloc,
+              commentRepository,
+              shouldLike,
+              commentToLikeSubject.value,
             ))
         .publish();
 
@@ -127,25 +152,32 @@ class CommentsBloc implements BaseBloc {
     final subscriptions = <StreamSubscription>[
       commentsState$.connect(),
       message$.connect(),
+      likeMessage$.connect(),
     ];
 
     final controllers = <StreamController>[
       commentSubject,
       gifSubject,
       isGifSubject,
+      isReplySubject,
       isLoadingSubject,
     ];
 
     return CommentsBloc._(
         addComment: () => addCommentSubject.add(null),
+        likeComment: (like) => likeCommentSubject.add(like),
         commentChanged: commentSubject.add,
+        commentToLikeChanged: commentToLikeSubject.add,
         isGifChanged: isGifSubject.add,
         gifChanged: gifSubject.add,
+        isReplyChanged: isReplySubject.add,
         isGif$: isGifSubject.stream,
         gif$: gifSubject.stream,
+        isReply$: isReplySubject.stream,
         commentsState$: commentsState$,
         commentError$: commentError$,
         message$: message$,
+        likeMessage$: likeMessage$,
         isLoading$: isLoadingSubject,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
@@ -215,6 +247,8 @@ class CommentsBloc implements BaseBloc {
         owner: entity.ownerId,
         replies: _entitiesToReplyItems(entity.replies ?? [], uid),
         isMine: entity.ownerId == uid,
+        likes: entity.likes ?? [],
+        isLiked: (entity.likes ?? []).contains(uid),
       );
     }).toList();
   }
@@ -231,11 +265,13 @@ class CommentsBloc implements BaseBloc {
         message: entity.postMessage,
         image: entity.image ?? "",
         datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-        isGif: false,
-        gif: '',
+        isGif: entity.isGIF ?? false,
+        gif: entity.imagePath,
         owner: entity.ownerId,
         replies: [],
         isMine: entity.ownerId == uid,
+        likes: [],
+        isLiked: false,
       );
     }).toList();
   }
@@ -266,7 +302,33 @@ class CommentsBloc implements BaseBloc {
     });
   }
 
+  static Stream<CommentLikeMessage> likeOrUnlikeComment(
+    UserBloc userBloc,
+    FirestoreCommentRepository commentRepository,
+    bool shouldLike,
+    String commentId,
+  ) async* {
+    print('[DEBUG] CommentsBloc#likeComment');
+    LoginState loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      try {
+        await commentRepository.likeOrUnlikeComment(
+          commentId,
+          shouldLike,
+          loginState.uid,
+        );
+
+        yield CommentLikeSuccess();
+      } catch (e) {
+        yield CommentLikeError(e);
+      }
+    }
+  }
+
   static Stream<CommentAddedMessage> saveComment(
+    String commentId,
+    bool isReply,
     UserBloc userBloc,
     FirestoreCommentRepository commentRepository,
     String postId,
@@ -282,7 +344,7 @@ class CommentsBloc implements BaseBloc {
       try {
         isLoading.add(true);
         await commentRepository.saveComment(
-          null,
+          commentId,
           loginState.isAdmin,
           loginState.fullName,
           loginState.isAdmin,
@@ -295,6 +357,7 @@ class CommentsBloc implements BaseBloc {
           isGif,
           gif,
           loginState.token,
+          isReply,
         );
 
         yield CommentAddedSuccess();

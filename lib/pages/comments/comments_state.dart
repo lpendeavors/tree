@@ -21,6 +21,19 @@ class CommentAddedError implements CommentAddedMessage {
   const CommentAddedError(this.error);
 }
 
+abstract class CommentLikeMessage {
+  const CommentLikeMessage();
+}
+
+class CommentLikeSuccess implements CommentLikeMessage {
+  const CommentLikeSuccess();
+}
+
+class CommentLikeError implements CommentLikeMessage {
+  final Object error;
+  const CommentLikeError(this.error);
+}
+
 class CommentEmptyError {
   const CommentEmptyError();
 }
@@ -77,7 +90,9 @@ class CommentItem extends Equatable {
   final String gif;
   final String owner;
   final List<CommentItem> replies;
+  final List<String> likes;
   final bool isMine;
+  final bool isLiked;
 
   const CommentItem({
     @required this.id,
@@ -90,7 +105,9 @@ class CommentItem extends Equatable {
     @required this.gif,
     @required this.owner,
     @required this.replies,
+    @required this.likes,
     @required this.isMine,
+    @required this.isLiked,
   });
 
   @override
@@ -106,6 +123,8 @@ class CommentItem extends Equatable {
         owner,
         replies,
         isMine,
+        likes,
+        isLiked,
       ];
 
   @override

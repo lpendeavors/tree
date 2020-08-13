@@ -8,8 +8,12 @@ import 'intl/messages_all.dart';
 // Made by Localizely
 // **************************************************************************
 
+// ignore_for_file: non_constant_identifier_names, lines_longer_than_80_chars
+
 class S {
   S();
+  
+  static S current;
   
   static const AppLocalizationDelegate delegate =
     AppLocalizationDelegate();
@@ -19,7 +23,9 @@ class S {
     final localeName = Intl.canonicalizedLocale(name); 
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
-      return S();
+      S.current = S();
+      
+      return S.current;
     });
   } 
 
@@ -27,6 +33,7 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
+  /// `TREE`
   String get app_title {
     return Intl.message(
       'TREE',
@@ -36,6 +43,7 @@ class S {
     );
   }
 
+  /// `Life is Better Together`
   String get getting_started_title {
     return Intl.message(
       'Life is Better Together',
@@ -45,6 +53,7 @@ class S {
     );
   }
 
+  /// `Get Started`
   String get getting_started_button {
     return Intl.message(
       'Get Started',
@@ -54,6 +63,7 @@ class S {
     );
   }
 
+  /// `Already have an account?`
   String get already_have_an_account {
     return Intl.message(
       'Already have an account?',
@@ -63,6 +73,7 @@ class S {
     );
   }
 
+  /// `Login Here`
   String get login_here {
     return Intl.message(
       'Login Here',
@@ -72,6 +83,7 @@ class S {
     );
   }
 
+  /// `Sign In`
   String get login {
     return Intl.message(
       'Sign In',
@@ -81,6 +93,7 @@ class S {
     );
   }
 
+  /// `Cancel?`
   String get exit_login {
     return Intl.message(
       'Cancel?',
@@ -90,6 +103,7 @@ class S {
     );
   }
 
+  /// `Are you sure you want to exit?`
   String get exit_login_message {
     return Intl.message(
       'Are you sure you want to exit?',
@@ -99,6 +113,7 @@ class S {
     );
   }
 
+  /// `Login successful!`
   String get login_success {
     return Intl.message(
       'Login successful!',
@@ -108,6 +123,7 @@ class S {
     );
   }
 
+  /// `Logout successful!`
   String get logout_success {
     return Intl.message(
       'Logout successful!',
@@ -117,6 +133,7 @@ class S {
     );
   }
 
+  /// `An error occurred logging out`
   String get logout_error {
     return Intl.message(
       'An error occurred logging out',
@@ -126,6 +143,7 @@ class S {
     );
   }
 
+  /// `Use your {method} to login`
   String login_method(Object method) {
     return Intl.message(
       'Use your $method to login',
@@ -135,6 +153,7 @@ class S {
     );
   }
 
+  /// `EMAIL ADDRESS`
   String get email_address {
     return Intl.message(
       'EMAIL ADDRESS',
@@ -144,6 +163,7 @@ class S {
     );
   }
 
+  /// `Enter Email Address`
   String get email_hint {
     return Intl.message(
       'Enter Email Address',
@@ -153,6 +173,7 @@ class S {
     );
   }
 
+  /// `PASSWORD`
   String get password {
     return Intl.message(
       'PASSWORD',
@@ -162,6 +183,7 @@ class S {
     );
   }
 
+  /// `Enter Password`
   String get password_hint {
     return Intl.message(
       'Enter Password',
@@ -171,6 +193,7 @@ class S {
     );
   }
 
+  /// `Verification sent`
   String get phone_login_success {
     return Intl.message(
       'Verification sent',
@@ -180,6 +203,7 @@ class S {
     );
   }
 
+  /// `Sign Up`
   String get sign_up {
     return Intl.message(
       'Sign Up',
@@ -189,6 +213,7 @@ class S {
     );
   }
 
+  /// `Continue`
   String get sign_up_continue {
     return Intl.message(
       'Continue',
@@ -198,6 +223,7 @@ class S {
     );
   }
 
+  /// `Sign Up as a {entity}?`
   String sign_up_as(Object entity) {
     return Intl.message(
       'Sign Up as a $entity?',
@@ -207,6 +233,7 @@ class S {
     );
   }
 
+  /// `Enter your mobile number`
   String get enter_phone_number {
     return Intl.message(
       'Enter your mobile number',
@@ -216,6 +243,7 @@ class S {
     );
   }
 
+  /// `(678) 324-4041`
   String get phone_number_hint {
     return Intl.message(
       '(678) 324-4041',
@@ -225,6 +253,7 @@ class S {
     );
   }
 
+  /// `(000) 000-0000`
   String get phone_number_mask {
     return Intl.message(
       '(000) 000-0000',
@@ -234,6 +263,7 @@ class S {
     );
   }
 
+  /// `Verification sent`
   String get phone_register_success {
     return Intl.message(
       'Verification sent',
@@ -243,6 +273,7 @@ class S {
     );
   }
 
+  /// `Sign Up Completed`
   String get register_success {
     return Intl.message(
       'Sign Up Completed',
@@ -252,6 +283,7 @@ class S {
     );
   }
 
+  /// `Enter Church Name`
   String get church_name_hint {
     return Intl.message(
       'Enter Church Name',
@@ -261,6 +293,7 @@ class S {
     );
   }
 
+  /// `Enter First Name`
   String get f_name_hint {
     return Intl.message(
       'Enter First Name',
@@ -270,6 +303,7 @@ class S {
     );
   }
 
+  /// `Enter Last Name`
   String get l_name_hint {
     return Intl.message(
       'Enter Last Name',
@@ -279,6 +313,7 @@ class S {
     );
   }
 
+  /// `Retype Password`
   String get retype_hint {
     return Intl.message(
       'Retype Password',
@@ -288,6 +323,7 @@ class S {
     );
   }
 
+  /// `Verification`
   String get verification {
     return Intl.message(
       'Verification',
@@ -297,6 +333,7 @@ class S {
     );
   }
 
+  /// `Phone Verification`
   String get verification_title {
     return Intl.message(
       'Phone Verification',
@@ -306,6 +343,7 @@ class S {
     );
   }
 
+  /// `Enter the 6 digit number sent to you`
   String get verification_message {
     return Intl.message(
       'Enter the 6 digit number sent to you',
@@ -315,6 +353,7 @@ class S {
     );
   }
 
+  /// `Resend code`
   String get verification_resend {
     return Intl.message(
       'Resend code',
@@ -324,6 +363,7 @@ class S {
     );
   }
 
+  /// `We'll send you a text verification code`
   String get verification_hint {
     return Intl.message(
       'We\'ll send you a text verification code',
@@ -333,6 +373,7 @@ class S {
     );
   }
 
+  /// `Forgot your password?`
   String get forgot_password {
     return Intl.message(
       'Forgot your password?',
@@ -342,6 +383,7 @@ class S {
     );
   }
 
+  /// `We'll email you instructions to reset your password`
   String get password_reset_tip {
     return Intl.message(
       'We\'ll email you instructions to reset your password',
@@ -351,6 +393,7 @@ class S {
     );
   }
 
+  /// `Password reset email sent!`
   String get password_reset_success {
     return Intl.message(
       'Password reset email sent!',
@@ -360,6 +403,7 @@ class S {
     );
   }
 
+  /// `Send Email`
   String get password_reset_confirm {
     return Intl.message(
       'Send Email',
@@ -369,6 +413,7 @@ class S {
     );
   }
 
+  /// `A network error occurred`
   String get network_error {
     return Intl.message(
       'A network error occurred',
@@ -378,6 +423,7 @@ class S {
     );
   }
 
+  /// `An error occurred. Too many requests`
   String get too_many_requests_error {
     return Intl.message(
       'An error occurred. Too many requests',
@@ -387,6 +433,7 @@ class S {
     );
   }
 
+  /// `User not found`
   String get user_not_found_error {
     return Intl.message(
       'User not found',
@@ -396,6 +443,7 @@ class S {
     );
   }
 
+  /// `Incorrect password`
   String get wrong_password_error {
     return Intl.message(
       'Incorrect password',
@@ -405,6 +453,7 @@ class S {
     );
   }
 
+  /// `Invalid email address`
   String get invalid_email_error {
     return Intl.message(
       'Invalid email address',
@@ -414,6 +463,7 @@ class S {
     );
   }
 
+  /// `Password is too weak`
   String get weak_password_error {
     return Intl.message(
       'Password is too weak',
@@ -423,6 +473,7 @@ class S {
     );
   }
 
+  /// `An unknown error has occurred`
   String get error_occurred {
     return Intl.message(
       'An unknown error has occurred',
@@ -432,6 +483,7 @@ class S {
     );
   }
 
+  /// `Notifications`
   String get notifications_title {
     return Intl.message(
       'Notifications',
@@ -441,6 +493,7 @@ class S {
     );
   }
 
+  /// `No Notifications`
   String get notifications_empty_title {
     return Intl.message(
       'No Notifications',
@@ -450,6 +503,7 @@ class S {
     );
   }
 
+  /// `~You have no notifications yet~`
   String get notifications_empty_desc {
     return Intl.message(
       '~You have no notifications yet~',
@@ -459,6 +513,7 @@ class S {
     );
   }
 
+  /// `Search Events`
   String get events_search_hint {
     return Intl.message(
       'Search Events',
@@ -468,6 +523,7 @@ class S {
     );
   }
 
+  /// `EXPLORE`
   String get events_tab_explore {
     return Intl.message(
       'EXPLORE',
@@ -477,6 +533,7 @@ class S {
     );
   }
 
+  /// `MAP`
   String get events_tab_map {
     return Intl.message(
       'MAP',
@@ -486,6 +543,7 @@ class S {
     );
   }
 
+  /// `MY EVENTS`
   String get events_tab_mine {
     return Intl.message(
       'MY EVENTS',
@@ -495,6 +553,7 @@ class S {
     );
   }
 
+  /// `No Events`
   String get events_empty_title {
     return Intl.message(
       'No Events',
@@ -504,6 +563,7 @@ class S {
     );
   }
 
+  /// `~You have no events yet~`
   String get events_empty_desc {
     return Intl.message(
       '~You have no events yet~',
@@ -513,6 +573,7 @@ class S {
     );
   }
 
+  /// `🔥 Sponsored Event`
   String get event_sponsored_title {
     return Intl.message(
       '🔥 Sponsored Event',
@@ -522,6 +583,7 @@ class S {
     );
   }
 
+  /// `Create Event`
   String get create_event_title {
     return Intl.message(
       'Create Event',
@@ -531,6 +593,7 @@ class S {
     );
   }
 
+  /// `Choose your objective`
   String get event_objective_title {
     return Intl.message(
       'Choose your objective',
@@ -540,6 +603,7 @@ class S {
     );
   }
 
+  /// `Event Details`
   String get event_details_title {
     return Intl.message(
       'Event Details',
@@ -549,6 +613,7 @@ class S {
     );
   }
 
+  /// `ATTENDEES`
   String get event_attendees_title {
     return Intl.message(
       'ATTENDEES',
@@ -558,6 +623,7 @@ class S {
     );
   }
 
+  /// `Declined Reason`
   String get event_rejected_reason_title {
     return Intl.message(
       'Declined Reason',
@@ -567,6 +633,7 @@ class S {
     );
   }
 
+  /// `DESCRIPTION`
   String get event_description_title {
     return Intl.message(
       'DESCRIPTION',
@@ -576,6 +643,7 @@ class S {
     );
   }
 
+  /// `ATTEND`
   String get event_attend_title {
     return Intl.message(
       'ATTEND',
@@ -585,6 +653,7 @@ class S {
     );
   }
 
+  /// `CREATE`
   String get event_create_title {
     return Intl.message(
       'CREATE',
@@ -594,6 +663,7 @@ class S {
     );
   }
 
+  /// `Add photos`
   String get event_add_photos {
     return Intl.message(
       'Add photos',
@@ -603,6 +673,7 @@ class S {
     );
   }
 
+  /// `SAVE`
   String get event_save_title {
     return Intl.message(
       'SAVE',
@@ -612,6 +683,7 @@ class S {
     );
   }
 
+  /// `Event title`
   String get event_title {
     return Intl.message(
       'Event title',
@@ -621,6 +693,7 @@ class S {
     );
   }
 
+  /// `Select event start and end date`
   String get event_start_end_date {
     return Intl.message(
       'Select event start and end date',
@@ -630,6 +703,7 @@ class S {
     );
   }
 
+  /// `Briefly describe this event`
   String get describe_event {
     return Intl.message(
       'Briefly describe this event',
@@ -639,6 +713,7 @@ class S {
     );
   }
 
+  /// `Please include all necessary information`
   String get event_details_hint {
     return Intl.message(
       'Please include all necessary information',
@@ -648,6 +723,7 @@ class S {
     );
   }
 
+  /// `Destination Link (If Any)`
   String get event_destination_link {
     return Intl.message(
       'Destination Link (If Any)',
@@ -657,6 +733,7 @@ class S {
     );
   }
 
+  /// `Web address`
   String get event_web_address {
     return Intl.message(
       'Web address',
@@ -666,6 +743,7 @@ class S {
     );
   }
 
+  /// `Cost of the event (Optional)`
   String get event_cost_label {
     return Intl.message(
       'Cost of the event (Optional)',
@@ -675,6 +753,7 @@ class S {
     );
   }
 
+  /// `Venue of event`
   String get event_venue_label {
     return Intl.message(
       'Venue of event',
@@ -684,6 +763,7 @@ class S {
     );
   }
 
+  /// `Where will this event be held?`
   String get event_venue_hint {
     return Intl.message(
       'Where will this event be held?',
@@ -693,6 +773,7 @@ class S {
     );
   }
 
+  /// `Request for this event to be a Sponsored Event(Special advertising benefits included)`
   String get event_sponsored_hint {
     return Intl.message(
       'Request for this event to be a Sponsored Event(Special advertising benefits included)',
@@ -702,6 +783,7 @@ class S {
     );
   }
 
+  /// `What is your budget?`
   String get event_budget_label {
     return Intl.message(
       'What is your budget?',
@@ -711,6 +793,7 @@ class S {
     );
   }
 
+  /// `Estimated number of people that will see your event`
   String get event_estimate_label {
     return Intl.message(
       'Estimated number of people that will see your event',
@@ -720,6 +803,7 @@ class S {
     );
   }
 
+  /// `Search and discover`
   String get explore_search_hint {
     return Intl.message(
       'Search and discover',
@@ -729,6 +813,7 @@ class S {
     );
   }
 
+  /// `FIND CONNECTIONS`
   String get explore_find_connections {
     return Intl.message(
       'FIND CONNECTIONS',
@@ -738,6 +823,7 @@ class S {
     );
   }
 
+  /// `EXPLORE`
   String get explore_posts {
     return Intl.message(
       'EXPLORE',
@@ -747,6 +833,7 @@ class S {
     );
   }
 
+  /// ``
   String get explore_posts_empty {
     return Intl.message(
       '',
@@ -756,6 +843,7 @@ class S {
     );
   }
 
+  /// ``
   String get explore_post_empty_desc {
     return Intl.message(
       '',
@@ -765,6 +853,7 @@ class S {
     );
   }
 
+  /// `No Request Found`
   String get connections_empty_title {
     return Intl.message(
       'No Request Found',
@@ -774,6 +863,7 @@ class S {
     );
   }
 
+  /// ``
   String get connections_empty_desc {
     return Intl.message(
       '',
@@ -783,6 +873,7 @@ class S {
     );
   }
 
+  /// `No`
   String get no {
     return Intl.message(
       'No',
@@ -792,6 +883,7 @@ class S {
     );
   }
 
+  /// `Exit`
   String get exit {
     return Intl.message(
       'Exit',
@@ -801,6 +893,7 @@ class S {
     );
   }
 
+  /// `email`
   String get email {
     return Intl.message(
       'email',
@@ -810,6 +903,7 @@ class S {
     );
   }
 
+  /// `phone number`
   String get phone {
     return Intl.message(
       'phone number',
@@ -819,6 +913,7 @@ class S {
     );
   }
 
+  /// `Verify`
   String get verify {
     return Intl.message(
       'Verify',
@@ -828,6 +923,7 @@ class S {
     );
   }
 
+  /// `OR`
   String get or {
     return Intl.message(
       'OR',
@@ -837,6 +933,7 @@ class S {
     );
   }
 
+  /// `Church`
   String get church {
     return Intl.message(
       'Church',
@@ -846,6 +943,7 @@ class S {
     );
   }
 
+  /// `Person`
   String get person {
     return Intl.message(
       'Person',
@@ -855,6 +953,7 @@ class S {
     );
   }
 
+  /// `Events`
   String get events {
     return Intl.message(
       'Events',
@@ -864,6 +963,7 @@ class S {
     );
   }
 
+  /// `View on map`
   String get view_map {
     return Intl.message(
       'View on map',
@@ -873,6 +973,7 @@ class S {
     );
   }
 
+  /// `Cancel`
   String get cancel {
     return Intl.message(
       'Cancel',
@@ -882,6 +983,7 @@ class S {
     );
   }
 
+  /// `Home`
   String get home_tab_title {
     return Intl.message(
       'Home',
@@ -891,6 +993,7 @@ class S {
     );
   }
 
+  /// `Explore`
   String get explore_tab_title {
     return Intl.message(
       'Explore',
@@ -900,6 +1003,7 @@ class S {
     );
   }
 
+  /// `Chat`
   String get chat_tab_title {
     return Intl.message(
       'Chat',
@@ -909,6 +1013,7 @@ class S {
     );
   }
 
+  /// `Profile`
   String get profile_tab_title {
     return Intl.message(
       'Profile',
@@ -918,6 +1023,7 @@ class S {
     );
   }
 
+  /// `Create Account`
   String get create_account {
     return Intl.message(
       'Create Account',

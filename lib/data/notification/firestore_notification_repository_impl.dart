@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import './firestore_notification_repository.dart';
 import '../../models/old/notification_entity.dart';
 
-class FirestoreNotificationRepositoryImpl implements FirestoreNotificationRepository {
+class FirestoreNotificationRepositoryImpl
+    implements FirestoreNotificationRepository {
   final Firestore _firestore;
 
   const FirestoreNotificationRepositoryImpl(this._firestore);

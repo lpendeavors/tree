@@ -27,6 +27,7 @@ import '../pages/getting_started/getting_started_page.dart';
 import '../pages/phone_verification/phone_verification_page.dart';
 import '../pages/phone_verification/phone_verification_bloc.dart';
 import '../pages/home_tabs/home_tabs_page.dart';
+import '../pages/home_tabs/home_tabs_bloc.dart';
 import '../pages/notifications/notifications_page.dart';
 import '../pages/notifications/notifications_bloc.dart';
 import '../pages/events/events_tabs_page.dart';
@@ -73,17 +74,23 @@ class MyApp extends StatelessWidget {
   );
 
   final appRoutes = <String, WidgetBuilder>{
-    '/': (context) {
-      return HomeTabsPage(
-        userBloc: BlocProvider.of<UserBloc>(context),
-        postRepository: Injector.of(context).postRepository,
-        roomRepository: Injector.of(context).roomRepository,
-        userRepository: Injector.of(context).userRepository,
-        chatRepository: Injector.of(context).chatRepository,
-        groupRepository: Injector.of(context).groupRepository,
-        requestRepository: Injector.of(context).requestRepository,
-      );
-    },
+    // '/': (context) {
+    //   return HomeTabsPage(
+    //     initHomeTabsBloc: () => HomeTabsBloc(
+    //       userBloc: BlocProvider.of<UserBloc>(context),
+    //       requestRepository: Injector.of(context).requestRepository,
+    //       chatRepository: Injector.of(context).chatRepository,
+    //     ),
+    //     userBloc: BlocProvider.of<UserBloc>(context),
+    //     postRepository: Injector.of(context).postRepository,
+    //     roomRepository: Injector.of(context).roomRepository,
+    //     userRepository: Injector.of(context).userRepository,
+    //     chatRepository: Injector.of(context).chatRepository,
+    //     groupRepository: Injector.of(context).groupRepository,
+    //     requestRepository: Injector.of(context).requestRepository,
+    //     notificationRepository: Injector.of(context).notificationRepository,
+    //   );
+    // },
     '/splash': (context) {
       return SplashPage(
         userBloc: BlocProvider.of<UserBloc>(context),

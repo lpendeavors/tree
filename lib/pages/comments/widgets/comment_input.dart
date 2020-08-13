@@ -10,10 +10,12 @@ import 'package:treeapp/widgets/image_holder.dart';
 class CommentInput extends StatefulWidget {
   final CommentsBloc commentsBloc;
   final String userImage;
+  final bool isReply;
 
   const CommentInput({
     @required this.commentsBloc,
     @required this.userImage,
+    @required this.isReply,
   });
 
   @override
@@ -122,6 +124,10 @@ class _CommentInputState extends State<CommentInput> {
                         child: CupertinoButton(
                           child: isGif ? Text('Search') : Text('Send'),
                           onPressed: () async {
+                            if (widget.isReply) {
+                              widget.commentsBloc.isReplyChanged(true);
+                            }
+
                             if (isGif) {
                               var query = gifSearchController.value.text;
                               var gifs = await client.search(query);
@@ -148,8 +154,9 @@ class _CommentInputState extends State<CommentInput> {
           initialData: widget.commentsBloc.isGif$.value,
           builder: (context, snapshot) {
             var isGif = snapshot.data ?? false;
+            var hasImages = gifImages != null && gifImages.data.length > 0;
 
-            if (isGif && (gifImages.data ?? []).isNotEmpty) {
+            if (isGif && hasImages) {
               return Flexible(
                 fit: FlexFit.loose,
                 child: Container(
@@ -168,6 +175,7 @@ class _CommentInputState extends State<CommentInput> {
                             gifImages.data[index].images.original.url,
                           );
                           widget.commentsBloc.addComment();
+                          widget.commentsBloc.isGifChanged(false);
                         },
                         child: CachedNetworkImage(
                           imageUrl: gifImages.data[index].images.original.url,

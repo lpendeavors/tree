@@ -10,6 +10,7 @@ import '../../data/post/firestore_post_repository.dart';
 import '../../data/comment/firestore_comment_repository.dart';
 import '../../models/old/post_entity.dart';
 import '../../models/old/comment_entity.dart';
+import '../../models/old/comment_reply.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../feed/feed_state.dart';
@@ -154,19 +155,47 @@ class PostDetailsBloc extends BaseBloc {
     List<CommentEntity> entities,
     String uid,
   ) {
+    entities.sort((a, b) => b.time.compareTo(a.time));
+
     return entities.map((entity) {
       return CommentItem(
-          id: entity.documentId,
-          fullName: (entity.fullName ?? entity.churchName) ?? "",
-          message: entity.postMessage,
-          image: entity.image ?? "",
-          datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-          isGif: entity.isGIF ?? false,
-          gif: entity.imagePath,
-          owner: entity.ownerId,
-          userId: entity.uid,
-          isMine: entity.uid == uid,
-          replies: entity.replies ?? []);
+        id: entity.documentId,
+        fullName: (entity.fullName ?? entity.churchName) ?? "",
+        message: entity.postMessage,
+        image: entity.image ?? "",
+        datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        isGif: entity.isGIF ?? false,
+        gif: entity.imagePath,
+        owner: entity.ownerId,
+        userId: entity.uid,
+        isMine: entity.uid == uid,
+        replies: _entitiesToReplyItems(entity.replies ?? [], uid),
+        isLiked: (entity.likes ?? []).contains(uid),
+        likes: entity.likes ?? [],
+      );
+    }).toList();
+  }
+
+  static List<CommentItem> _entitiesToReplyItems(
+    List<CommentReply> entities,
+    String uid,
+  ) {
+    return entities.map((entity) {
+      return CommentItem(
+        id: '',
+        userId: entity.ownerId,
+        fullName: (entity.fullName ?? entity.churchName) ?? "",
+        message: entity.postMessage,
+        image: entity.image ?? "",
+        datePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        isGif: entity.isGIF ?? false,
+        gif: entity.imagePath,
+        owner: entity.ownerId,
+        replies: [],
+        isMine: entity.ownerId == uid,
+        likes: [],
+        isLiked: false,
+      );
     }).toList();
   }
 
