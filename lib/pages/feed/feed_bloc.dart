@@ -118,6 +118,7 @@ class FeedBloc implements BaseBloc {
     final subscriptions = <StreamSubscription>[
       feedListState$.connect(),
       message$.connect(),
+      unconnectMessage$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -168,6 +169,10 @@ class FeedBloc implements BaseBloc {
           (byAdmin, userFeed, newNotifications) {
         var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
         var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
+
+        userPosts
+            .removeWhere((p) => feed.map((f) => f.id).toList().contains(p.id));
+
         var hasNotifications =
             _entitiesToNewNotifications(newNotifications, loginState.uid);
 
@@ -217,6 +222,7 @@ class FeedBloc implements BaseBloc {
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
         isShared: entity.isPostPrivate == 1,
         pollData: entity.pollData ?? [],
+        likes: entity.likes ?? [],
       );
     }).toList();
   }

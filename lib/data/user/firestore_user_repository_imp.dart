@@ -403,4 +403,45 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       'connections': FieldValue.arrayRemove([userId]),
     });
   }
+
+  @override
+  Stream<List<UserEntity>> getPending() {
+    return _firestore
+        .collection('userBase')
+        .where('status', isEqualTo: 0)
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Future<void> saveApproval(
+    String userId,
+    bool approved,
+  ) {
+    if (approved) {
+      return _firestore.collection('userBase').document(userId).setData({
+        'isVerified': true,
+        'status': 1,
+      }, merge: true);
+    } else {
+      return _firestore.collection('userBase').document(userId).setData({
+        'status': 3,
+        'reason': '',
+      });
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    await _firestore.document('userBase/$userId').updateData({
+      'deleted': true,
+    });
+  }
+
+  @override
+  Future<void> suspendUser(String userId) async {
+    await _firestore.document('userBase/$userId').updateData({
+      'suspended': true,
+    });
+  }
 }

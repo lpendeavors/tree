@@ -60,6 +60,7 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
+        brightness: Brightness.light,
         flexibleSpace: PreferredSize(
           preferredSize: Size.fromHeight(10),
           child: SafeArea(

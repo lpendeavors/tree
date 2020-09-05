@@ -40,6 +40,7 @@ class ImageHolder extends StatelessWidget {
                     imageUrl: image,
                     height: size,
                     width: size,
+                    fit: BoxFit.cover,
                   ),
                 ],
               ],

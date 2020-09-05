@@ -43,4 +43,12 @@ abstract class FirestoreEventRepository {
   );
 
   Future<List<EventEntity>> runSearchQuery(String query);
+
+  Stream<List<EventEntity>> getPending();
+
+  Stream<List<EventEntity>> getInactive();
+
+  Stream<List<EventEntity>> getCompleted();
+
+  Future<void> approveEvent(String eventId);
 }

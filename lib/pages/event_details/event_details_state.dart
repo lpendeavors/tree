@@ -53,10 +53,10 @@ class EventDetailsState extends Equatable {
 
   @override
   List get props => [
-    eventDetails,
-    isLoading,
-    error,
-  ];
+        eventDetails,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -104,24 +104,24 @@ class EventDetailItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    title,
-    image,
-    attendees,
-    isSponsored,
-    isMine,
-    isRejected,
-    reason,
-    status,
-    webAddress,
-    isAttending,
-    latitude,
-    longitude,
-    type,
-    location,
-    price,
-    details,
-  ];
+        id,
+        title,
+        image,
+        attendees,
+        isSponsored,
+        isMine,
+        isRejected,
+        reason,
+        status,
+        webAddress,
+        isAttending,
+        latitude,
+        longitude,
+        type,
+        location,
+        price,
+        details,
+      ];
 
   @override
   bool get stringify => true;

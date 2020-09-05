@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-/// 
+///
 /// Enum
 ///
 enum EventOption { report, edit, delete, changeStatus, updateReach }
+enum EventFilter { none, pending, inactive, completed }
 
 ///
 /// Message
@@ -87,19 +88,19 @@ class EventItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    title,
-    details,
-    ownerId,
-    image,
-    location,
-    isSponsored,
-    eventType,
-    startDate,
-    isAttending,
-    isMine,
-    isAdmin,
-  ];
+        id,
+        title,
+        details,
+        ownerId,
+        image,
+        location,
+        isSponsored,
+        eventType,
+        startDate,
+        isAttending,
+        isMine,
+        isAdmin,
+      ];
 
   @override
   bool get stringify => true;

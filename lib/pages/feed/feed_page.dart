@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/events/events_state.dart';
 import 'package:treeapp/pages/settings/settings_state.dart';
 import '../../util/asset_utils.dart';
 import '../../widgets/curved_scaffold.dart';
@@ -108,14 +109,20 @@ class _FeedPageState extends State<FeedPage>
                     ],
                   ),
                   onPressed: () {
-                    Navigator.of(context).pushNamed('/events');
+                    Navigator.of(context)
+                        .pushNamed('/events', arguments: EventFilter.none);
                   },
                 ),
               ],
             ),
           ),
           GestureDetector(
-            onLongPress: () {},
+            onLongPress: () {
+              var user = widget.userBloc.loginState$.value;
+              if (user is LoggedInUser && user.isAdmin) {
+                Navigator.of(context).pushNamed('/admin_panel');
+              }
+            },
             child: Text(
               S.of(context).app_title,
               style: TextStyle(
@@ -196,6 +203,8 @@ class _FeedPageState extends State<FeedPage>
               physics: AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return FeedListItem(
+                  admin: (widget.userBloc.loginState$.value as LoggedInUser)
+                      .isAdmin,
                   context: context,
                   tickerProvider: this,
                   feedItem: data.feedItems[index],
@@ -208,7 +217,10 @@ class _FeedPageState extends State<FeedPage>
                       _feedBloc.deletePost(data.feedItems[index].id),
                   unconnect: () =>
                       _feedBloc.unconnect(data.feedItems[index].userId),
-                  reportPost: () => print('report'),
+                  reportPost: () => Navigator.of(context).pushNamed(
+                    '/report_post',
+                    arguments: data.feedItems[index].id,
+                  ),
                 );
               },
             );

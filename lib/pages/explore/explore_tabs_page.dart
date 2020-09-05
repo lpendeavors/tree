@@ -44,8 +44,6 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
               Navigator.popUntil(context, ModalRoute.withName('/login'))),
       widget.exploreBloc.addConnectionMessage$
           .listen((message) => showMessage(message)),
-      widget.exploreBloc.removeConnectionMessage$
-          .listen((message) => showMessage(message)),
       widget.exploreBloc.acceptConnectionMessage$
           .listen((message) => showMessage(message)),
       widget.exploreBloc.declineConnectionMessage$

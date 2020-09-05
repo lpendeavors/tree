@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:treeapp/models/old/chat_entity.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
 import 'package:treeapp/user_bloc/user_login_state.dart';
 import './firestore_group_repository.dart';
@@ -105,9 +104,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
 
   @override
   Future<Map<String, dynamic>> launchDM(
-    String userID,
-    LoggedInUser loginState
-  ) async {
+      String userID, LoggedInUser loginState) async {
     final TransactionHandler transactionHandler = (transaction) async {
       var otherUser = await _firestore.document('userBase/$userID').get();
 
@@ -123,21 +120,19 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         'uid': userID,
       };
 
-      var check = await _firestore.collection('groupBase').where('groupMembers', isEqualTo: [personalMember, otherMember]).getDocuments();
-      if(check.documents.length != 0){
+      var check = await _firestore.collection('groupBase').where('groupMembers',
+          isEqualTo: [personalMember, otherMember]).getDocuments();
+      if (check.documents.length != 0) {
         return <String, dynamic>{
           'roomId': check.documents[0].documentID,
           'isRoom': false,
           'isGroup': true,
         };
-      }else{
+      } else {
         final group = <String, dynamic>{
           'byAdmin': loginState.isAdmin,
           'createdAt': FieldValue.serverTimestamp(),
-          'groupMembers': [
-            personalMember,
-            otherMember
-          ],
+          'groupMembers': [personalMember, otherMember],
           'isConversation': true,
           'isGroup': true,
           'isGroupPrivate': true,
@@ -147,7 +142,8 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
           'updatedAt': FieldValue.serverTimestamp(),
         };
 
-        var room = await _firestore.collection('groupBase').add(group).then((doc) {
+        var room =
+            await _firestore.collection('groupBase').add(group).then((doc) {
           return <String, dynamic>{
             'roomId': doc.documentID,
             'isRoom': false,
@@ -172,7 +168,10 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
           'userImage': '',
         };
 
-        await _firestore.collection('userBase').document(loginState.uid).updateData({
+        await _firestore
+            .collection('userBase')
+            .document(loginState.uid)
+            .updateData({
           'myChatsList13': FieldValue.arrayUnion([chat]),
         });
 
@@ -184,16 +183,49 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
       }
     };
 
-    return _firestore.runTransaction(transactionHandler).then((result) => result is Map<String, dynamic> ? result : result.cast<String, dynamic>());
+    return _firestore.runTransaction(transactionHandler).then((result) =>
+        result is Map<String, dynamic>
+            ? result
+            : result.cast<String, dynamic>());
   }
 
   @override
   Future<List<GroupEntity>> runSearchQuery(String query) {
-    return Firestore.instance
+    return _firestore
         .collection("groupBase")
         .where("searchData", arrayContains: query.trim())
         .limit(30)
         .getDocuments()
         .then(_toEntities);
+  }
+
+  @override
+  Stream<List<GroupEntity>> getDefaultRooms() {
+    return _firestore
+        .collection('groupBase')
+        .where('byAdmin', isEqualTo: true)
+        .where('isGroupPrivate', isEqualTo: false)
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Stream<List<GroupEntity>> getGroupsByUser(String uid) {
+    return _firestore
+        .collection('groupBase')
+        .where('isGroup', isEqualTo: true)
+        .where('parties', arrayContains: uid)
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Stream<List<GroupEntity>> getRoomsByUser(String uid) {
+    return _firestore
+        .collection('groupBase')
+        .where('byAdmin', isEqualTo: false)
+        .where('parties', arrayContains: uid)
+        .snapshots()
+        .map(_toEntities);
   }
 }

@@ -83,7 +83,7 @@ class EditPostBloc implements BaseBloc {
     ///
     /// Stream controller
     ///
-    final isPublicSubject = BehaviorSubject<bool>.seeded(false);
+    final isPublicSubject = BehaviorSubject<bool>.seeded(true);
     final isOnlyForConnectionsSubject = BehaviorSubject<bool>.seeded(false);
     final messageSubject = BehaviorSubject<String>.seeded('');
     final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);

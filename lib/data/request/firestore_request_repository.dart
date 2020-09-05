@@ -15,11 +15,29 @@ abstract class FirestoreRequestRepository {
     @required String uid,
   });
 
-  Future<void> saveRequest({
-    @required String to,
-    @required String toUser,
-    @required String from,
-    @required String fromUser,
+  Future<void> addRequest({
+    @required String toName,
+    @required String toId,
+    @required String fromName,
+    @required String fromId,
+    @required String image,
+    @required String token,
+  });
+
+  Future<void> acceptRequest({
+    @required String toName,
+    @required String toId,
+    @required String fromName,
+    @required String fromId,
+    @required String image,
+    @required String token,
+  });
+
+  Future<void> declineRequest({
+    @required String toName,
+    @required String toId,
+    @required String fromName,
+    @required String fromId,
     @required String image,
     @required String token,
   });

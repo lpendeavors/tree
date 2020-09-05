@@ -63,21 +63,22 @@ class EventDetailsBloc implements BaseBloc {
     /// Streams
     ///
     final message$ = attendanceSubject
-      .exhaustMap(
-        (attending) => switchAttendance(
-          userBloc,
-          eventRepository,
-          eventId,
-          attending,
-          isLoadingSubject,
-        ),
-      ).publish();
+        .exhaustMap(
+          (attending) => switchAttendance(
+            userBloc,
+            eventRepository,
+            eventId,
+            attending,
+            isLoadingSubject,
+          ),
+        )
+        .publish();
 
     final eventDetailsState$ = _getEventDetails(
-        userBloc,
-        eventRepository,
-        eventId,
-      ).publishValueSeeded(_kInitialEventDetailsState);
+      userBloc,
+      eventRepository,
+      eventId,
+    ).publishValueSeeded(_kInitialEventDetailsState);
 
     final subscriptions = <StreamSubscription>[
       eventDetailsState$.connect(),
@@ -85,14 +86,13 @@ class EventDetailsBloc implements BaseBloc {
     ];
 
     return EventDetailsBloc._(
-      toggleAttendance: attendanceSubject.add,
-      eventDetailsState$: eventDetailsState$,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-      }
-    );
+        toggleAttendance: attendanceSubject.add,
+        eventDetailsState$: eventDetailsState$,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+        });
   }
 
   @override
@@ -113,26 +113,27 @@ class EventDetailsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return eventRepository.getById(eventId)
-        .map((entities) {
-          return _entityToEventItem(
-            entities,
-            loginState,
-          );
-        })
-        .map((eventItem) {
-          return _kInitialEventDetailsState.copyWith(
-            eventDetails: eventItem,
-            isLoading: false,
-          );
-        })
-        .startWith(_kInitialEventDetailsState)
-        .onErrorReturnWith((e) {
-          return _kInitialEventDetailsState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+      return eventRepository
+          .getById(eventId)
+          .map((entities) {
+            return _entityToEventItem(
+              entities,
+              loginState,
+            );
+          })
+          .map((eventItem) {
+            return _kInitialEventDetailsState.copyWith(
+              eventDetails: eventItem,
+              isLoading: false,
+            );
+          })
+          .startWith(_kInitialEventDetailsState)
+          .onErrorReturnWith((e) {
+            return _kInitialEventDetailsState.copyWith(
+              error: e,
+              isLoading: false,
+            );
+          });
     }
 
     return Stream.value(
@@ -164,8 +165,8 @@ class EventDetailsBloc implements BaseBloc {
       location: entity.location,
       details: entity.eventDetails,
       isSponsored: entity.isSponsored,
-      isAttending: (entity.attending ?? [])
-        .contains((loginState as LoggedInUser).uid),
+      isAttending:
+          (entity.attending ?? []).contains((loginState as LoggedInUser).uid),
     );
   }
 

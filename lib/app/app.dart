@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:treeapp/pages/events/events_state.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 import 'package:treeapp/pages/settings/settings_state.dart';
 import 'package:treeapp/widgets/modals/info_dialog.dart';
@@ -62,6 +63,11 @@ import '../pages/tag_connections/tag_connections_bloc.dart';
 import '../pages/tag_connections/tag_connections_page.dart';
 import '../pages/comments/comments_page.dart';
 import '../pages/comments/comments_bloc.dart';
+import '../pages/admin/admin_panel.dart';
+import '../pages/pending/pending_page.dart';
+import '../pages/pending/pending_bloc.dart';
+import '../pages/report_post/report_post_page.dart';
+import '../pages/report_post/report_post_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
@@ -74,23 +80,23 @@ class MyApp extends StatelessWidget {
   );
 
   final appRoutes = <String, WidgetBuilder>{
-    // '/': (context) {
-    //   return HomeTabsPage(
-    //     initHomeTabsBloc: () => HomeTabsBloc(
-    //       userBloc: BlocProvider.of<UserBloc>(context),
-    //       requestRepository: Injector.of(context).requestRepository,
-    //       chatRepository: Injector.of(context).chatRepository,
-    //     ),
-    //     userBloc: BlocProvider.of<UserBloc>(context),
-    //     postRepository: Injector.of(context).postRepository,
-    //     roomRepository: Injector.of(context).roomRepository,
-    //     userRepository: Injector.of(context).userRepository,
-    //     chatRepository: Injector.of(context).chatRepository,
-    //     groupRepository: Injector.of(context).groupRepository,
-    //     requestRepository: Injector.of(context).requestRepository,
-    //     notificationRepository: Injector.of(context).notificationRepository,
-    //   );
-    // },
+    '/': (context) {
+      return HomeTabsPage(
+        initHomeTabsBloc: () => HomeTabsBloc(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          requestRepository: Injector.of(context).requestRepository,
+          chatRepository: Injector.of(context).chatRepository,
+        ),
+        userBloc: BlocProvider.of<UserBloc>(context),
+        postRepository: Injector.of(context).postRepository,
+        roomRepository: Injector.of(context).roomRepository,
+        userRepository: Injector.of(context).userRepository,
+        chatRepository: Injector.of(context).chatRepository,
+        groupRepository: Injector.of(context).groupRepository,
+        requestRepository: Injector.of(context).requestRepository,
+        notificationRepository: Injector.of(context).notificationRepository,
+      );
+    },
     '/splash': (context) {
       return SplashPage(
         userBloc: BlocProvider.of<UserBloc>(context),
@@ -123,15 +129,6 @@ class MyApp extends StatelessWidget {
         notificationsBloc: NotificationsBloc(
           userBloc: BlocProvider.of<UserBloc>(context),
           notificationRepository: Injector.of(context).notificationRepository,
-        ),
-      );
-    },
-    '/events': (context) {
-      return EventsTabsPage(
-        userBloc: BlocProvider.of<UserBloc>(context),
-        eventsBloc: EventsBloc(
-          userBloc: BlocProvider.of<UserBloc>(context),
-          eventRepository: Injector.of(context).eventRepository,
         ),
       );
     },
@@ -474,6 +471,53 @@ class MyApp extends StatelessWidget {
             postRepository: Injector.of(context).postRepository,
             postId: routerSettings.arguments as String,
           ),
+        );
+      });
+    }
+
+    if (routerSettings.name == '/admin_panel') {
+      return MaterialPageRoute(builder: (context) {
+        return AdminPanel(
+          userBloc: BlocProvider.of<UserBloc>(context),
+        );
+      });
+    }
+
+    if (routerSettings.name == '/events') {
+      return MaterialPageRoute(builder: (context) {
+        return EventsTabsPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          eventsBloc: EventsBloc(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            eventRepository: Injector.of(context).eventRepository,
+            filter: routerSettings.arguments as EventFilter,
+          ),
+        );
+      });
+    }
+
+    if (routerSettings.name == '/pending') {
+      return MaterialPageRoute(builder: (context) {
+        return PendingPage(
+          pendingBloc: PendingBloc(
+            userBloc: BlocProvider.of<UserBloc>(context),
+            userRepository: Injector.of(context).userRepository,
+          ),
+        );
+      });
+    }
+
+    if (routerSettings.name == '/report_post') {
+      return MaterialPageRoute(builder: (context) {
+        return ReportPostPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initReportPostBloc: () {
+            return ReportPostBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              reportRepository: Injector.of(context).reportRepository,
+              postId: routerSettings.arguments as String,
+            );
+          },
         );
       });
     }

@@ -97,4 +97,15 @@ abstract class FirestoreUserRepository {
     String uid,
     String userId,
   );
+
+  Stream<List<UserEntity>> getPending();
+
+  Future<void> saveApproval(
+    String userId,
+    bool approved,
+  );
+
+  Future<void> suspendUser(String userId);
+
+  Future<void> deleteUser(String userId);
 }

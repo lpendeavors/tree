@@ -24,7 +24,6 @@ class ExploreBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-  final void Function(ConnectionItem) removeConnection;
   final void Function(ConnectionItem) addConnection;
   final void Function(ConnectionItem) acceptConnection;
   final void Function(ConnectionItem) declineConnection;
@@ -35,7 +34,6 @@ class ExploreBloc implements BaseBloc {
   final ValueStream<ExploreState> exploreState$;
   final ValueStream<bool> isLoading$;
   final Stream<ExploreMessage> addConnectionMessage$;
-  final Stream<ExploreMessage> removeConnectionMessage$;
   final Stream<ExploreMessage> acceptConnectionMessage$;
   final Stream<ExploreMessage> declineConnectionMessage$;
 
@@ -48,11 +46,9 @@ class ExploreBloc implements BaseBloc {
     @required this.isLoading$,
     @required this.exploreState$,
     @required this.addConnectionMessage$,
-    @required this.removeConnectionMessage$,
     @required this.acceptConnectionMessage$,
     @required this.declineConnectionMessage$,
     @required this.addConnection,
-    @required this.removeConnection,
     @required this.acceptConnection,
     @required this.declineConnection,
     @required void Function() dispose,
@@ -84,25 +80,28 @@ class ExploreBloc implements BaseBloc {
     ///
     /// Streams
     ///
-    final addConnectionMessage$ = addConnectionSubject.exhaustMap((connection) {
-      print('add ${connection.name}');
-      return saveAddConnection(
-        requestRepository,
-        connection,
-        userBloc.loginState$.value,
-      );
-    }).publish();
-
-    final removeConnectionMessage$ = removeConnectionSubject
-        .exhaustMap((connection) => saveRemoveConnection(connection))
+    final addConnectionMessage$ = addConnectionSubject
+        .exhaustMap((connection) => saveAddConnection(
+              requestRepository,
+              connection,
+              userBloc.loginState$.value,
+            ))
         .publish();
 
     final acceptConnectionMessage$ = acceptConnectionSubject
-        .exhaustMap((connection) => saveAcceptConnection(connection))
+        .exhaustMap((connection) => saveAcceptConnection(
+              requestRepository,
+              connection,
+              userBloc.loginState$.value,
+            ))
         .publish();
 
     final declineConnectionMessage$ = declineConnectionSubject
-        .exhaustMap((connection) => saveDeclineConnection(connection))
+        .exhaustMap((connection) => saveDeclineConnection(
+              requestRepository,
+              connection,
+              userBloc.loginState$.value,
+            ))
         .publish();
 
     final exploreState$ = _getExploreList(
@@ -114,6 +113,9 @@ class ExploreBloc implements BaseBloc {
 
     final subscriptions = <StreamSubscription>[
       exploreState$.connect(),
+      addConnectionMessage$.connect(),
+      acceptConnectionMessage$.connect(),
+      declineConnectionMessage$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -122,12 +124,10 @@ class ExploreBloc implements BaseBloc {
 
     return ExploreBloc._(
         addConnection: addConnectionSubject.add,
-        removeConnection: removeConnectionSubject.add,
         acceptConnection: acceptConnectionSubject.add,
         declineConnection: declineConnectionSubject.add,
         isLoading$: isLoadingSubject,
         addConnectionMessage$: addConnectionMessage$,
-        removeConnectionMessage$: removeConnectionMessage$,
         acceptConnectionMessage$: acceptConnectionMessage$,
         declineConnectionMessage$: declineConnectionMessage$,
         exploreState$: exploreState$,
@@ -176,7 +176,14 @@ class ExploreBloc implements BaseBloc {
         suggestions.addAll(publicFigures);
         suggestions.addAll(cityUsers);
         suggestions.addAll(newestUsers);
-        suggestions.toSet().where((s) => s.uid != loginState.uid).toList();
+
+        suggestions.removeWhere((s) => s.uid == loginState.uid);
+        suggestions.removeWhere((s) => loginState.connections.contains(s.id));
+
+        suggestions.toSet().toList();
+
+        (requests as List<UserEntity>)
+            .removeWhere((r) => loginState.connections.contains(r.id));
 
         return _kInitialExploreState.copyWith(
           connectionItems: _userEntitiesToItems(suggestions),
@@ -281,33 +288,64 @@ class ExploreBloc implements BaseBloc {
     LoginState loginState,
   ) async* {
     print('[DEBUG] ExploreBloc#saveAddConnection');
-    try {
-      // requestRepository.saveRequest(
-      //   to: connection.name,
-      //   toUser: connection.id,
-      //   image: connection.image,
-      //   from: (loginState as LoggedInUser).uid,
-      //   fromUser: (loginState as LoggedInUser).fullName,
-      //   token: (loginState as LoggedInUser).token,
-      // );
-      yield ConnectionAddedSuccess();
-    } catch (e) {
-      yield ConnectionAddedError(e);
+    if (loginState is LoggedInUser) {
+      try {
+        requestRepository.addRequest(
+          image: loginState.image,
+          toName: connection.name,
+          toId: connection.id,
+          fromName: loginState.fullName,
+          fromId: loginState.uid,
+          token: loginState.token,
+        );
+        yield ConnectionAddedSuccess();
+      } catch (e) {
+        yield ConnectionAddedError(e);
+      }
     }
   }
 
-  static Stream<ExploreMessage> saveRemoveConnection(
-      ConnectionItem connection) async* {
-    print('[DEBUG] ExploreBloc#saveAddConnection');
-  }
-
   static Stream<ExploreMessage> saveAcceptConnection(
-      ConnectionItem connection) async* {
+    FirestoreRequestRepository requestRepository,
+    ConnectionItem connection,
+    LoginState loginState,
+  ) async* {
     print('[DEBUG] ExploreBloc#saveAddConnection');
+    if (loginState is LoggedInUser) {
+      try {
+        requestRepository.acceptRequest(
+          image: loginState.image,
+          toName: connection.name,
+          toId: connection.id,
+          fromName: loginState.fullName,
+          fromId: loginState.uid,
+          token: loginState.token,
+        );
+      } catch (e) {
+        yield ConnectionAddedError(e);
+      }
+    }
   }
 
   static Stream<ExploreMessage> saveDeclineConnection(
-      ConnectionItem connection) async* {
+    FirestoreRequestRepository requestRepository,
+    ConnectionItem connection,
+    LoginState loginState,
+  ) async* {
     print('[DEBUG] ExploreBloc#saveAddConnection');
+    if (loginState is LoggedInUser) {
+      try {
+        requestRepository.declineRequest(
+          image: loginState.image,
+          toName: connection.name,
+          toId: connection.id,
+          fromName: loginState.fullName,
+          fromId: loginState.uid,
+          token: loginState.token,
+        );
+      } catch (e) {
+        yield ConnectionAddedError(e);
+      }
+    }
   }
 }

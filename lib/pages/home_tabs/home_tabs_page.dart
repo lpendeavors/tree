@@ -174,7 +174,9 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                           isActive: _currentPage == 1,
                           type: 0,
                           iconImage: null,
-                          hasNew: snapshot.data.hasRequests,
+                          hasNew: snapshot.data != null
+                              ? snapshot.data.hasRequests
+                              : false,
                         ),
                         Spacer(),
                         TreeTabItem(
@@ -184,7 +186,9 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
                           isActive: _currentPage == 2,
                           type: 1,
                           iconImage: ic_chat,
-                          hasNew: snapshot.data.hasMessages,
+                          hasNew: snapshot.data != null
+                              ? snapshot.data.hasMessages
+                              : false,
                         ),
                         TreeTabItem(
                           title: S.of(context).profile_tab_title,

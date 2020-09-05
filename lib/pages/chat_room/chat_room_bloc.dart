@@ -26,6 +26,7 @@ class ChatRoomBloc implements BaseBloc {
   ///
   /// Input functions
   ///
+  final void Function(List<String>) markRead;
   final void Function() sendMessage;
   final void Function(String) messageChanged;
   final void Function(int) messageTypeChanged;
@@ -51,6 +52,7 @@ class ChatRoomBloc implements BaseBloc {
   final void Function() _dispose;
 
   ChatRoomBloc._({
+    @required this.markRead,
     @required this.sendMessage,
     @required this.gifChanged,
     @required this.isGifChanged,
@@ -95,7 +97,6 @@ class ChatRoomBloc implements BaseBloc {
     final messageTypeSubject = BehaviorSubject<int>.seeded(null);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
     final sendMessageSubject = PublishSubject<void>();
-    final markReadSubject = PublishSubject<void>();
 
     ///
     /// Streams
@@ -166,6 +167,8 @@ class ChatRoomBloc implements BaseBloc {
         messageChanged: messageSubject.add,
         messageTypeChanged: messageTypeSubject.add,
         sendMessage: () => sendMessageSubject.add(null),
+        markRead: (messages) =>
+            _markMessagesRead(chatRepository, messages, userBloc),
         gif$: gifSubject.stream,
         isGif$: isGifSubject.stream,
         members$: membersSubject.stream,
@@ -239,7 +242,7 @@ class ChatRoomBloc implements BaseBloc {
       image: entity.image,
       groupImage: entity.groupImage,
       name: entity.groupName,
-      isMuted: mutedChats.contains(entity.documentId),
+      isMuted: (mutedChats ?? []).contains(entity.documentId),
     );
   }
 
@@ -260,6 +263,7 @@ class ChatRoomBloc implements BaseBloc {
         image: entity.image,
         name: entity.fullName,
         userId: entity.ownerId,
+        members: entity.parties,
       );
     }).toList();
   }
@@ -326,6 +330,17 @@ class ChatRoomBloc implements BaseBloc {
       }
     } else {
       yield ChatMessageAddedError(NotLoggedInError());
+    }
+  }
+
+  static void _markMessagesRead(
+    FirestoreChatRepository chatRepository,
+    List<String> messages,
+    UserBloc userBloc,
+  ) {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      chatRepository.markRead(messages, loginState.uid);
     }
   }
 }

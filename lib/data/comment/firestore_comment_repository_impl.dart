@@ -78,10 +78,10 @@ class FirestoreCommentRepositoryImpl implements FirestoreCommentRepository {
       //     ]),
       //   });
       // } else {
-      await _firestore
-          .collection('commentsBase')
-          .document(commentId)
-          .setData(comment, merge: true);
+      // await _firestore
+      //     .collection('commentsBase')
+      //     .document(commentId)
+      //     .setData(comment, merge: true);
       // }
     } else {
       if (isGif) {

@@ -20,7 +20,7 @@ class NotificationsBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-
+  Function(List<String>) markRead;
 
   ///
   /// Output streams
@@ -33,6 +33,7 @@ class NotificationsBloc implements BaseBloc {
   final void Function() _dispose;
 
   NotificationsBloc._({
+    @required this.markRead,
     @required this.notificationsListState$,
     @required void Function() dispose,
   }) : _dispose = dispose;
@@ -45,12 +46,12 @@ class NotificationsBloc implements BaseBloc {
     /// Assert
     ///
     assert(userBloc != null, 'userBloc cannot be null');
-    assert(notificationRepository != null, 'notificationRepository cannot be null');
+    assert(notificationRepository != null,
+        'notificationRepository cannot be null');
 
     ///
     /// Stream controllers
     ///
-
 
     ///
     /// Streams
@@ -65,11 +66,15 @@ class NotificationsBloc implements BaseBloc {
     ];
 
     return NotificationsBloc._(
-      notificationsListState$: notificationsListState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-      }
-    );
+        notificationsListState$: notificationsListState$,
+        markRead: (notifications) => _markNotificationsRead(
+              notificationRepository,
+              notifications,
+              userBloc,
+            ),
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+        });
   }
 
   @override
@@ -89,23 +94,24 @@ class NotificationsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return notificationRepository.getByOwner(loginState.uid)
-        .map((entities) {
-          return _entitiesToNotificationItems(entities);
-        })
-        .map((notificationItems) {
-          return _kInitialNotificationsListState.copyWith(
-            notificationItems: notificationItems,
-            isLoading: false,
-          );
-        })
-        .startWith(_kInitialNotificationsListState)
-        .onErrorReturnWith((e) {
-          return _kInitialNotificationsListState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+      return notificationRepository
+          .getByOwner(loginState.uid)
+          .map((entities) {
+            return _entitiesToNotificationItems(entities);
+          })
+          .map((notificationItems) {
+            return _kInitialNotificationsListState.copyWith(
+              notificationItems: notificationItems,
+              isLoading: false,
+            );
+          })
+          .startWith(_kInitialNotificationsListState)
+          .onErrorReturnWith((e) {
+            return _kInitialNotificationsListState.copyWith(
+              error: e,
+              isLoading: false,
+            );
+          });
     }
 
     return Stream.value(
@@ -127,7 +133,8 @@ class NotificationsBloc implements BaseBloc {
         sharedBy: entity.fullName,
         isNew: (entity.readBy ?? []).contains(entity.id),
         image: entity.image,
-        user: entity.ownerId,
+        user: entity.id,
+        navigateToId: entity.postId,
       );
     }).toList();
   }
@@ -137,10 +144,18 @@ class NotificationsBloc implements BaseBloc {
     FirestoreNotificationRepository notificationRepository,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
-      return _toState(
-        loginState,
-        notificationRepository
-      );
+      return _toState(loginState, notificationRepository);
     });
+  }
+
+  static void _markNotificationsRead(
+    FirestoreNotificationRepository notificationRepository,
+    List<String> notifications,
+    UserBloc userBloc,
+  ) {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      notificationRepository.markRead(notifications, loginState.uid);
+    }
   }
 }

@@ -39,7 +39,12 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
   Stream<List<ChatEntity>> getByUser({
     @required String uid,
   }) {
-    return _firestore.collection('chatBase').where('parties', arrayContains: uid).snapshots().map(_toEntities);;
+    return _firestore
+        .collection('chatBase')
+        .where('parties', arrayContains: uid)
+        .snapshots()
+        .map(_toEntities);
+    ;
   }
 
   List<ChatEntity> _toEntities(QuerySnapshot querySnapshot) {
@@ -76,18 +81,6 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     bool isGif,
     String gif,
   ) async {
-    print(message);
-    print(messageType);
-    print(byAdmin);
-    print(chatId);
-    print(ownerName);
-    print(ownerEmail);
-    print(ownerImage);
-    print(isVerified);
-    print(isChurch);
-    print(isRoom);
-    print(token);
-    print(showDate);
     var newMessage = <String, dynamic>{
       'byAdmin': byAdmin,
       'chatId': chatId,
@@ -117,6 +110,27 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
       'createdAt': FieldValue.serverTimestamp(),
     };
 
+    if (isGif) {
+      newMessage.addAll({
+        'imagePath': gif,
+      });
+    }
+
     await _firestore.collection('chatBase').add(newMessage);
+  }
+
+  @override
+  Future<void> markRead(List<String> messageIds, String uid) async {
+    print(messageIds.length);
+    
+    var batch = _firestore.batch();
+
+    messageIds.forEach((id) {
+      batch.updateData(_firestore.document('chatBase/$id'), {
+        'readBy': FieldValue.arrayUnion([uid]),
+      });
+    });
+
+    await batch.commit();
   }
 }

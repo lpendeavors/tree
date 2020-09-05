@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:cache_image/cache_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:treeapp/models/old/group_member.dart';
+import 'package:treeapp/pages/chat_room/widgets/chat_input.dart';
 import '../../widgets/empty_list_view.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -32,11 +34,13 @@ class ChatRoomPage extends StatefulWidget {
 class _ChatRoomPageState extends State<ChatRoomPage> {
   ChatRoomBloc _chatRoomBloc;
   List<StreamSubscription> _subscriptions;
+  Firestore _firestore;
 
   @override
   void initState() {
     super.initState();
 
+    _firestore = Firestore.instance;
     _chatRoomBloc = widget.initChatRoomBloc();
     _subscriptions = [
       widget.userBloc.loginState$
@@ -85,6 +89,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               );
             }
 
+            if (data.messages.isNotEmpty) {
+              var uid = (widget.userBloc.loginState$.value as LoggedInUser).uid;
+              var unread = data.messages
+                  .where((m) => !m.isRead && m.members.contains(uid))
+                  .toList();
+              if (unread.isNotEmpty) {
+                _chatRoomBloc.markRead(unread.map((u) => u.id).toList());
+              }
+            }
+
             return Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,12 +138,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 );
                               } else if (data.details.members.length > 2) {
                                 // TODO: view members
-                              } else {
-                                Navigator.of(context).pushNamed(
-                                  '/profile',
-                                  arguments: data.details.members[1].uid,
-                                );
                               }
+                            } else {
+                              var uid = (widget.userBloc.loginState$.value
+                                      as LoggedInUser)
+                                  .uid;
+                              var otherMember = data.messages.last.members
+                                  .where((m) => m != uid)
+                                  .toList()[0];
+                              Navigator.of(context).pushNamed(
+                                '/profile',
+                                arguments: otherMember,
+                              );
                             }
                           },
                           child: Row(
@@ -162,13 +182,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     //     fit: BoxFit.cover,
                                     //     imageUrl: otherMembers[0].image,
                                     //   ),
-                                    // if (data.details.groupImage != null)
-                                    //   CachedNetworkImage(
-                                    //     width: 40,
-                                    //     height: 40,
-                                    //     fit: BoxFit.cover,
-                                    //     imageUrl: data.details.groupImage,
-                                    //   ),
+                                    if (data.details != null &&
+                                        data.details.groupImage != null)
+                                      CachedNetworkImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        imageUrl: data.details.groupImage,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -178,57 +199,56 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    // if (data.details != null)
-                                    //   Text(
-                                    //     otherMembers[0].fullName,
-                                    //     maxLines: 1,
-                                    //     overflow: TextOverflow.ellipsis,
-                                    //     style: TextStyle(
-                                    //       fontSize: 17,
-                                    //       fontWeight: FontWeight.bold,
-                                    //       color: Colors.black,
-                                    //     ),
-                                    //   )
-                                    // else if (!data.details.isGroup ||
-                                    //     !data.details.isConversation)
-                                    //   Text(
-                                    //     data.details.name,
-                                    //     maxLines: 1,
-                                    //     overflow: TextOverflow.ellipsis,
-                                    //     style: TextStyle(
-                                    //       fontSize: 17,
-                                    //       fontWeight: FontWeight.bold,
-                                    //       color: Colors.black,
-                                    //     ),
-                                    //   )
-                                    // else if (data.details.members.length > 2 &&
-                                    //     data.details.isConversation)
-                                    //   Text.rich(
-                                    //     TextSpan(
-                                    //       children: List.generate(
-                                    //           data.details.members
-                                    //               .where((m) =>
-                                    //                   m.uid !=
-                                    //                   (widget.userBloc
-                                    //                               .loginState$
-                                    //                           as LoggedInUser)
-                                    //                       .uid)
-                                    //               .length, (index) {
-                                    //         return TextSpan(
-                                    //           text:
-                                    //               '${data.details.members[0].fullName} and ${data.details.members.length} more',
-                                    //         );
-                                    //       }),
-                                    //     ),
-                                    //     maxLines: 1,
-                                    //     overflow: TextOverflow.ellipsis,
-                                    //     style: TextStyle(
-                                    //       fontSize: 17,
-                                    //       fontWeight: FontWeight.bold,
-                                    //       color: Colors.black,
-                                    //     ),
-                                    //   ),
-                                    // SizedBox(height: 5),
+                                    if (data.details != null)
+                                      Text(
+                                        data.details.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
+                                    else
+                                      FutureBuilder(
+                                          future: _getOtherMembers(
+                                              data.messages.last.members),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                    ConnectionState.none &&
+                                                snapshot.hasData == null) {
+                                              return Container();
+                                            }
+
+                                            var uid = (widget
+                                                    .userBloc
+                                                    .loginState$
+                                                    .value as LoggedInUser)
+                                                .uid;
+                                            var otherMembers =
+                                                List<MemberItem>();
+                                            if (snapshot.hasData) {
+                                              otherMembers = snapshot.data
+                                                  .where((m) => m.id != uid)
+                                                  .toList();
+                                            }
+
+                                            return Text(
+                                              otherMembers.length > 0
+                                                  ? otherMembers.length == 1
+                                                      ? otherMembers[0].name
+                                                      : '${otherMembers[0].name} and ${otherMembers.length - 1} others'
+                                                  : '',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            );
+                                          }),
                                   ],
                                 ),
                               ),
@@ -314,104 +334,41 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   color: Colors.black.withOpacity(0.1),
                   margin: EdgeInsets.only(top: 5),
                 ),
-                Container(
-                  width: double.infinity,
-                  color: Color(0xff0f534949),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        // Container(
-                        //   height: 50,
-                        //   width: 50,
-                        //   child: FlatButton(
-                        //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        //     onPressed: () {
-
-                        //     },
-                        //     child: Icon(
-                        //       Icons.keyboard,
-                        //       size: 20,
-                        //       color: Colors.black.withOpacity(0.5),
-                        //     ),
-                        //   ),
-                        // ),
-                        SizedBox(width: 15),
-                        Flexible(
-                          flex: 1,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight: 120,
-                            ),
-                            child: TextField(
-                              onChanged: _chatRoomBloc.messageChanged,
-                              cursorWidth: 1,
-                              cursorColor: Colors.black,
-                              keyboardType: TextInputType.multiline,
-                              scrollPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                              textCapitalization: TextCapitalization.sentences,
-                              decoration: InputDecoration(
-                                hintText: 'Type a message',
-                                hintStyle: TextStyle(
-                                  fontSize: 17,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () async {},
-                            child: Icon(
-                              Icons.photo,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            onPressed: () async {},
-                            child: Icon(
-                              Icons.video_library,
-                              size: 20,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          child: FlatButton(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            onPressed: _chatRoomBloc.sendMessage,
-                            child: Icon(
-                              Icons.send,
-                              size: 20,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                ChatInput(
+                  chatRoomBloc: _chatRoomBloc,
+                  userImage:
+                      (widget.userBloc.loginState$.value as LoggedInUser).image,
                 ),
               ],
             );
           }),
     );
+  }
+
+  Future<List<MemberItem>> _getOtherMembers(
+    List<String> members,
+  ) async {
+    var memberDetails = List<MemberItem>();
+    print('get members');
+
+    var snapshots = await _firestore
+        .collection('userBase')
+        .where('uid', whereIn: members)
+        .getDocuments();
+
+    for (var doc in snapshots.documents) {
+      memberDetails.add(
+        MemberItem(
+          id: doc.documentID,
+          name: doc['fullName'],
+          image: doc['image'],
+        ),
+      );
+    }
+
+    print(memberDetails);
+
+    return memberDetails;
   }
 
   Widget _outgoingMessage(ChatMessageItem messageItem) {

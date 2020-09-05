@@ -21,7 +21,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
   final String fullName;
   // final int gender;
   final String image;
-  final bool isChurch;
+  // final bool isChurch;
   final bool isRoom;
   // final bool isVerified;
   final String message;
@@ -61,7 +61,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
     this.churchName,
     // this.databaseName,
     this.fullName,
-    this.isChurch,
+    // this.isChurch,
     // this.isVerified,
     // this.phoneNo,
     // this.pushNotificationToken,
@@ -107,7 +107,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
       churchName,
       // databaseName,
       fullName,
-      isChurch,
+      // isChurch,
       // isVerified,
       // phoneNo,
       // pushNotificationToken,

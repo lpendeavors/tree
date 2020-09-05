@@ -18,6 +18,7 @@ import './data/group/firestore_group_repository_impl.dart';
 import './data/chat/firestore_chat_repository_impl.dart';
 import './data/comment/firestore_comment_repository_impl.dart';
 import './data/request/firestore_request_repository_impl.dart';
+import './data/report/firestore_report_repository_impl.dart';
 import './dependency_injection.dart';
 import './shared_pref_util.dart';
 
@@ -33,7 +34,7 @@ Future<void> main() async {
   ///
   /// Setup firestore
   ///
-  await firestore.settings(persistenceEnabled: true);
+  await firestore.settings(persistenceEnabled: false);
 
   ///
   /// Setup crashlytics
@@ -52,6 +53,7 @@ Future<void> main() async {
   final commentRepository =
       FirestoreCommentRepositoryImpl(firestore, firebaseStorage);
   final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
+  final reportRepository = FirestoreReportRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);
 
   // runZoned(() {
@@ -66,6 +68,7 @@ Future<void> main() async {
       groupRepository: groupRepository,
       commentRepository: commentRepository,
       requestRepository: requestReposirory,
+      reportRepository: reportRepository,
       child: BlocProvider<UserBloc>(
         bloc: userBloc,
         child: BlocProvider<LocaleBloc>(

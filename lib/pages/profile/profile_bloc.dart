@@ -24,8 +24,11 @@ const _kInitialProfileState = ProfileState(
   isAdmin: false,
 );
 
-const _kInitialRecentFeedState =
-    RecentFeedState(feedItems: [], isLoading: true, error: false);
+const _kInitialRecentFeedState = RecentFeedState(
+  feedItems: [],
+  isLoading: true,
+  error: false,
+);
 
 class ProfileBloc implements BaseBloc {
   ///
@@ -38,13 +41,23 @@ class ProfileBloc implements BaseBloc {
   final void Function() approveAccount;
   final void Function(File file) setPhoto;
   final void Function() createOrLaunchDM;
+  final void Function(String) postToLikeChanged;
+  final void Function(bool) likePostChanged;
+  final void Function() saveLikeValue;
+  final Function(String) deletePost;
+  final Function() suspendUser;
+  final Function() deleteUser;
 
   ///
   /// Output streams
   ///
+
+  final Stream<FeedDeleteMessage> deleteMessage$;
+  final Stream<FeedItemLikeMessage> likeMessage$;
   final ValueStream<ProfileState> profileState$;
   final ValueStream<RecentFeedState> recentFeedState$;
   final Stream<MessageCreateMessage> dmState$;
+  final ValueStream isLoading$;
 
   ///
   /// Clean up
@@ -55,6 +68,8 @@ class ProfileBloc implements BaseBloc {
     @required this.profileState$,
     @required this.recentFeedState$,
     @required this.dmState$,
+    @required this.deleteMessage$,
+    @required this.likeMessage$,
     @required this.sendConnectRequest,
     @required this.cancelConnectRequest,
     @required this.acceptConnectRequest,
@@ -62,6 +77,13 @@ class ProfileBloc implements BaseBloc {
     @required this.approveAccount,
     @required this.setPhoto,
     @required this.createOrLaunchDM,
+    @required this.postToLikeChanged,
+    @required this.likePostChanged,
+    @required this.saveLikeValue,
+    @required this.deletePost,
+    @required this.suspendUser,
+    @required this.deleteUser,
+    @required this.isLoading$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -90,6 +112,13 @@ class ProfileBloc implements BaseBloc {
     final approveController = PublishSubject<void>();
     final setPhotoController = BehaviorSubject<File>();
     final createOrLaunchDMController = PublishSubject<void>();
+    final feedItemToLikeSubject = BehaviorSubject<String>.seeded(null);
+    final postLikeSubject = BehaviorSubject<bool>.seeded(false);
+    final savePostLikeSubject = PublishSubject<void>();
+    final deletePostSubject = PublishSubject<String>();
+    final deleteUserSubject = PublishSubject<void>();
+    final suspendUserSubject = PublishSubject<void>();
+    final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     final sendConnectRequest$ = sendConnectRequestController
         .exhaustMap((_) => _sendConnectRequest(
@@ -116,9 +145,26 @@ class ProfileBloc implements BaseBloc {
         .publish();
 
     final dm$ = createOrLaunchDMController
-      .exhaustMap(
-        (_) => _createOrLaunch(userRepository, groupRepository, userId, userBloc.loginState$.value)
-      ).publish();
+        .exhaustMap((_) => _createOrLaunch(userRepository, groupRepository,
+            userId, userBloc.loginState$.value))
+        .publish();
+
+    final deleteMessage$ = deletePostSubject
+        .switchMap((post) => performDelete(
+              postRepository,
+              post,
+            ))
+        .publish();
+
+    final likeMessage$ = savePostLikeSubject
+        .switchMap((_) => saveLikeOrUnlike(
+              postRepository,
+              postLikeSubject.value,
+              (userBloc.loginState$.value as LoggedInUser).uid,
+              feedItemToLikeSubject.value,
+              isLoadingSubject,
+            ))
+        .publish();
 
     ///
     /// Streams
@@ -145,6 +191,8 @@ class ProfileBloc implements BaseBloc {
       approveAccount$.connect(),
       photo$.connect(),
       dm$.connect(),
+      likeMessage$.connect(),
+      deleteMessage$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -154,24 +202,35 @@ class ProfileBloc implements BaseBloc {
       disconnectController,
       approveController,
       setPhotoController,
-      createOrLaunchDMController
+      createOrLaunchDMController,
+      postLikeSubject,
+      feedItemToLikeSubject,
     ];
 
     return ProfileBloc._(
-      profileState$: profileState$,
-      recentFeedState$: recentFeedState$,
-      dmState$: dm$,
-      sendConnectRequest: () => sendConnectRequestController.add(null),
-      cancelConnectRequest: () => cancelConnectRequestController.add(null),
-      acceptConnectRequest: () => acceptConnectRequestController.add(null),
-      disconnect: () => disconnectController.add(null),
-      approveAccount: () => approveController.add(null),
-      setPhoto: (file) => setPhotoController.add(file),
-      createOrLaunchDM: () => createOrLaunchDMController.add(null),
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      });
+        profileState$: profileState$,
+        recentFeedState$: recentFeedState$,
+        dmState$: dm$,
+        isLoading$: isLoadingSubject,
+        sendConnectRequest: () => sendConnectRequestController.add(null),
+        cancelConnectRequest: () => cancelConnectRequestController.add(null),
+        acceptConnectRequest: () => acceptConnectRequestController.add(null),
+        disconnect: () => disconnectController.add(null),
+        approveAccount: () => approveController.add(null),
+        setPhoto: (file) => setPhotoController.add(file),
+        createOrLaunchDM: () => createOrLaunchDMController.add(null),
+        deletePost: (post) => deletePostSubject.add(post),
+        saveLikeValue: () => savePostLikeSubject.add(null),
+        likePostChanged: postLikeSubject.add,
+        postToLikeChanged: feedItemToLikeSubject.add,
+        deleteMessage$: deleteMessage$,
+        likeMessage$: likeMessage$,
+        suspendUser: () => _suspendUser(userBloc, userRepository, userId),
+        deleteUser: () => _deleteUser(userBloc, userRepository, userId),
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   @override
@@ -183,14 +242,11 @@ class ProfileBloc implements BaseBloc {
     String userID,
     LoginState loginState,
   ) async* {
-    if(loginState is LoggedInUser){
-      try{
-        var details = await groupRepository.launchDM(
-          userID,
-          loginState
-        );
+    if (loginState is LoggedInUser) {
+      try {
+        var details = await groupRepository.launchDM(userID, loginState);
         yield MessageCreateSuccess(details);
-      }catch(e){
+      } catch (e) {
         yield MessageCreateError(e);
       }
     } else {
@@ -272,6 +328,7 @@ class ProfileBloc implements BaseBloc {
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
         isShared: entity.isPostPrivate == 1,
         pollData: entity.pollData ?? [],
+        likes: entity.likes ?? [],
       );
     }).toList();
   }
@@ -424,5 +481,67 @@ class ProfileBloc implements BaseBloc {
     return userBloc.loginState$.switchMap((loginState) {
       return _toFeedState(loginState, userId, postRepository);
     });
+  }
+
+  static Stream<FeedDeleteMessage> performDelete(
+    FirestorePostRepository postRepository,
+    String postId,
+  ) async* {
+    print('[DEBUG] FeedBloc#performDelete');
+    try {
+      await postRepository.deletePost(postId);
+      yield FeedDeleteSuccess();
+    } catch (e) {
+      yield FeedDeleteError(e);
+    }
+  }
+
+  static Stream<FeedItemLikeMessage> saveLikeOrUnlike(
+    FirestorePostRepository postRepository,
+    bool shouldLike,
+    String uid,
+    String postId,
+    Sink<bool> isLoadingSink,
+  ) async* {
+    print('[DEBUG] FeedBloc#performSave');
+    try {
+      isLoadingSink.add(true);
+      await postRepository.likeOrUnlikePost(
+        shouldLike: shouldLike,
+        postId: postId,
+        userId: uid,
+      );
+      yield FeedItemLikeSuccess();
+    } catch (e) {
+      yield FeedItemLikeError(e);
+    } finally {
+      isLoadingSink.add(false);
+    }
+  }
+
+  static void _suspendUser(
+    UserBloc userBloc,
+    FirestoreUserRepository userRepository,
+    String userId,
+  ) {
+    print('[DEBUG] ProfileBloc#suspendUser');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser && loginState.isAdmin) {
+      userRepository.suspendUser(userId);
+    }
+  }
+
+  static void _deleteUser(
+    UserBloc userBloc,
+    FirestoreUserRepository userRepository,
+    String userId,
+  ) {
+    print('[DEBUG] ProfileBloc#deleteUser');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser && loginState.isAdmin) {
+      userRepository.deleteUser(userId);
+    }
   }
 }

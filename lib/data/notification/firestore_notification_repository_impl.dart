@@ -48,4 +48,13 @@ class FirestoreNotificationRepositoryImpl
         .snapshots()
         .map(_toEntities);
   }
+
+  @override
+  Future<void> markRead(List<String> notificationIds, String uid) async {
+    return notificationIds.forEach((n) async {
+      await _firestore.document('notificationBase').updateData({
+        'readBy': FieldValue.arrayUnion([uid]),
+      });
+    });
+  }
 }

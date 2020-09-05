@@ -34,4 +34,6 @@ abstract class FirestoreChatRepository {
     bool isGif,
     String gif,
   );
+
+  Future<void> markRead(List<String> messageIds, String uid);
 }

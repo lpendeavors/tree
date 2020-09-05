@@ -16,7 +16,7 @@ const _kInitialProfileSettingsState = ProfileSettingsState(
   userEntity: null,
 );
 
-class ProfileSettingsBloc implements BaseBloc{
+class ProfileSettingsBloc implements BaseBloc {
   ///
   /// Input functions
   ///
@@ -93,7 +93,6 @@ class ProfileSettingsBloc implements BaseBloc{
     @required this.setParentChurch,
     @required this.settingState$,
     @required this.message$,
-
     @required this.firstNameError$,
     @required this.lastNameError$,
     @required this.churchNameError$,
@@ -110,7 +109,7 @@ class ProfileSettingsBloc implements BaseBloc{
     @required int index,
     @required UserBloc userBloc,
     @required FirestoreUserRepository userRepository,
-  }){
+  }) {
     ///
     /// Assert
     ///
@@ -150,91 +149,79 @@ class ProfileSettingsBloc implements BaseBloc{
     /// Error Streams
     ///
     final firstNameError$ = setFirstNameController.map((name) {
-      if (name.length > 0) return null;
+      if ((name ?? "").length > 0) return null;
       return NoFirstNameError();
     }).share();
 
     final lastNameError$ = setLastNameController.map((name) {
-      if (name.length > 0) return null;
+      if ((name ?? "").length > 0) return null;
       return NoLastNameError();
     }).share();
 
     final churchNameError$ = setChurchNameController.map((name) {
-      if (name.length > 0) return null;
+      if ((name ?? "").length > 0) return null;
       return NoChurchNameError();
     }).share();
 
     final bioError$ = setBioController.map((bio) {
-      if (bio.length > 0) return null;
+      if ((bio ?? "").length > 0) return null;
       return NoBioError();
     }).share();
 
     final websiteError$ = setChurchWebsiteController.map((site) {
-      if (site.length > 0) return null;
+      if ((site ?? "").length > 0) return null;
       return NoWebsiteError();
     }).share();
 
     final parentChurchError$ = setParentChurchController.map((church) {
-      if (church.length > 0) return null;
+      if ((church ?? "").length > 0) return null;
       return NoParentChurchError();
     }).share();
 
     final cityError$ = setCityController.map((city) {
-      if (city.length > 0) return null;
+      if ((city ?? "").length > 0) return null;
       return NoCityError();
     }).share();
 
     final churchStateError$ = setNoChurchController.map((church) {
-      if (church != null) return null;
+      if ((church ?? "") != null) return null;
       return NoChurchStateError();
     }).share();
 
     final churchError$ = setChurchController.map((church) {
-      if (church != null) return null;
+      if ((church ?? "") != null) return null;
       return NoChurchError();
     }).share();
 
     ///
     /// Streams
     ///
-    final settingState$ = _getSettings(
-        userBloc,
-        userRepository
-    ).publishValueSeeded(_kInitialProfileSettingsState);
+    final settingState$ = _getSettings(userBloc, userRepository)
+        .publishValueSeeded(_kInitialProfileSettingsState);
 
     final personal_personalFieldsAreValid$ = Rx.combineLatest(
-        [
-          firstNameError$,
-          lastNameError$,
-          cityError$,
-          bioError$
-        ], (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
+        [firstNameError$, lastNameError$, cityError$, bioError$],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final personal_churchFieldsAreValid$ = Rx.combineLatest(
-        [
-          churchStateError$
-        ], (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
+        [churchStateError$],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final personal_churchFieldsAreValid2$ = Rx.combineLatest(
-        [
-          churchStateError$,
-          churchError$
-        ], (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
+        [churchStateError$, churchError$],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final church_personalFieldsAreValid$ = Rx.combineLatest(
-      [
-        firstNameError$,
-        lastNameError$
-      ],
+      [firstNameError$, lastNameError$],
       (allError) => allError.every((error) {
         print(error);
         return error == null;
@@ -242,15 +229,11 @@ class ProfileSettingsBloc implements BaseBloc{
     );
 
     final church_churchFieldsAreValid$ = Rx.combineLatest(
-        [
-          churchNameError$,
-          bioError$,
-          websiteError$,
-          parentChurchError$
-        ], (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
+        [churchNameError$, bioError$, websiteError$, parentChurchError$],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final validators = [
       personal_personalFieldsAreValid$,
@@ -262,37 +245,42 @@ class ProfileSettingsBloc implements BaseBloc{
     ];
 
     final message$ = saveChangesController
-      .withLatestFrom(validationTypeController.value == 1 ? (validators[validationTypeController.value] as List)[setNoChurchController.value ? 1 : 0] : validators[validationTypeController.value], (_, bool isValid) {
-        print(isValid);
-        return isValid;
-      })
-      .where((isValid) => isValid)
-      .exhaustMap((_) => saveProfileChanges(
-        userBloc,
-        validationTypeController.value,
-        setFirstNameController.value,
-        setLastNameController.value,
-        setPhoneNumberController.value,
-        setRelationshipController.value,
-        setIsPublicController.value,
-        setTitleController.value,
-        setBioController.value,
-        setCityController.value,
-        setAddressController.value,
-        countryCodeController.value,
-        setChurchController.value,
-        setUnknownChurchController.value,
-        setNoChurchController.value,
-        setChurchIdController.value,
-        setChurchNameController.value,
-        setMinistryTypeController.value,
-        setChurchDenominationController.value,
-        setLocationDataController.value,
-        setChurchWebsiteController.value,
-        setParentChurchController.value,
-        userRepository,
-      )
-    ).publish();
+        .withLatestFrom(
+            validationTypeController.value == 1
+                ? (validators[validationTypeController.value]
+                    as List)[setNoChurchController.value ? 1 : 0]
+                : validators[validationTypeController.value],
+            (_, bool isValid) {
+          print(isValid);
+          return isValid;
+        })
+        .where((isValid) => isValid)
+        .exhaustMap((_) => saveProfileChanges(
+              userBloc,
+              validationTypeController.value,
+              setFirstNameController.value,
+              setLastNameController.value,
+              setPhoneNumberController.value,
+              setRelationshipController.value,
+              setIsPublicController.value,
+              setTitleController.value,
+              setBioController.value,
+              setCityController.value,
+              setAddressController.value,
+              countryCodeController.value,
+              setChurchController.value,
+              setUnknownChurchController.value,
+              setNoChurchController.value,
+              setChurchIdController.value,
+              setChurchNameController.value,
+              setMinistryTypeController.value,
+              setChurchDenominationController.value,
+              setLocationDataController.value,
+              setChurchWebsiteController.value,
+              setParentChurchController.value,
+              userRepository,
+            ))
+        .publish();
 
     ///
     /// Subscriptions and controllers
@@ -327,44 +315,43 @@ class ProfileSettingsBloc implements BaseBloc{
     ];
 
     return ProfileSettingsBloc._(
-        settingState$: settingState$,
-        message$: message$,
-        setValidationType: validationTypeController.add,
-        setFirstName: setFirstNameController.add,
-        setLastName: setLastNameController.add,
-        setPhoneNumber: setPhoneNumberController.add,
-        setRelationship: setRelationshipController.add,
-        setIsPublic: setIsPublicController.add,
-        setTitle: setTitleController.add,
-        setBio: setBioController.add,
-        setCity: setCityController.add,
-        setAddress: setAddressController.add,
-        countryCodeChanged: countryCodeController.add,
-        setChurch: setChurchController.add,
-        setUnknownChurch: setUnknownChurchController.add,
-        setNoChurch: setNoChurchController.add,
-        setChurchId: setChurchIdController.add,
-        setChurchName: setChurchNameController.add,
-        setMinistryType: setMinistryTypeController.add,
-        setChurchDenomination: setChurchDenominationController.add,
-        setLocationData: setLocationDataController.add,
-        setChurchWebsite: setChurchWebsiteController.add,
-        setParentChurch: setParentChurchController.add,
-        saveChanges: () => saveChangesController.add(null),
-
-        firstNameError$: firstNameError$,
-        lastNameError$: lastNameError$,
-        churchNameError$: churchNameError$,
-        ministryError$: bioError$,
-        websiteError$: websiteError$,
-        parentChurchError$: parentChurchError$,
-        cityError$: cityError$,
-        churchStateError$: churchStateError$,
-        churchError$: churchError$,
-        dispose: () async {
-          await Future.wait(subscriptions.map((s) => s.cancel()));
-          await Future.wait(controllers.map((c) => c.close()));
-        },
+      settingState$: settingState$,
+      message$: message$,
+      setValidationType: validationTypeController.add,
+      setFirstName: setFirstNameController.add,
+      setLastName: setLastNameController.add,
+      setPhoneNumber: setPhoneNumberController.add,
+      setRelationship: setRelationshipController.add,
+      setIsPublic: setIsPublicController.add,
+      setTitle: setTitleController.add,
+      setBio: setBioController.add,
+      setCity: setCityController.add,
+      setAddress: setAddressController.add,
+      countryCodeChanged: countryCodeController.add,
+      setChurch: setChurchController.add,
+      setUnknownChurch: setUnknownChurchController.add,
+      setNoChurch: setNoChurchController.add,
+      setChurchId: setChurchIdController.add,
+      setChurchName: setChurchNameController.add,
+      setMinistryType: setMinistryTypeController.add,
+      setChurchDenomination: setChurchDenominationController.add,
+      setLocationData: setLocationDataController.add,
+      setChurchWebsite: setChurchWebsiteController.add,
+      setParentChurch: setParentChurchController.add,
+      saveChanges: () => saveChangesController.add(null),
+      firstNameError$: firstNameError$,
+      lastNameError$: lastNameError$,
+      churchNameError$: churchNameError$,
+      ministryError$: bioError$,
+      websiteError$: websiteError$,
+      parentChurchError$: parentChurchError$,
+      cityError$: cityError$,
+      churchStateError$: churchStateError$,
+      churchError$: churchError$,
+      dispose: () async {
+        await Future.wait(subscriptions.map((s) => s.cancel()));
+        await Future.wait(controllers.map((c) => c.close()));
+      },
     );
   }
 
@@ -372,9 +359,9 @@ class ProfileSettingsBloc implements BaseBloc{
   void dispose() => _dispose();
 
   static Stream<ProfileSettingsState> _toSettingsState(
-      LoginState loginState,
-      FirestoreUserRepository userRepository,
-      ) {
+    LoginState loginState,
+    FirestoreUserRepository userRepository,
+  ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
         _kInitialProfileSettingsState.copyWith(
@@ -385,19 +372,17 @@ class ProfileSettingsBloc implements BaseBloc{
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getUserById(uid: loginState.uid).map((user){
-        return _kInitialProfileSettingsState.copyWith(
-            userEntity: user,
-            isLoading: false
-        );
-      })
+      return userRepository
+          .getUserById(uid: loginState.uid)
+          .map((user) {
+            return _kInitialProfileSettingsState.copyWith(
+                userEntity: user, isLoading: false);
+          })
           .startWith(_kInitialProfileSettingsState)
           .onErrorReturnWith((e) {
-        return _kInitialProfileSettingsState.copyWith(
-            error: e,
-            isLoading: false
-        );
-      });
+            return _kInitialProfileSettingsState.copyWith(
+                error: e, isLoading: false);
+          });
     }
 
     return Stream.value(
@@ -409,9 +394,9 @@ class ProfileSettingsBloc implements BaseBloc{
   }
 
   static Stream<ProfileSettingsState> _getSettings(
-      UserBloc userBloc,
-      FirestoreUserRepository userRepository,
-      ) {
+    UserBloc userBloc,
+    FirestoreUserRepository userRepository,
+  ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toSettingsState(
         loginState,
@@ -443,8 +428,7 @@ class ProfileSettingsBloc implements BaseBloc{
       List<dynamic> locationData,
       String churchWebsite,
       String churchParent,
-      FirestoreUserRepository userRepository
-      ) async* {
+      FirestoreUserRepository userRepository) async* {
     Map<String, dynamic> data = {
       'firstName': firstName,
       'lastName': lastName,
@@ -457,57 +441,57 @@ class ProfileSettingsBloc implements BaseBloc{
       'businessAddress': address,
     };
 
-    if(ministryType != null){
+    if (ministryType != null) {
       data['type'] = ministryType;
     }
 
-    if(churchDenomination != null){
+    if (churchDenomination != null) {
       data['churchDenomination'] = churchDenomination;
     }
 
-    if(locationData != null){
+    if (locationData != null) {
       data['churchAddress'] = locationData[0];
       data['churchLat'] = locationData[1];
       data['churchLong'] = locationData[2];
     }
 
-    if(churchWebsite != null){
+    if (churchWebsite != null) {
       data['churchWebsite'] = churchWebsite;
     }
 
-    if(churchParent != null){
+    if (churchParent != null) {
       data['parentChurch'] = churchParent;
     }
 
-    if(church != null && church.uid.substring(0, 7).toUpperCase() == churchId){
+    if (church != null &&
+        church.uid.substring(0, 7).toUpperCase() == churchId) {
       data['churchInfo'] = {
         'churchName': church.churchName,
         'churchAddress': church.churchAddress,
         'churchDenomination': church.churchDenomination
       };
-    } else if(unknownChurch != null) {
+    } else if (unknownChurch != null) {
       data['churchInfo'] = {
         'churchName': unknownChurch,
         'churchAddress': null,
         'churchDenomination': null
       };
-    } else if(noChurch == true){
+    } else if (noChurch == true) {
       data['churchInfo'] = null;
     }
 
-    if(isPublic != null && isPublic){
+    if (isPublic != null && isPublic) {
       data['isPublic'] = isPublic;
       data['status'] = 0;
     }
 
     LoginState state = userBloc.loginState$.value;
-    if(state is LoggedInUser){
-
-      if(saveType == 0 || saveType == 3){
+    if (state is LoggedInUser) {
+      if (saveType == 0 || saveType == 3) {
         data['isProfileUpdated'] = true;
       }
 
-      if(saveType == 1 || saveType == 4){
+      if (saveType == 1 || saveType == 4) {
         data['isChurchUpdated'] = true;
       }
 

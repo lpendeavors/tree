@@ -95,17 +95,17 @@ class ChatTabsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.combineLatest2(
-          chatRepository.getByUser(uid: loginState.uid), groupRepository.get(),
-          (chats, groups) {
-        Tuple2 sortedGroups =
-            _sortGroups(_entitiesToGroupItems(groups), loginState);
-
+      return Rx.combineLatest4(
+          chatRepository.getByUser(uid: loginState.uid),
+          groupRepository.getRoomsByUser(loginState.uid),
+          groupRepository.getDefaultRooms(),
+          groupRepository.getGroupsByUser(loginState.uid),
+          (chats, myRooms, defaultRooms, groups) {
         return _kInitialChatState.copyWith(
           isLoading: false,
-          messages: _entitiesToMessageItems(chats, groups, loginState.uid),
-          chatRooms: sortedGroups.item1,
-          groups: sortedGroups.item2,
+          messages: _entitiesToMessageItems(chats, loginState.uid),
+          chatRooms: _filterRooms(myRooms, defaultRooms, loginState),
+          groups: _entitiesToGroupItems(groups),
         );
       }).startWith(_kInitialChatState).onErrorReturnWith((e) {
         print('error $e');
@@ -146,7 +146,6 @@ class ChatTabsBloc implements BaseBloc {
 
   static List<MessageItem> _entitiesToMessageItems(
     List<ChatEntity> entities,
-    List<GroupEntity> groups,
     String uid,
   ) {
     var grouped = groupBy(entities, (e) {
@@ -169,12 +168,13 @@ class ChatTabsBloc implements BaseBloc {
         message: entity.message,
         image: entity.image,
         members: entity.parties,
-        isRoom: entity.isRoom,
+        isRoom: entity.isRoom ?? false,
         sentDate: DateTime.fromMillisecondsSinceEpoch(entity.time),
         roomId: entity.chatId,
         isRead: (entity.readBy ?? []).contains(uid),
         isMine: entity.ownerId == uid,
-        isConversation: (entity.isRoom && entity.parties.length > 2),
+        isConversation:
+            (!(entity.isRoom ?? false) && entity.parties.length > 2),
         isGroup: false,
       );
     }).toList();
@@ -194,41 +194,26 @@ class ChatTabsBloc implements BaseBloc {
     });
   }
 
-  static Tuple2 _sortGroups(
-    List<GroupItem> groups,
+  static List<GroupItem> _filterRooms(
+    List<GroupEntity> myRooms,
+    List<GroupEntity> defaultRooms,
     LoginState loginState,
   ) {
-    var uid = (loginState as LoggedInUser).uid;
-    var churchId = (loginState as LoggedInUser).churchId;
-    var roomsList = List<GroupItem>();
+    print(myRooms.length);
 
-    if ((loginState as LoggedInUser).isYouth) {
-      roomsList = groups.where((group) => group.name.toLowerCase() == 'youth');
+    var user = loginState as LoggedInUser;
+    var rooms = _entitiesToGroupItems(defaultRooms);
+
+    if (user.isYouth) {
+      rooms =
+          rooms.where((r) => r.name.toLowerCase().contains('youth')).toList();
     } else {
-      roomsList = groups
-          .where((group) => group.byAdmin)
-          .where((group) => group.isPrivate != true)
-          .where((group) => group.name.toLowerCase() != 'youth')
-          .toList();
-
-      roomsList.addAll(groups.where((g) {
-        return (g.members.contains(uid) && g.ownerId == churchId);
-      }));
+      rooms =
+          rooms.where((r) => !r.name.toLowerCase().contains('youth')).toList();
     }
 
-    // roomsList.addAll(
-    //   groups.where((g) => g.ownerId == churchId),
-    // );
+    rooms.addAll(_entitiesToGroupItems(myRooms));
 
-    var groupsList = (groups
-            .where((group) => !group.byAdmin)
-            .where((group) => group.isGroup)
-            .where((group) => !group.isChurch)
-            .where((group) => (group.image ?? "").isNotEmpty)
-            .where((group) => group.members.contains(uid))
-            .toList() ??
-        []);
-
-    return Tuple2(roomsList, <GroupItem>[]);
+    return rooms;
   }
 }

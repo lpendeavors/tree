@@ -129,14 +129,22 @@ class HomeTabsBloc extends BaseBloc {
     List<ChatEntity> chats,
     String uid,
   ) {
-    return chats.map((c) => !c.readBy.contains(uid)).toList().length > 0;
+    var newChats = chats
+        .map((c) => !c.readBy.contains(uid) && c.parties.contains(uid))
+        .toList();
+
+    print('${newChats.length} new chats');
+    return newChats.length > 0;
   }
 
   static bool _hasNewRequests(
     List<UserEntity> requests,
     List<String> connections,
   ) {
-    return requests.map((r) => !connections.contains(r.uid)).toList().length >
-        0;
+    var newRequests =
+        requests.map((r) => !connections.contains(r.uid)).toList();
+
+    print('${newRequests.length} requests');
+    return newRequests.length > 0;
   }
 }

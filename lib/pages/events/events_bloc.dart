@@ -43,12 +43,14 @@ class EventsBloc implements BaseBloc {
   factory EventsBloc({
     @required UserBloc userBloc,
     @required FirestoreEventRepository eventRepository,
+    @required EventFilter filter,
   }) {
     ///
     /// Assert
     ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(eventRepository != null, 'eventRepository cannot be null');
+    assert(filter != null, 'filter cannot be null');
 
     ///
     /// Stream controllers
@@ -61,12 +63,12 @@ class EventsBloc implements BaseBloc {
     final eventsListState$ = _getEventsList(
       userBloc,
       eventRepository,
+      filter,
     ).publishValueSeeded(_kInitialEventsListState);
 
-
-    /// 
+    ///
     /// Controllers and subscriptions
-    /// 
+    ///
     final subscriptions = <StreamSubscription>[
       eventsListState$.connect(),
     ];
@@ -76,14 +78,13 @@ class EventsBloc implements BaseBloc {
     ];
 
     return EventsBloc._(
-      hideEventsOnMap$: hideEventsOnMapSubject.stream,
-      hideEventsOnMapChanged: hideEventsOnMapSubject.add,
-      eventsListState$: eventsListState$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        hideEventsOnMap$: hideEventsOnMapSubject.stream,
+        hideEventsOnMapChanged: hideEventsOnMapSubject.add,
+        eventsListState$: eventsListState$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   @override
@@ -92,6 +93,7 @@ class EventsBloc implements BaseBloc {
   static Stream<EventsListState> _toState(
     LoginState loginState,
     FirestoreEventRepository eventRepository,
+    EventFilter filter,
   ) {
     if (loginState is Unauthenticated) {
       return Stream.value(
@@ -103,28 +105,109 @@ class EventsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return eventRepository.get()
-        .map((entities) {
-          return _entitiesToEventItems(
-            entities, 
-            loginState.uid,
-            loginState.isAdmin,
-          );
-        })
-        .map((eventItems) {
-          return _kInitialEventsListState.copyWith(
-            isLoading: false,
-            eventItems: eventItems,
-            myEvents: _getEventsImAttending(eventItems, loginState.uid),
-          );
-        })
-        .startWith(_kInitialEventsListState)
-        .onErrorReturnWith((e) {
-          return _kInitialEventsListState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+      if (filter == EventFilter.none) {
+        return eventRepository
+            .get()
+            .map((entities) {
+              return _entitiesToEventItems(
+                entities,
+                loginState.uid,
+                loginState.isAdmin,
+              );
+            })
+            .map((eventItems) {
+              return _kInitialEventsListState.copyWith(
+                isLoading: false,
+                eventItems: eventItems,
+                myEvents: _getEventsImAttending(eventItems, loginState.uid),
+              );
+            })
+            .startWith(_kInitialEventsListState)
+            .onErrorReturnWith((e) {
+              return _kInitialEventsListState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
+      }
+
+      if (filter == EventFilter.pending) {
+        return eventRepository
+            .getPending()
+            .map((entities) {
+              return _entitiesToEventItems(
+                entities,
+                loginState.uid,
+                loginState.isAdmin,
+              );
+            })
+            .map((eventItems) {
+              return _kInitialEventsListState.copyWith(
+                isLoading: false,
+                eventItems: eventItems,
+                myEvents: _getEventsImAttending(eventItems, loginState.uid),
+              );
+            })
+            .startWith(_kInitialEventsListState)
+            .onErrorReturnWith((e) {
+              return _kInitialEventsListState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
+      }
+
+      if (filter == EventFilter.inactive) {
+        return eventRepository
+            .getInactive()
+            .map((entities) {
+              return _entitiesToEventItems(
+                entities,
+                loginState.uid,
+                loginState.isAdmin,
+              );
+            })
+            .map((eventItems) {
+              return _kInitialEventsListState.copyWith(
+                isLoading: false,
+                eventItems: eventItems,
+                myEvents: _getEventsImAttending(eventItems, loginState.uid),
+              );
+            })
+            .startWith(_kInitialEventsListState)
+            .onErrorReturnWith((e) {
+              return _kInitialEventsListState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
+      }
+
+      if (filter == EventFilter.completed) {
+        return eventRepository
+            .getCompleted()
+            .map((entities) {
+              return _entitiesToEventItems(
+                entities,
+                loginState.uid,
+                loginState.isAdmin,
+              );
+            })
+            .map((eventItems) {
+              return _kInitialEventsListState.copyWith(
+                isLoading: false,
+                eventItems: eventItems,
+                myEvents: _getEventsImAttending(eventItems, loginState.uid),
+              );
+            })
+            .startWith(_kInitialEventsListState)
+            .onErrorReturnWith((e) {
+              return _kInitialEventsListState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
+      }
     }
 
     return Stream.value(
@@ -162,11 +245,13 @@ class EventsBloc implements BaseBloc {
   static Stream<EventsListState> _getEventsList(
     UserBloc userBloc,
     FirestoreEventRepository eventRepository,
+    EventFilter filter,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
         loginState,
         eventRepository,
+        filter,
       );
     });
   }

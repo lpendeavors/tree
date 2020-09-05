@@ -53,7 +53,8 @@ class _ProfilePageState extends State<ProfilePage>
           .where((state) => state is Unauthenticated)
           .listen((_) =>
               Navigator.popUntil(context, ModalRoute.withName('/login'))),
-      _profileBloc.dmState$.listen(_dmResult)
+      _profileBloc.dmState$.listen(_dmResult),
+      _profileBloc.likeMessage$.listen((m) => print(m)),
     ];
   }
 
@@ -168,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage>
                               : ["Add Photo"]
                           : [
                               "View Picture",
-                              if (data.isAdmin) "Approve Account"
+                              if (data.isAdmin) "Approve Account",
                             ]);
                 }).then((result) async {
               if (result == "Add Photo" || result == "Update Picture") {
@@ -276,12 +277,23 @@ class _ProfilePageState extends State<ProfilePage>
                                 showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
+                                      var isAdmin = (widget.userBloc.loginState$
+                                              .value as LoggedInUser)
+                                          .isAdmin;
                                       return ProfileImageModal(options: [
                                         "Report User",
-                                        "Block User"
+                                        "Block User",
+                                        if (isAdmin) "Suspend User",
+                                        if (isAdmin) "Delete User"
                                       ]);
                                     }).then((value) {
-                                  //broken in original app too
+                                  if (value == "Suspend User") {
+                                    _profileBloc.suspendUser();
+                                  }
+
+                                  if (value == "Delete User") {
+                                    _profileBloc.deleteUser();
+                                  }
                                 });
                               },
                             ),
@@ -424,7 +436,8 @@ class _ProfilePageState extends State<ProfilePage>
                       SizedBox(width: 10),
                       Text(
                         "Send Direct Message",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       )
                     ],
                   ),
@@ -1133,12 +1146,18 @@ class _ProfilePageState extends State<ProfilePage>
             return FeedListItem(
               context: context,
               tickerProvider: this,
+              admin:
+                  (widget.userBloc.loginState$.value as LoggedInUser).isAdmin,
               feedItem: data.feedItems[index],
+              unconnect: null,
+              deletePost: null,
+              reportPost: null,
               likeFeedItem: (item) {
-                // TODO: finish saving like
-                // _feedBloc.postToLikeChanged(item);
-                // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
-                // _feedBloc.saveLikeValue();
+                if (!data.feedItems[index].isMine) {
+                  _profileBloc.postToLikeChanged(item);
+                  _profileBloc.likePostChanged(!data.feedItems[index].isLiked);
+                  _profileBloc.saveLikeValue();
+                }
               },
             );
           })

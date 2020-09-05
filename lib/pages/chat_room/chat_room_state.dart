@@ -126,6 +126,7 @@ class ChatMessageItem extends Equatable {
   final DateTime sentDate;
   final String message;
   final String userId;
+  final List<String> members;
 
   const ChatMessageItem({
     @required this.id,
@@ -138,6 +139,7 @@ class ChatMessageItem extends Equatable {
     @required this.sentDate,
     @required this.message,
     @required this.userId,
+    @required this.members,
   });
 
   @override
@@ -152,7 +154,27 @@ class ChatMessageItem extends Equatable {
         sentDate,
         message,
         userId,
+        members,
       ];
+
+  @override
+  bool get stringify => true;
+}
+
+@immutable
+class MemberItem extends Equatable {
+  final String name;
+  final String image;
+  final String id;
+
+  const MemberItem({
+    @required this.name,
+    @required this.image,
+    @required this.id,
+  });
+
+  @override
+  List get props => [name, image, id];
 
   @override
   bool get stringify => true;

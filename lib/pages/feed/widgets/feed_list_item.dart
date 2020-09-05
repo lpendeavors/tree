@@ -17,6 +17,7 @@ class FeedListItem extends StatefulWidget {
   final Function() deletePost;
   final Function() reportPost;
   final Function() unconnect;
+  final bool admin;
 
   const FeedListItem({
     @required this.feedItem,
@@ -26,6 +27,7 @@ class FeedListItem extends StatefulWidget {
     @required this.deletePost,
     @required this.reportPost,
     @required this.unconnect,
+    @required this.admin,
   });
 
   @override
@@ -468,7 +470,9 @@ class _FeedListItemState extends State<FeedListItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     _feedButton(
-                      title: 'Like',
+                      title: widget.feedItem.isMine
+                          ? '${widget.feedItem.likes.length} likes'
+                          : 'Like',
                       icon: Icons.favorite,
                       color: !widget.feedItem.isLiked
                           ? Colors.grey
@@ -515,6 +519,10 @@ class _FeedListItemState extends State<FeedListItem> {
                     ),
                   ],
                 ),
+              ),
+              Container(
+                height: 10,
+                color: Color(0xff14000000),
               ),
             ],
           ),
@@ -573,7 +581,110 @@ class _FeedListItemState extends State<FeedListItem> {
     );
   }
 
-  Future<void> _showShareOptions() async {}
+  Future<void> _showShareOptions() async {
+    print('share');
+    switch (await showDialog<ShareOption>(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            elevation: 0.0,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Container(
+              height: 140,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 15,
+                          ),
+                          Image.asset(
+                            ic_launcher,
+                            height: 20,
+                            width: 20,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Flexible(
+                            flex: 1,
+                            child: Text(
+                              'Tree',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Container(
+                      height: 0.5,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.1),
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: 90,
+                        ),
+                        child: Scrollbar(
+                          child: ListView(
+                            children: <Widget>[
+                              SizedBox(height: 5),
+                              SimpleDialogOption(
+                                child: Text('Say something about post'),
+                                onPressed: () => Navigator.pop(
+                                    context, ShareOption.withComment),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                              SimpleDialogOption(
+                                child: Text('Just share on my wall'),
+                                onPressed: () => Navigator.pop(
+                                    context, ShareOption.withoutComment),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        })) {
+      case ShareOption.withComment:
+        print('comment');
+        break;
+      case ShareOption.withoutComment:
+        print('without');
+        break;
+    }
+  }
 
   Future<void> _showPostOptions() async {
     switch (await showDialog<PostOption>(
@@ -718,6 +829,12 @@ class _FeedListItemState extends State<FeedListItem> {
         break;
       case PostOption.report:
         widget.reportPost();
+        break;
+      case PostOption.deleteUser:
+        print('delete');
+        break;
+      case PostOption.suspendUser:
+        print('suspend');
         break;
     }
   }

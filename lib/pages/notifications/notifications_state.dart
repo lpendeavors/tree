@@ -56,6 +56,7 @@ class NotificationItem extends Equatable {
   final String sharedBy;
   final String body;
   final String user;
+  final String navigateToId;
 
   const NotificationItem({
     @required this.id,
@@ -65,18 +66,20 @@ class NotificationItem extends Equatable {
     @required this.sharedBy,
     @required this.body,
     @required this.user,
+    @required this.navigateToId,
   });
 
   @override
   List get props => [
-    id,
-    body,
-    sharedBy,
-    image,
-    time,
-    isNew,
-    user,
-  ];
+        id,
+        body,
+        sharedBy,
+        image,
+        time,
+        isNew,
+        user,
+        navigateToId,
+      ];
 
   @override
   bool get stringify => true;

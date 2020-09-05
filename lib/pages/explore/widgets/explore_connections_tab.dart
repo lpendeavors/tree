@@ -133,8 +133,8 @@ class ExploreConnectionsTab extends StatelessWidget {
                     return ConnectionListItem(
                       isRequest: false,
                       connectionItem: data.connectionItems[index],
-                      onRemove: bloc.removeConnection,
-                      onConnect: onConnect,
+                      onRemove: data.connectionItems.remove,
+                      onConnect: bloc.addConnection,
                       onAccept: null,
                       onDecline: null,
                     );

@@ -77,7 +77,7 @@ class UserBloc implements BaseBloc {
         fullName: "${userEntity.firstName} ${userEntity.lastName}",
         email: userEntity.email,
         uid: userEntity.id,
-        isAdmin: userEntity.isAdmin ?? false,
+        isAdmin: true, //userEntity.isAdmin ?? false,
         chatList: userEntity.myChatsList13 ?? [],
         image: userEntity.image,
         connections: userEntity.connections ?? [],
@@ -90,7 +90,7 @@ class UserBloc implements BaseBloc {
         isVerified: userEntity.isVerified ?? false,
         churchId: userEntity.churchID,
         isYouth: false,
-        mutedChats: [],
+        mutedChats: userEntity.muted,
         isChurchUpdated: userEntity.isChurchUpdated ?? false,
         isProfileUpdated: userEntity.isProfileUpdated ?? false);
   }

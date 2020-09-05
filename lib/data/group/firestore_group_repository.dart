@@ -22,12 +22,17 @@ abstract class FirestoreGroupRepository {
     bool isVerified,
   );
 
-  Future<Map<String, dynamic>> launchDM(
-    String userID,
-    LoggedInUser loginState
+  Future<Map<String, dynamic>> launchDM(String userID, LoggedInUser loginState);
+
+  Future<List<GroupEntity>> runSearchQuery(String query);
+
+  Stream<List<GroupEntity>> getGroupsByUser(
+    String uid,
   );
 
-  Future<List<GroupEntity>> runSearchQuery(
-      String query
+  Stream<List<GroupEntity>> getRoomsByUser(
+    String uid,
   );
+
+  Stream<List<GroupEntity>> getDefaultRooms();
 }

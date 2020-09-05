@@ -6,7 +6,7 @@ import 'package:treeapp/models/old/poll_data.dart';
 /// Enums
 ///
 enum PostType { feed, quiz, poll, group, ad, user }
-enum PostOption { edit, delete, unconnect, report }
+enum PostOption { edit, delete, unconnect, report, deleteUser, suspendUser }
 enum ShareOption { withComment, withoutComment }
 
 ///
@@ -128,6 +128,7 @@ class FeedItem extends Equatable {
   final String abbreviatedPost;
   final bool isShared;
   final List<PollData> pollData;
+  final List<String> likes;
 
   const FeedItem({
     @required this.id,
@@ -145,6 +146,7 @@ class FeedItem extends Equatable {
     @required this.abbreviatedPost,
     @required this.isShared,
     @required this.pollData,
+    @required this.likes,
   });
 
   @override
@@ -164,6 +166,7 @@ class FeedItem extends Equatable {
         abbreviatedPost,
         isShared,
         pollData,
+        likes,
       ];
 
   @override

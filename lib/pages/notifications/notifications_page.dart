@@ -37,8 +37,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _notificationsBloc = widget.notificationsBloc;
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
     ];
   }
 
@@ -55,9 +56,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          S.of(context).notifications_title
-        ),
+        title: Text(S.of(context).notifications_title),
       ),
       backgroundColor: Colors.white,
       body: Container(
@@ -94,6 +93,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ),
                 ),
               );
+            }
+
+            var unread = data.notificationItems.where((n) => n.isNew).toList();
+            if (unread.isNotEmpty) {
+              _notificationsBloc.markRead(unread.map((u) => u.id).toList());
             }
 
             return ListView.separated(

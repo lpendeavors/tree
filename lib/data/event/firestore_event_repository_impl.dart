@@ -11,10 +11,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   final Firestore _firestore;
   final FirebaseStorage _storage;
 
-  const FirestoreEventRepositoryImpl(
-    this._firestore,
-    this._storage
-  );
+  const FirestoreEventRepositoryImpl(this._firestore, this._storage);
 
   @override
   Stream<List<EventEntity>> get() {
@@ -22,28 +19,29 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     var yesterday = new DateTime(now.year, now.month, now.day - 1);
 
     return _firestore
-      .collection('eventBase')
-      .where('eventStartDate', isGreaterThanOrEqualTo: yesterday.millisecondsSinceEpoch)
-      .snapshots()
-      .map(_toEntities);
+        .collection('eventBase')
+        .where('eventStartDate',
+            isGreaterThanOrEqualTo: yesterday.millisecondsSinceEpoch)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
   Stream<EventEntity> getById(String eventId) {
     return _firestore
-      .collection('eventBase')
-      .document(eventId)
-      .snapshots()
-      .map((snapshot) => EventEntity.fromDocumentSnapshot(snapshot));
+        .collection('eventBase')
+        .document(eventId)
+        .snapshots()
+        .map((snapshot) => EventEntity.fromDocumentSnapshot(snapshot));
   }
 
   @override
   Stream<List<EventEntity>> getByOwner(String ownerId) {
     return _firestore
-      .collection('eventBase')
-      .where('ownerId', isEqualTo: ownerId)
-      .snapshots()
-      .map(_toEntities);
+        .collection('eventBase')
+        .where('ownerId', isEqualTo: ownerId)
+        .snapshots()
+        .map(_toEntities);
   }
 
   @override
@@ -117,14 +115,11 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     };
 
     if (id != null) {
-
       return _firestore
-        .collection('eventBase')
-        .document(id)
-        .setData(event, merge: true);
-        
+          .collection('eventBase')
+          .document(id)
+          .setData(event, merge: true);
     } else {
-
       List<String> imageUrls = await Future.wait(
         images.map((image) async {
           String id = Uuid().v1();
@@ -146,9 +141,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
         }).toList(),
       });
 
-      return _firestore
-        .collection('eventBase')
-        .add(event);
+      return _firestore.collection('eventBase').add(event);
     }
   }
 
@@ -161,11 +154,11 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   @override
   Future<List<EventEntity>> runSearchQuery(String query) {
     return _firestore
-      .collection('eventBase')
-      .where('searchData', arrayContains: query.trim())
-      .limit(30)
-      .getDocuments()
-      .then(_toEntities);
+        .collection('eventBase')
+        .where('searchData', arrayContains: query.trim())
+        .limit(30)
+        .getDocuments()
+        .then(_toEntities);
   }
 
   @override
@@ -175,17 +168,49 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     String userId,
   ) async {
     if (isAttending) {
-      return _firestore
-        .document('eventBase/$eventId')
-        .updateData({
-          'attending': FieldValue.arrayUnion([userId]),
-        });
+      return _firestore.document('eventBase/$eventId').updateData({
+        'attending': FieldValue.arrayUnion([userId]),
+      });
     } else {
-      return _firestore
-        .document('eventBase/$eventId')
-        .updateData({
-          'attending': FieldValue.arrayRemove([userId]),
-        });
+      return _firestore.document('eventBase/$eventId').updateData({
+        'attending': FieldValue.arrayRemove([userId]),
+      });
     }
+  }
+
+  @override
+  Future<void> approveEvent(String eventId) {
+    // TODO: implement approveEvent
+    throw UnimplementedError();
+  }
+
+  @override
+  Stream<List<EventEntity>> getCompleted() {
+    return _firestore
+        .collection('eventBase')
+        .where('status', isEqualTo: 4)
+        .orderBy('time')
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Stream<List<EventEntity>> getInactive() {
+    return _firestore
+        .collection('eventBase')
+        .where('status', isEqualTo: 3)
+        .orderBy('time')
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Stream<List<EventEntity>> getPending() {
+    return _firestore
+        .collection('eventBase')
+        .where('status', isEqualTo: 0)
+        .orderBy('time')
+        .snapshots()
+        .map(_toEntities);
   }
 }
