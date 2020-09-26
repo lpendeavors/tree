@@ -921,7 +921,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                                                         flex: 1,
                                                         fit: FlexFit.tight,
                                                         child: Text(
-                                                            address.isEmpty
+                                                            (address ?? "").isEmpty
                                                                 ? "Enter your business address"
                                                                 : address,
                                                             style: TextStyle(
@@ -929,7 +929,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                                                                 color: Colors
                                                                     .black
                                                                     .withOpacity(
-                                                                        address.isEmpty
+                                                                      (address ?? "").isEmpty
                                                                             ? (.2)
                                                                             : 1),
                                                                 fontFamily:
