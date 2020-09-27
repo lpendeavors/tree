@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_text_view/smart_text_view.dart';
 import 'package:treeapp/util/asset_utils.dart';
+import 'package:treeapp/widgets/image_holder.dart';
 import '../../comments/comments_panel.dart';
 import '../../comments/comments_bloc.dart';
 import '../../../dependency_injection.dart';
@@ -18,6 +20,7 @@ class FeedListItem extends StatefulWidget {
   final Function() reportPost;
   final Function() unconnect;
   final bool admin;
+  final bool isFeed;
 
   const FeedListItem({
     @required this.feedItem,
@@ -28,6 +31,7 @@ class FeedListItem extends StatefulWidget {
     @required this.reportPost,
     @required this.unconnect,
     @required this.admin,
+    @required this.isFeed,
   });
 
   @override
@@ -36,6 +40,7 @@ class FeedListItem extends StatefulWidget {
 
 class _FeedListItemState extends State<FeedListItem> {
   var _expanded = false;
+  Firestore _firestore = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -465,6 +470,8 @@ class _FeedListItemState extends State<FeedListItem> {
                 padding: EdgeInsets.only(
                   right: 15,
                   left: 15,
+                  top: 5,
+                  bottom: 5,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -520,6 +527,88 @@ class _FeedListItemState extends State<FeedListItem> {
                   ],
                 ),
               ),
+              if (widget.isFeed)
+                FutureBuilder<LastCommentItem>(
+                  future: _getLastComment(widget.feedItem.id),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.none &&
+                        snapshot.hasData == null) {
+                      return Container();
+                    }
+
+                    if (snapshot.hasData != null && snapshot.data != null) {
+                      var comment = snapshot.data;
+                      return Flexible(
+                        child: Stack(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Stack(
+                                    alignment: Alignment.bottomLeft,
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.all(18),
+                                        margin: EdgeInsets.only(left: 14),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.withOpacity(0.05),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              comment.ownerName ?? '',
+                                              textAlign: TextAlign.start,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Flexible(
+                                              child: Text(
+                                                comment.comment ?? '',
+                                                maxLines: 4,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  '/profile',
+                                  arguments: comment.ownerId,
+                                );
+                              },
+                              child: AbsorbPointer(
+                                absorbing: true,
+                                child: ImageHolder(
+                                  image: comment.ownerImage ?? '',
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Container();
+                  },
+                ),
               Container(
                 height: 10,
                 color: Color(0xff14000000),
@@ -532,6 +621,24 @@ class _FeedListItemState extends State<FeedListItem> {
     //     SizedBox(height: 20),
     //   ],
     // );
+  }
+
+  Future<LastCommentItem> _getLastComment(String postId) async {
+    var snapshots = await _firestore
+        .collection('commentsBase')
+        .where('postId', isEqualTo: postId)
+        .orderBy('time')
+        .getDocuments();
+
+    var doc = snapshots.documents.last;
+
+    return LastCommentItem(
+      id: doc.documentID,
+      ownerImage: doc['image'],
+      ownerId: doc['ownerId'],
+      ownerName: doc['fullName'] ?? doc['churchName'],
+      comment: doc['postMessage'],
+    );
   }
 
   Widget _feedButton({

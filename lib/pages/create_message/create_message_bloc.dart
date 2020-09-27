@@ -14,7 +14,7 @@ import './create_message_state.dart';
 
 bool _isMembersValid(List<MemberItem> members) {
   return members.length > 1;
-} 
+}
 
 const _kInitialCreateMessageState = CreateMessageState(
   error: null,
@@ -23,17 +23,17 @@ const _kInitialCreateMessageState = CreateMessageState(
 );
 
 class CreateMessageBloc implements BaseBloc {
-  /// 
+  ///
   /// Input functions
   ///
   final void Function() submitCreateMessage;
   final void Function(int) typeChanged;
   final void Function(List<MemberItem>) membersChanged;
   final void Function(MemberItem) toggleMember;
-  
-  /// 
+
+  ///
   /// Output streams
-  /// 
+  ///
   final ValueStream<CreateMessageState> createMessageState$;
   final Stream<MessageCreateMessage> message$;
   final ValueStream<bool> isLoading$;
@@ -41,9 +41,9 @@ class CreateMessageBloc implements BaseBloc {
   final ValueStream<int> type$;
   final ValueStream<List<MemberItem>> members$;
 
-  /// 
+  ///
   /// Clean up
-  /// 
+  ///
   final void Function() _dispose;
 
   CreateMessageBloc._({
@@ -78,17 +78,17 @@ class CreateMessageBloc implements BaseBloc {
     assert(groupRepository != null, 'groupRepository cannot be null');
     assert(userRepository != null, 'userRepository cannot be null');
 
-    /// 
+    ///
     /// Stream controller
-    /// 
+    ///
     final typeSubject = BehaviorSubject<int>.seeded(type);
     final membersSubject = BehaviorSubject<List<MemberItem>>.seeded([]);
     final submitCreateMessageSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
-    /// 
+    ///
     /// Streams
-    /// 
+    ///
     final membersError$ = membersSubject.map((members) {
       if (_isMembersValid(members)) return null;
       return const MembersError();
@@ -105,18 +105,19 @@ class CreateMessageBloc implements BaseBloc {
     );
 
     final message$ = submitCreateMessageSubject
-      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => performSave(
-          userBloc,
-          groupRepository,
-          chatRepository,
-          membersSubject.value,
-          MessageType.values[type],
-        ),
-      ).publish();
-    
+        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        .where((isValid) => isValid)
+        .exhaustMap(
+          (_) => performSave(
+            userBloc,
+            groupRepository,
+            chatRepository,
+            membersSubject.value,
+            MessageType.values[type],
+          ),
+        )
+        .publish();
+
     final createMessageState$ = _getConnectionsList(
       userBloc,
       groupRepository,
@@ -125,9 +126,9 @@ class CreateMessageBloc implements BaseBloc {
       MessageType.values[type],
     ).publishValueSeeded(_kInitialCreateMessageState);
 
-    /// 
+    ///
     /// Controllers and subscriptions
-    /// 
+    ///
     final subscriptions = <StreamSubscription>[
       createMessageState$.connect(),
       message$.connect(),
@@ -139,24 +140,25 @@ class CreateMessageBloc implements BaseBloc {
     ];
 
     return CreateMessageBloc._(
-      membersChanged: membersSubject.add,
-      members$: membersSubject.stream,
-      typeChanged: typeSubject.add,
-      type$: typeSubject.stream,
-      createMessageState$: createMessageState$,
-      isLoading$: isLoadingSubject,
-      message$: message$,
-      submitCreateMessage: () => submitCreateMessageSubject.add(null),
-      toggleMember: (member) {
-        var members = membersSubject.value;
-        members.contains(member) ? members.remove(member) : members.add(member);
-        membersSubject.add(members);
-      },
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        membersChanged: membersSubject.add,
+        members$: membersSubject.stream,
+        typeChanged: typeSubject.add,
+        type$: typeSubject.stream,
+        createMessageState$: createMessageState$,
+        isLoading$: isLoadingSubject,
+        message$: message$,
+        submitCreateMessage: () => submitCreateMessageSubject.add(null),
+        toggleMember: (member) {
+          var members = membersSubject.value;
+          members.contains(member)
+              ? members.remove(member)
+              : members.add(member);
+          membersSubject.add(members);
+        },
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   static Stream<CreateMessageState> _toState(
@@ -176,25 +178,24 @@ class CreateMessageBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return userRepository.getMyConnections(
-          loginState.connections
-        )
-        .map((entities) {
-          return _entitiesToConnectionItems(entities);
-        })
-        .map((connectionItems) {
-          return _kInitialCreateMessageState.copyWith(
-            myConnections: connectionItems,
-            isLoading: false,
-          );
-        })
-        .startWith(_kInitialCreateMessageState)
-        .onErrorReturnWith((e) {
-          return _kInitialCreateMessageState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+      return userRepository
+          .getMyConnections(loginState.connections)
+          .map((entities) {
+            return _entitiesToConnectionItems(entities);
+          })
+          .map((connectionItems) {
+            return _kInitialCreateMessageState.copyWith(
+              myConnections: connectionItems,
+              isLoading: false,
+            );
+          })
+          .startWith(_kInitialCreateMessageState)
+          .onErrorReturnWith((e) {
+            return _kInitialCreateMessageState.copyWith(
+              error: e,
+              isLoading: false,
+            );
+          });
     }
 
     return Stream.value(
@@ -219,12 +220,11 @@ class CreateMessageBloc implements BaseBloc {
   }
 
   static Stream<CreateMessageState> _getConnectionsList(
-    UserBloc userBloc,
-    FirestoreGroupRepository groupRepository,
-    FirestoreChatRepository chatRepository,
-    FirestoreUserRepository userRepository,
-    MessageType type
-  ) {
+      UserBloc userBloc,
+      FirestoreGroupRepository groupRepository,
+      FirestoreChatRepository chatRepository,
+      FirestoreUserRepository userRepository,
+      MessageType type) {
     return userBloc.loginState$.switchMap((loginState) {
       return _toState(
         loginState,
@@ -258,6 +258,7 @@ class CreateMessageBloc implements BaseBloc {
           loginState.uid,
           loginState.isAdmin,
           loginState.isVerified,
+          "",
         );
         yield MessageCreateSuccess(details);
       } catch (e) {

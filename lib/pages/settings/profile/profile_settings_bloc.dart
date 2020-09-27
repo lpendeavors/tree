@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/models/old/user_entity.dart';
+import 'package:treeapp/util/model_utils.dart';
 import '../../../data/user/firestore_user_repository.dart';
 import '../../../user_bloc/user_bloc.dart';
 import '../../../user_bloc/user_login_state.dart';
@@ -200,7 +201,7 @@ class ProfileSettingsBloc implements BaseBloc {
         .publishValueSeeded(_kInitialProfileSettingsState);
 
     final personal_personalFieldsAreValid$ = Rx.combineLatest(
-        [firstNameError$, lastNameError$, cityError$, bioError$],
+        [firstNameError$, lastNameError$], //, cityError$, bioError$],
         (allErrors) => allErrors.every((error) {
               print(error);
               return error == null;
@@ -463,8 +464,8 @@ class ProfileSettingsBloc implements BaseBloc {
       data['parentChurch'] = churchParent;
     }
 
-    if (church != null &&
-        church.uid.substring(0, 7).toUpperCase() == churchId) {
+    if (church != null) {
+      data['churchID'] = church.id;
       data['churchInfo'] = {
         'churchName': church.churchName,
         'churchAddress': church.churchAddress,
@@ -489,10 +490,12 @@ class ProfileSettingsBloc implements BaseBloc {
     if (state is LoggedInUser) {
       if (saveType == 0 || saveType == 3) {
         data['isProfileUpdated'] = true;
+        data['searchData'] = createSearchData('$firstName $lastName');
       }
 
       if (saveType == 1 || saveType == 4) {
         data['isChurchUpdated'] = true;
+        data['searchData'] = createSearchData('$churchName');
       }
 
       await userRepository.updateUserData(state.uid, data);

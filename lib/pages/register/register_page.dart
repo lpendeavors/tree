@@ -42,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.initState();
 
     _controller.addListener(() {
-      if(_step != _controller.page.round().toInt()) {
+      if (_step != _controller.page.round().toInt()) {
         setState(() {
           _step = _controller.page.round().toInt();
         });
@@ -61,62 +61,59 @@ class _RegisterPageState extends State<RegisterPage> {
     final s = S.of(context);
 
     return WillPopScope(
-      onWillPop: _onWillPop,
-      child: CurvedScaffold(
-        curveRadius: 25,
-        appBar: TreeAppBar(
-          title: s.sign_up,
-          steps: 2,
-          step: _step,
-          backButton: true,
-        ),
-        body: Stack(
-          children: <Widget>[
-            PageView.builder(
-              itemCount: 2,
-              physics: NeverScrollableScrollPhysics(),
-              controller: _controller,
-              itemBuilder: (context, index){
-                return index == 0 ? _firstPage() : _secondPage();
-              }
+        onWillPop: _onWillPop,
+        child: CurvedScaffold(
+            curveRadius: 25,
+            appBar: TreeAppBar(
+              title: s.sign_up,
+              steps: 2,
+              step: _step,
+              backButton: true,
             ),
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                  margin: EdgeInsets.all(15),
-                  padding: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
-                  decoration: BoxDecoration(
-                    color: _isChurch ? Color(0XFFe46514) : Colors.blue,
-                    borderRadius: BorderRadius.circular(15)
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      if (_isChurch)
-                        Image.asset(
-                          "assets/images/church_icon.png",
-                          height: 15,
-                          width: 15,
-                          color: Colors.white,
-                        ),
-                      if (!_isChurch)
-                        Icon(
-                          Icons.person,
-                          size: 15,
-                          color: Colors.white,
-                        ),
-                      SizedBox(width: 5.0),
-                      Text(
-                        _isChurch ? "Church" : "Personal",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  )),
-            )
-          ],
-        )
-      )
-    );
+            body: Stack(
+              children: <Widget>[
+                PageView.builder(
+                    itemCount: 2,
+                    physics: NeverScrollableScrollPhysics(),
+                    controller: _controller,
+                    itemBuilder: (context, index) {
+                      return index == 0 ? _firstPage() : _secondPage();
+                    }),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                      margin: EdgeInsets.all(15),
+                      padding:
+                          EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+                      decoration: BoxDecoration(
+                          color: _isChurch ? Color(0XFFe46514) : Colors.blue,
+                          borderRadius: BorderRadius.circular(15)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (_isChurch)
+                            Image.asset(
+                              "assets/images/church_icon.png",
+                              height: 15,
+                              width: 15,
+                              color: Colors.white,
+                            ),
+                          if (!_isChurch)
+                            Icon(
+                              Icons.person,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          SizedBox(width: 5.0),
+                          Text(
+                            _isChurch ? "Church" : "Personal",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      )),
+                )
+              ],
+            )));
   }
 
   Widget _firstPage() {
@@ -150,7 +147,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   ).then((country) {
                     if (country != null) {
                       var selectedCountry = country as Country;
-                      _registerBloc.countryCodeChanged(selectedCountry.phoneCode);
+                      _registerBloc
+                          .countryCodeChanged(selectedCountry.phoneCode);
                     }
                   });
                 },
@@ -255,8 +253,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)
-              ),
+                  borderRadius: BorderRadius.circular(25)),
               onPressed: () {
                 setState(() {
                   _isChurch = !_isChurch;
@@ -275,78 +272,28 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return SingleChildScrollView(
       child: Container(
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: <Widget>[
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  _isChurch ? 'CHURCH EMAIL ADDRESS' : 'EMAIL ADDRESS',
-                  style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: Icon(
-                        Icons.email,
-                        size: 23,
-                        color: Colors.black38,
-                      ),
-                    ),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: TextField(
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.none,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: s.email_hint,
-                            hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
-                          ),
-                          style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          keyboardType: TextInputType.emailAddress,
-                          onChanged: _registerBloc.emailAddressChanged,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 6.0,
-                  thickness: 1.0,
-                  color: Colors.black26,
-                )
-              ],
-            ),
-            if(_isChurch) ...[
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: <Widget>[
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: Text(
-                        'CHURCH NAME',
-                        style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
-                    ),
-                  ),
+                  Text(_isChurch ? 'CHURCH EMAIL ADDRESS' : 'EMAIL ADDRESS',
+                      style: TextStyle(
+                          color: Colors.black38,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "NirmalaB",
+                          fontSize: 12.0)),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
                         margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: Image.asset(
-                          church_icon,
-                          height: 23,
-                          width: 23,
+                        child: Icon(
+                          Icons.email,
+                          size: 23,
                           color: Colors.black38,
                         ),
                       ),
@@ -355,17 +302,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           padding: const EdgeInsets.only(left: 10.0),
                           child: TextField(
                             textInputAction: TextInputAction.next,
-                            textCapitalization: TextCapitalization.words,
+                            textCapitalization: TextCapitalization.none,
                             decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: s.church_name_hint,
-                                hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
-                            ),
-                            style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
+                                hintText: s.email_hint,
+                                hintStyle: TextStyle(
+                                    color: Colors.black26,
+                                    fontFamily: "Nirmala",
+                                    fontSize: 17.0)),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Nirmala",
+                                fontSize: 20.0),
                             cursorColor: Colors.black,
                             cursorWidth: 1,
-                            keyboardType: TextInputType.text,
-                            onChanged: _registerBloc.churchNameChanged,
+                            keyboardType: TextInputType.emailAddress,
+                            onChanged: _registerBloc.emailAddressChanged,
                           ),
                         ),
                       ),
@@ -378,229 +330,320 @@ class _RegisterPageState extends State<RegisterPage> {
                   )
                 ],
               ),
-            ],
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Text(
-                      _isChurch ? 'CONTACT FIRST NAME' : 'FIRST NAME',
-                      style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
-                  ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              if (_isChurch) ...[
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: Icon(
-                        Icons.person,
-                        size: 23,
-                        color: Colors.black38,
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Text('CHURCH NAME',
+                          style: TextStyle(
+                              color: Colors.black38,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "NirmalaB",
+                              fontSize: 12.0)),
                     ),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: TextField(
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: s.f_name_hint,
-                              hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Image.asset(
+                            church_icon,
+                            height: 23,
+                            width: 23,
+                            color: Colors.black38,
                           ),
-                          style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          keyboardType: TextInputType.text,
-                          onChanged: _registerBloc.firstNameChanged,
                         ),
-                      ),
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: TextField(
+                              textInputAction: TextInputAction.next,
+                              textCapitalization: TextCapitalization.words,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: s.church_name_hint,
+                                  hintStyle: TextStyle(
+                                      color: Colors.black26,
+                                      fontFamily: "Nirmala",
+                                      fontSize: 17.0)),
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: "Nirmala",
+                                  fontSize: 20.0),
+                              cursorColor: Colors.black,
+                              cursorWidth: 1,
+                              keyboardType: TextInputType.text,
+                              onChanged: _registerBloc.churchNameChanged,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    Divider(
+                      height: 6.0,
+                      thickness: 1.0,
+                      color: Colors.black26,
+                    )
                   ],
                 ),
-                Divider(
-                  height: 6.0,
-                  thickness: 1.0,
-                  color: Colors.black26,
-                )
               ],
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Text(
-                      _isChurch ? 'CONTACT LAST NAME' : 'LAST NAME',
-                      style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(_isChurch ? 'CONTACT FIRST NAME' : 'FIRST NAME',
+                        style: TextStyle(
+                            color: Colors.black38,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "NirmalaB",
+                            fontSize: 12.0)),
                   ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: Icon(
-                        Icons.person,
-                        size: 23,
-                        color: Colors.black38,
-                      ),
-                    ),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: TextField(
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: s.l_name_hint,
-                              hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
-                          ),
-                          style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          keyboardType: TextInputType.text,
-                          onChanged: _registerBloc.lastNameChanged,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Icon(
+                          Icons.person,
+                          size: 23,
+                          color: Colors.black38,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 6.0,
-                  thickness: 1.0,
-                  color: Colors.black26,
-                )
-              ],
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Text(
-                      'PASSWORD',
-                      style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
-                  ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: Icon(
-                        Icons.lock,
-                        size: 23,
-                        color: Colors.black38,
-                      ),
-                    ),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: TextField(
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.none,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: s.password_hint,
-                              hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: s.f_name_hint,
+                                hintStyle: TextStyle(
+                                    color: Colors.black26,
+                                    fontFamily: "Nirmala",
+                                    fontSize: 17.0)),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Nirmala",
+                                fontSize: 20.0),
+                            cursorColor: Colors.black,
+                            cursorWidth: 1,
+                            keyboardType: TextInputType.text,
+                            onChanged: _registerBloc.firstNameChanged,
                           ),
-                          style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          keyboardType: TextInputType.text,
-                          obscureText: true,
-                          onChanged: _registerBloc.passwordChanged,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 6.0,
-                  thickness: 1.0,
-                  color: Colors.black26,
-                )
-              ],
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0),
-                  child: Text(
-                      'CONFIRM PASSWORD',
-                      style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold, fontFamily: "NirmalaB", fontSize: 12.0)
+                    ],
                   ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: Icon(
-                        Icons.lock,
-                        size: 23,
-                        color: Colors.black38,
-                      ),
-                    ),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: TextField(
-                          textInputAction: TextInputAction.done,
-                          textCapitalization: TextCapitalization.none,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: s.retype_hint,
-                              hintStyle: TextStyle(color: Colors.black26, fontFamily: "Nirmala", fontSize: 17.0)
-                          ),
-                          style: TextStyle(color: Colors.black, fontFamily: "Nirmala", fontSize: 20.0),
-                          cursorColor: Colors.black,
-                          cursorWidth: 1,
-                          keyboardType: TextInputType.text,
-                          obscureText: true,
-                          onChanged: _registerBloc.confirmPasswordChanged,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 6.0,
-                  thickness: 1.0,
-                  color: Colors.black26,
-                )
-              ],
-            ),
-            SizedBox(height: 30.0),
-            Container(
-              height: 50.0,
-              width: double.infinity,
-              child: RaisedButton(
-                onPressed: (){
-                  _registerBloc.submitUser(_isChurch);
-                },
-                color: Color(0xFF6CA748),
-                textColor: Colors.white,
-                child: Text(
-                  s.create_account,
-                  style: TextStyle(fontSize: 22.0, color: Colors.white, fontFamily: 'NirmalaB', fontWeight: FontWeight.bold),
-                ),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  Divider(
+                    height: 6.0,
+                    thickness: 1.0,
+                    color: Colors.black26,
+                  )
+                ],
               ),
-            )
-          ],
-        )
-      ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(_isChurch ? 'CONTACT LAST NAME' : 'LAST NAME',
+                        style: TextStyle(
+                            color: Colors.black38,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "NirmalaB",
+                            fontSize: 12.0)),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Icon(
+                          Icons.person,
+                          size: 23,
+                          color: Colors.black38,
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: s.l_name_hint,
+                                hintStyle: TextStyle(
+                                    color: Colors.black26,
+                                    fontFamily: "Nirmala",
+                                    fontSize: 17.0)),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Nirmala",
+                                fontSize: 20.0),
+                            cursorColor: Colors.black,
+                            cursorWidth: 1,
+                            keyboardType: TextInputType.text,
+                            onChanged: _registerBloc.lastNameChanged,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 6.0,
+                    thickness: 1.0,
+                    color: Colors.black26,
+                  )
+                ],
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text('PASSWORD',
+                        style: TextStyle(
+                            color: Colors.black38,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "NirmalaB",
+                            fontSize: 12.0)),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Icon(
+                          Icons.lock,
+                          size: 23,
+                          color: Colors.black38,
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.none,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: s.password_hint,
+                                hintStyle: TextStyle(
+                                    color: Colors.black26,
+                                    fontFamily: "Nirmala",
+                                    fontSize: 17.0)),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Nirmala",
+                                fontSize: 20.0),
+                            cursorColor: Colors.black,
+                            cursorWidth: 1,
+                            keyboardType: TextInputType.text,
+                            obscureText: true,
+                            onChanged: _registerBloc.passwordChanged,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 6.0,
+                    thickness: 1.0,
+                    color: Colors.black26,
+                  )
+                ],
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text('CONFIRM PASSWORD',
+                        style: TextStyle(
+                            color: Colors.black38,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "NirmalaB",
+                            fontSize: 12.0)),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Icon(
+                          Icons.lock,
+                          size: 23,
+                          color: Colors.black38,
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: TextField(
+                            textInputAction: TextInputAction.done,
+                            textCapitalization: TextCapitalization.none,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: s.retype_hint,
+                                hintStyle: TextStyle(
+                                    color: Colors.black26,
+                                    fontFamily: "Nirmala",
+                                    fontSize: 17.0)),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: "Nirmala",
+                                fontSize: 20.0),
+                            cursorColor: Colors.black,
+                            cursorWidth: 1,
+                            keyboardType: TextInputType.text,
+                            obscureText: true,
+                            onChanged: _registerBloc.confirmPasswordChanged,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 6.0,
+                    thickness: 1.0,
+                    color: Colors.black26,
+                  )
+                ],
+              ),
+              SizedBox(height: 30.0),
+              Container(
+                height: 50.0,
+                width: double.infinity,
+                child: RaisedButton(
+                  onPressed: () {
+                    _registerBloc.submitUser(_isChurch);
+                  },
+                  color: Color(0xFF6CA748),
+                  textColor: Colors.white,
+                  child: Text(
+                    s.create_account,
+                    style: TextStyle(
+                        fontSize: 22.0,
+                        color: Colors.white,
+                        fontFamily: 'NirmalaB',
+                        fontWeight: FontWeight.bold),
+                  ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25)),
+                ),
+              )
+            ],
+          )),
     );
   }
 
@@ -611,9 +654,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  Future<bool> _onWillPop() async {
-
-  }
+  Future<bool> _onWillPop() async {}
 
   void _showSnackBar(message) {
     Scaffold.of(context, nullOk: true)?.showSnackBar(
@@ -624,9 +665,9 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _returnedFromVerification(Object message){
+  void _returnedFromVerification(Object message) {
     print('_returnedFromVerification');
-    if(message is PhoneVerificationSuccess){
+    if (message is PhoneVerificationSuccess) {
       _registerBloc.verificationResultChanged(message.result);
       setState(() {
         _controller.jumpToPage(2);
@@ -636,6 +677,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   _showRegisterMessage(RegisterMessage message) async {
     final s = S.of(context);
+    print(message);
     if (message is RegisterMessageSuccess) {
       _showSnackBar(s.register_success);
       await Future.delayed(const Duration(seconds: 2));
@@ -654,7 +696,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final error = message.error;
       print('[DEBUG] error=$error');
 
-      switch(error.runtimeType){
+      switch (error.runtimeType) {
         case InvalidBusinessEmailError:
           _showSnackBar("Enter a valid business email address");
           break;
@@ -662,7 +704,7 @@ class _RegisterPageState extends State<RegisterPage> {
           _showSnackBar("This phone number is already in use. Please Sign In.");
           break;
         default:
-          _showSnackBar("Unknown error");
+          _showSnackBar(error.toString());
       }
     }
     if (message is RegisterMessageComplete) {

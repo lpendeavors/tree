@@ -286,7 +286,7 @@ class EditPostBloc implements BaseBloc {
           loginState.token,
           0,
           groupId,
-          tags.map((t) => t.id),
+          tags.map((t) => t.id).toList(),
         );
         yield PostAddedMessageSuccess();
       } catch (e) {

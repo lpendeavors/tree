@@ -11,6 +11,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../models/old/user_preview_entity.dart';
+import '../../util/model_utils.dart';
 
 class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   final FirebaseAuth _firebaseAuth;
@@ -98,8 +99,40 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
           'lastName': lastName,
           'password': password,
           'fullName': "$firstName $lastName",
-          'uid': user.uid
+          'uid': user.uid,
+          'searchData': createSearchData(
+              churchName == null ? '$firstName $lastName' : churchName),
         }));
+
+    if (!(churchName == '')) {
+      var churchRoom = <String, dynamic>{
+        'groupName': churchName,
+        'byAdmin': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'groupMembers': [
+          <String, dynamic>{
+            'fullName': churchName,
+            'uid': user.uid,
+            'image': '',
+            'groupAdmin': true,
+          }
+        ],
+        'parties': [user.uid],
+        'isConversation': true,
+        'isGroup': true,
+        'isGroupPrivate': true,
+        'isRoom': true,
+        'isVerified': false,
+        'ownerId': user.uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'searchData': createSearchData(churchName),
+      };
+
+      await _firestore
+          .collection('groupBase')
+          .document('${user.uid}')
+          .setData(churchRoom);
+    }
 
     print('[USER_REPO] registerWithPhone firebaseUser=$user');
   }
@@ -442,6 +475,16 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> suspendUser(String userId) async {
     await _firestore.document('userBase/$userId').updateData({
       'suspended': true,
+    });
+  }
+
+  @override
+  Future<void> mute(
+    String uid,
+    String id,
+  ) {
+    return _firestore.document('userBase/$uid').updateData({
+      'muted': FieldValue.arrayUnion([id]),
     });
   }
 }

@@ -12,6 +12,7 @@ class UserBloc implements BaseBloc {
   /// Sinks
   ///
   final Sink<void> signOut;
+  final Function(String) mute;
 
   ///
   /// Streams
@@ -55,6 +56,7 @@ class UserBloc implements BaseBloc {
       user$,
       signOutController,
       signOutMessage$,
+      (id) async => await _mute(userRepository, user$.value, id),
     );
   }
 
@@ -63,6 +65,7 @@ class UserBloc implements BaseBloc {
     this.loginState$,
     this.signOut,
     this.message$,
+    this.mute,
   );
 
   @override
@@ -74,24 +77,38 @@ class UserBloc implements BaseBloc {
     }
 
     return LoggedInUser(
-        fullName: "${userEntity.firstName} ${userEntity.lastName}",
-        email: userEntity.email,
-        uid: userEntity.id,
-        isAdmin: true, //userEntity.isAdmin ?? false,
-        chatList: userEntity.myChatsList13 ?? [],
-        image: userEntity.image,
-        connections: userEntity.connections ?? [],
-        church: userEntity.churchInfo != null
-            ? userEntity.churchInfo.churchName
-            : "",
-        city: userEntity.city ?? "",
-        token: userEntity.pushNotificationToken,
-        isChurch: userEntity.isChurch ?? false,
-        isVerified: userEntity.isVerified ?? false,
-        churchId: userEntity.churchID,
-        isYouth: false,
-        mutedChats: userEntity.muted,
-        isChurchUpdated: userEntity.isChurchUpdated ?? false,
-        isProfileUpdated: userEntity.isProfileUpdated ?? false);
+      fullName: "${userEntity.firstName} ${userEntity.lastName}",
+      email: userEntity.email,
+      uid: userEntity.id,
+      isAdmin: userEntity.isAdmin ?? false,
+      chatList: userEntity.myChatsList13 ?? [],
+      image: userEntity.image,
+      connections: userEntity.connections ?? [],
+      church:
+          userEntity.churchInfo != null ? userEntity.churchInfo.churchName : "",
+      city: userEntity.city ?? "",
+      token: userEntity.pushNotificationToken,
+      isChurch: userEntity.isChurch ?? false,
+      isVerified: userEntity.isVerified ?? false,
+      churchId: userEntity.churchID,
+      isYouth: false,
+      mutedChats: userEntity.muted,
+      isChurchUpdated: userEntity.isChurchUpdated ?? false,
+      isProfileUpdated: userEntity.isProfileUpdated ?? false,
+      receivedRequests: userEntity.receivedRequests ?? [],
+    );
+  }
+
+  static Future<void> _mute(
+    FirestoreUserRepository userRepository,
+    LoginState loginState,
+    String id,
+  ) async {
+    if (loginState is LoggedInUser) {
+      await userRepository.mute(
+        loginState.uid,
+        id,
+      );
+    }
   }
 }

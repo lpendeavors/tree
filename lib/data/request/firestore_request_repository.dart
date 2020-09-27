@@ -12,7 +12,7 @@ abstract class FirestoreRequestRepository {
   });
 
   Stream<List<UserEntity>> requestsByUser({
-    @required String uid,
+    @required List<String> uids,
   });
 
   Future<void> addRequest({

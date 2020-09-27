@@ -29,10 +29,10 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
   }
 
   @override
-  Stream<List<UserEntity>> requestsByUser({String uid}) async* {
+  Stream<List<UserEntity>> requestsByUser({List<String> uids}) async* {
     List<String> userIds = await _firestore
         .collection('requestBase')
-        .where('personId', isEqualTo: uid)
+        .where('personId', whereIn: uids)
         .getDocuments()
         .then((requests) {
       return requests.documents.map((doc) => doc['ownerId'] as String).toList();

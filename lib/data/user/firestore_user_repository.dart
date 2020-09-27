@@ -108,4 +108,6 @@ abstract class FirestoreUserRepository {
   Future<void> suspendUser(String userId);
 
   Future<void> deleteUser(String userId);
+
+  Future<void> mute(String userId, String id);
 }

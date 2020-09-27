@@ -6,6 +6,7 @@ import '../../models/old/group_member.dart';
 /// Enums
 ///
 enum MessageType { text, image, gif, doc, video }
+enum MessageOption { delete, copy }
 
 ///
 /// Message
@@ -86,6 +87,7 @@ class ChatRoomItem extends Equatable {
   final String groupImage;
   final String name;
   final bool isMuted;
+  final bool isAdmin;
 
   const ChatRoomItem({
     @required this.id,
@@ -96,6 +98,7 @@ class ChatRoomItem extends Equatable {
     @required this.groupImage,
     @required this.name,
     @required this.isMuted,
+    @required this.isAdmin,
   });
 
   @override
@@ -108,6 +111,7 @@ class ChatRoomItem extends Equatable {
         groupImage,
         name,
         isMuted,
+        isAdmin,
       ];
 
   @override

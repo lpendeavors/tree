@@ -20,6 +20,7 @@ abstract class FirestoreGroupRepository {
     String ownerId,
     bool byAdmin,
     bool isVerified,
+    String groupName,
   );
 
   Future<Map<String, dynamic>> launchDM(String userID, LoggedInUser loginState);
@@ -35,4 +36,8 @@ abstract class FirestoreGroupRepository {
   );
 
   Stream<List<GroupEntity>> getDefaultRooms();
+
+  Future<void> joinGroup(String groupId, String uid);
+
+  Stream<List<GroupEntity>> getChurchRoom(String churchId);
 }

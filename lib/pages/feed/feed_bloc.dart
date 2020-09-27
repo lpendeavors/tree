@@ -166,15 +166,17 @@ class FeedBloc implements BaseBloc {
           postRepository.getByAdmin(),
           postRepository.postsByUser(uid: loginState.uid),
           notificationRepository.getByOwner(loginState.uid),
-          (byAdmin, userFeed, newNotifications) {
-        var feed = _entitiesToFeedItems(byAdmin, loginState.uid);
-        var userPosts = _entitiesToFeedItems(userFeed, loginState.uid);
+          (byAdmin, userFeed, notifications) {
+        var feed = _entitiesToFeedItems(
+            byAdmin, loginState.uid, loginState.mutedChats);
+        var userPosts = _entitiesToFeedItems(
+            userFeed, loginState.uid, loginState.mutedChats);
 
         userPosts
             .removeWhere((p) => feed.map((f) => f.id).toList().contains(p.id));
 
         var hasNotifications =
-            _entitiesToNewNotifications(newNotifications, loginState.uid);
+            _entitiesToNewNotifications(notifications, loginState.uid);
 
         feed.addAll(userPosts);
         feed.sort((a, b) => b.timePosted.compareTo(a.timePosted));
@@ -203,6 +205,7 @@ class FeedBloc implements BaseBloc {
   static List<FeedItem> _entitiesToFeedItems(
     List<PostEntity> entities,
     String uid,
+    List<String> muted,
   ) {
     return entities.toSet().map((entity) {
       return FeedItem(
@@ -224,6 +227,8 @@ class FeedBloc implements BaseBloc {
         pollData: entity.pollData ?? [],
         likes: entity.likes ?? [],
       );
+    }).where((item) {
+      return !(muted ?? []).contains(item.id);
     }).toList();
   }
 
@@ -231,11 +236,15 @@ class FeedBloc implements BaseBloc {
     List<NotificationEntity> notifications,
     String uid,
   ) {
-    return notifications
-            .map((n) => !(n.readBy ?? []).contains(uid))
-            .toList()
-            .length >
-        0;
+    var newNotifications = List<NotificationEntity>();
+    notifications.forEach((n) {
+      var readBy = n.readBy ?? [];
+      if (!readBy.contains(uid)) {
+        newNotifications.add(n);
+      }
+    });
+
+    return newNotifications.length > 0;
   }
 
   static Stream<FeedListState> _getFeedList(

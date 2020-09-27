@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:treeapp/util/model_utils.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -112,6 +113,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
       'type': 4,
       'uid': ownerId,
       'updatedAt': FieldValue.serverTimestamp(),
+      'searchData': createSearchData(title),
     };
 
     if (id != null) {

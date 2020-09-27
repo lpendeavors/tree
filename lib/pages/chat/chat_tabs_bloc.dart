@@ -10,7 +10,6 @@ import '../../models/old/chat_entity.dart';
 import './chat_tabs_state.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:tuple/tuple.dart';
 import 'package:collection/collection.dart';
 
 const _kInitialChatState = ChatTabsState(
@@ -95,20 +94,26 @@ class ChatTabsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      return Rx.combineLatest4(
+      print('uid=${loginState.uid}');
+      return Rx.combineLatest5(
           chatRepository.getByUser(uid: loginState.uid),
           groupRepository.getRoomsByUser(loginState.uid),
           groupRepository.getDefaultRooms(),
           groupRepository.getGroupsByUser(loginState.uid),
-          (chats, myRooms, defaultRooms, groups) {
+          (loginState.churchId != null)
+              ? groupRepository.getById(
+                  groupId: loginState.isChurch
+                      ? loginState.uid
+                      : loginState.churchId)
+              : Stream.value(null),
+          (chats, myRooms, defaultRooms, groups, church) {
         return _kInitialChatState.copyWith(
           isLoading: false,
           messages: _entitiesToMessageItems(chats, loginState.uid),
-          chatRooms: _filterRooms(myRooms, defaultRooms, loginState),
-          groups: _entitiesToGroupItems(groups),
+          chatRooms: _filterRooms(myRooms, defaultRooms, church, loginState),
+          groups: _entitiesToGroupItems(groups, false),
         );
       }).startWith(_kInitialChatState).onErrorReturnWith((e) {
-        print('error $e');
         return _kInitialChatState.copyWith(
           error: e,
           isLoading: false,
@@ -126,6 +131,7 @@ class ChatTabsBloc implements BaseBloc {
 
   static List<GroupItem> _entitiesToGroupItems(
     List<GroupEntity> entities,
+    bool isDefault,
   ) {
     return entities.map((entity) {
       return GroupItem(
@@ -140,6 +146,7 @@ class ChatTabsBloc implements BaseBloc {
         byAdmin: entity.byAdmin,
         isPrivate: entity.isGroupPrivate,
         isChurch: false,
+        isDefault: isDefault,
       );
     }).toList();
   }
@@ -197,12 +204,18 @@ class ChatTabsBloc implements BaseBloc {
   static List<GroupItem> _filterRooms(
     List<GroupEntity> myRooms,
     List<GroupEntity> defaultRooms,
+    GroupEntity church,
     LoginState loginState,
   ) {
-    print(myRooms.length);
-
     var user = loginState as LoggedInUser;
-    var rooms = _entitiesToGroupItems(defaultRooms);
+    var rooms = _entitiesToGroupItems(defaultRooms, true);
+    var mine = _entitiesToGroupItems(myRooms, false);
+    var all = List<GroupItem>();
+
+    if (church != null) {
+      var churchGroup = _entitiesToGroupItems([church], false);
+      all.addAll(churchGroup);
+    }
 
     if (user.isYouth) {
       rooms =
@@ -212,8 +225,9 @@ class ChatTabsBloc implements BaseBloc {
           rooms.where((r) => !r.name.toLowerCase().contains('youth')).toList();
     }
 
-    rooms.addAll(_entitiesToGroupItems(myRooms));
+    all.addAll(mine);
+    all.addAll(rooms);
 
-    return rooms;
+    return all.toSet().toList();
   }
 }

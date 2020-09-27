@@ -32,6 +32,8 @@ class _FeedPageState extends State<FeedPage>
   List<StreamSubscription> _subscriptions;
   FeedBloc _feedBloc;
 
+  bool _hasLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,19 +44,6 @@ class _FeedPageState extends State<FeedPage>
           .where((state) => state is Unauthenticated)
           .listen((_) =>
               Navigator.popUntil(context, ModalRoute.withName('/login'))),
-      widget.userBloc.loginState$
-          .where((state) =>
-              state is LoggedInUser &&
-              (!state.isChurchUpdated || !state.isProfileUpdated))
-          .listen((state) => {
-                if (state is LoggedInUser)
-                  {
-                    Navigator.pushNamed(context, '/info',
-                        arguments: !state.isChurchUpdated
-                            ? SettingsType.updateChurch
-                            : SettingsType.updatePersonal)
-                  }
-              }),
       _feedBloc.message$.listen(_showMessageResult),
       _feedBloc.deleteMessage$.listen(_showMessageResult),
       _feedBloc.unconnectMessage$.listen(_showMessageResult),
@@ -80,6 +69,28 @@ class _FeedPageState extends State<FeedPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    if (!_hasLoaded) {
+      var user = widget.userBloc.loginState$.value;
+      if (user is LoggedInUser) {
+        if (user.isChurch && !user.isChurchUpdated) {
+          Future.delayed(Duration.zero, () {
+            Navigator.pushNamed(context, '/info',
+                arguments: SettingsType.updateChurch);
+          });
+        }
+
+        if (!user.isChurch && !user.isProfileUpdated) {
+          Future.delayed(Duration.zero, () {
+            Navigator.pushNamed(context, '/info',
+                arguments: SettingsType.updatePersonal);
+          });
+        }
+
+        _hasLoaded = true;
+      }
+    }
+
     return CurvedScaffold(
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,6 +165,19 @@ class _FeedPageState extends State<FeedPage>
                     Navigator.of(context).pushNamed('/notifications');
                   },
                 ),
+                if (_feedBloc.feedListState$.value.hasNotifications)
+                  Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: IgnorePointer(
+                      ignoring: true,
+                      child: Container(
+                        height: 10.0,
+                        width: 10.0,
+                        decoration: BoxDecoration(
+                            color: Colors.red, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -203,6 +227,7 @@ class _FeedPageState extends State<FeedPage>
               physics: AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 return FeedListItem(
+                  isFeed: true,
                   admin: (widget.userBloc.loginState$.value as LoggedInUser)
                       .isAdmin,
                   context: context,

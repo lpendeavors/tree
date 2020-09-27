@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/data/group/firestore_group_repository.dart';
+import 'package:treeapp/data/request/firestore_request_repository.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
 import '../../util/post_utils.dart';
 import '../../data/post/firestore_post_repository.dart';
@@ -34,7 +35,7 @@ class ProfileBloc implements BaseBloc {
   ///
   /// Input functions
   ///
-  final void Function() sendConnectRequest;
+  final void Function(Map<String, String>) sendConnectRequest;
   final void Function() cancelConnectRequest;
   final void Function() acceptConnectRequest;
   final void Function() disconnect;
@@ -93,6 +94,7 @@ class ProfileBloc implements BaseBloc {
     @required FirestoreUserRepository userRepository,
     @required FirestorePostRepository postRepository,
     @required FirestoreGroupRepository groupRepository,
+    @required FirestoreRequestRepository requestRepository,
   }) {
     ///
     /// Assert
@@ -101,11 +103,12 @@ class ProfileBloc implements BaseBloc {
     assert(userRepository != null, 'userRepository cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
     assert(groupRepository != null, 'groupRepository cannot be null');
+    assert(requestRepository != null, 'requestRepository cannot be null');
 
     ///
     /// Controllers
     ///
-    final sendConnectRequestController = PublishSubject<void>();
+    final sendConnectRequestController = PublishSubject<Map<String, String>>();
     final cancelConnectRequestController = PublishSubject<void>();
     final acceptConnectRequestController = PublishSubject<void>();
     final disconnectController = PublishSubject<void>();
@@ -121,8 +124,8 @@ class ProfileBloc implements BaseBloc {
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     final sendConnectRequest$ = sendConnectRequestController
-        .exhaustMap((_) => _sendConnectRequest(
-            userRepository, userId, userBloc.loginState$.value))
+        .exhaustMap((request) => _sendConnectRequest(
+            requestRepository, request, userBloc.loginState$.value))
         .publish();
     final cancelConnectRequest$ = cancelConnectRequestController
         .exhaustMap((_) => _cancelConnectRequest(
@@ -212,7 +215,8 @@ class ProfileBloc implements BaseBloc {
         recentFeedState$: recentFeedState$,
         dmState$: dm$,
         isLoading$: isLoadingSubject,
-        sendConnectRequest: () => sendConnectRequestController.add(null),
+        sendConnectRequest: (request) =>
+            sendConnectRequestController.add(request),
         cancelConnectRequest: () => cancelConnectRequestController.add(null),
         acceptConnectRequest: () => acceptConnectRequestController.add(null),
         disconnect: () => disconnectController.add(null),
@@ -255,12 +259,19 @@ class ProfileBloc implements BaseBloc {
   }
 
   static _sendConnectRequest(
-    FirestoreUserRepository userRepository,
-    String userID,
+    FirestoreRequestRepository requestRepository,
+    Map<String, String> request,
     LoginState loginState,
   ) {
     if (loginState is LoggedInUser) {
-      userRepository.sendConnectionRequest(loginState.uid, userID);
+      requestRepository.addRequest(
+        image: loginState.image,
+        toName: request['name'],
+        toId: request['id'],
+        fromName: loginState.fullName,
+        fromId: loginState.uid,
+        token: loginState.token,
+      );
     }
   }
 

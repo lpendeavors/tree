@@ -97,7 +97,7 @@ class NotificationsBloc implements BaseBloc {
       return notificationRepository
           .getByOwner(loginState.uid)
           .map((entities) {
-            return _entitiesToNotificationItems(entities);
+            return _entitiesToNotificationItems(entities, loginState.uid);
           })
           .map((notificationItems) {
             return _kInitialNotificationsListState.copyWith(
@@ -124,6 +124,7 @@ class NotificationsBloc implements BaseBloc {
 
   static List<NotificationItem> _entitiesToNotificationItems(
     List<NotificationEntity> entities,
+    String uid,
   ) {
     return entities.map((entity) {
       return NotificationItem(
@@ -131,7 +132,7 @@ class NotificationsBloc implements BaseBloc {
         body: entity.body,
         time: timeago.format(entity.createdAt.toDate()),
         sharedBy: entity.fullName,
-        isNew: (entity.readBy ?? []).contains(entity.id),
+        isNew: (entity.readBy ?? []).contains(uid),
         image: entity.image,
         user: entity.id,
         navigateToId: entity.postId,
@@ -155,7 +156,7 @@ class NotificationsBloc implements BaseBloc {
   ) {
     var loginState = userBloc.loginState$.value;
     if (loginState is LoggedInUser) {
-      notificationRepository.markRead(notifications, loginState.uid);
+      return notificationRepository.markRead(notifications, loginState.uid);
     }
   }
 }

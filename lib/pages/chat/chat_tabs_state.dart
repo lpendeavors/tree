@@ -67,6 +67,7 @@ class GroupItem extends Equatable {
   final String ownerId;
   final bool isPrivate;
   final bool isChurch;
+  final bool isDefault;
 
   const GroupItem({
     @required this.id,
@@ -80,6 +81,7 @@ class GroupItem extends Equatable {
     @required this.ownerId,
     @required this.isPrivate,
     @required this.isChurch,
+    @required this.isDefault,
   });
 
   @override
@@ -95,6 +97,7 @@ class GroupItem extends Equatable {
         ownerId,
         isPrivate,
         isChurch,
+        isDefault,
       ];
 
   @override
@@ -115,7 +118,6 @@ class MessageItem extends Equatable {
   final String roomId;
   final bool isRead;
   final bool isMine;
-  final List<MemberItem> membersInfo;
 
   const MessageItem({
     @required this.id,
@@ -130,7 +132,6 @@ class MessageItem extends Equatable {
     @required this.roomId,
     @required this.isRead,
     @required this.isMine,
-    @required this.membersInfo,
   });
 
   @override
@@ -147,7 +148,6 @@ class MessageItem extends Equatable {
         roomId,
         isRead,
         isMine,
-        membersInfo,
       ];
 
   @override

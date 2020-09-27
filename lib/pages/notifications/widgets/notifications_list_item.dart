@@ -49,7 +49,7 @@ class _NotificationsListItemState extends State<NotificationsListItem> {
       },
       onLongPress: () {},
       child: Opacity(
-        opacity: widget.notificationItem.isNew != null ? .5 : 1,
+        opacity: widget.notificationItem.isNew ? .5 : 1,
         child: Container(
           padding: EdgeInsets.all(12),
           child: Row(

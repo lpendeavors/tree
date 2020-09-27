@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+//import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -357,12 +357,12 @@ class _EditPollPageState extends State<EditPollPage> {
                                   ),
                                   GestureDetector(
                                     onTap: () async {
-                                      var date =
-                                          await DatePicker.showDatePicker(
-                                              context);
-                                      if (date != null) {
-                                        _editPollBloc.endDateChanged(date);
-                                      }
+                                      // var date =
+                                      //     await DatePicker.showDatePicker(
+                                      //         context);
+                                      // if (date != null) {
+                                      //   _editPollBloc.endDateChanged(date);
+                                      // }
                                     },
                                     child: Padding(
                                       padding: EdgeInsets.all(8),

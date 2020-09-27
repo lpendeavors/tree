@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:treeapp/user_bloc/user_bloc.dart';
 import '../../../generated/l10n.dart';
 import '../../../widgets/empty_list_view.dart';
 import '../explore_state.dart';
@@ -7,12 +8,12 @@ import './connections_list_item.dart';
 
 class ExploreConnectionsTab extends StatelessWidget {
   final ExploreBloc bloc;
-  final Function(ConnectionItem) onConnect;
+  final UserBloc userBloc;
 
   const ExploreConnectionsTab({
     Key key,
     @required this.bloc,
-    @required this.onConnect,
+    @required this.userBloc,
   }) : super(key: key);
 
   @override
@@ -133,7 +134,7 @@ class ExploreConnectionsTab extends StatelessWidget {
                     return ConnectionListItem(
                       isRequest: false,
                       connectionItem: data.connectionItems[index],
-                      onRemove: data.connectionItems.remove,
+                      onRemove: (connection) => userBloc.mute(connection.id),
                       onConnect: bloc.addConnection,
                       onAccept: null,
                       onDecline: null,

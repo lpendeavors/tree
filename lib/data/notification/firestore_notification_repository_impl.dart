@@ -50,11 +50,15 @@ class FirestoreNotificationRepositoryImpl
   }
 
   @override
-  Future<void> markRead(List<String> notificationIds, String uid) async {
-    return notificationIds.forEach((n) async {
-      await _firestore.document('notificationBase').updateData({
+  void markRead(List<String> notificationIds, String uid) async {
+    var batch = _firestore.batch();
+
+    notificationIds.forEach((id) {
+      batch.updateData(_firestore.document('notificationBase/$id'), {
         'readBy': FieldValue.arrayUnion([uid]),
       });
     });
+
+    await batch.commit();
   }
 }

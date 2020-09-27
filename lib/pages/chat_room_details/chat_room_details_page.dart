@@ -366,7 +366,7 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                       '/chat_room',
                       arguments: <String, dynamic>{
                         'roomId': data.chatRoomDetails.id,
-                        'isRoom': false,
+                        'isRoom': true,
                         'isGroup': true,
                       },
                     );

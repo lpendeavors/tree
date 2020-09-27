@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -371,14 +371,14 @@ class _EventEditPageState extends State<EventEditPage> {
                               children: <Widget>[
                                 GestureDetector(
                                   onTap: () {
-                                    DatePicker.showDateTimePicker(context,
-                                        showTitleActions: true,
-                                        onConfirm: (selectedDate) {
-                                      _eventEditBloc
-                                          .startDateChanged(selectedDate);
-                                      _eventEditBloc
-                                          .startTimeChanged(selectedDate);
-                                    });
+                                    // DatePicker.showDateTimePicker(context,
+                                    //     showTitleActions: true,
+                                    //     onConfirm: (selectedDate) {
+                                    //   _eventEditBloc
+                                    //       .startDateChanged(selectedDate);
+                                    //   _eventEditBloc
+                                    //       .startTimeChanged(selectedDate);
+                                    // });
                                   },
                                   child: Row(
                                     mainAxisAlignment:
@@ -454,14 +454,14 @@ class _EventEditPageState extends State<EventEditPage> {
                                 SizedBox(height: 10),
                                 GestureDetector(
                                   onTap: () async {
-                                    DatePicker.showDateTimePicker(context,
-                                        showTitleActions: true,
-                                        onConfirm: (selectedDate) {
-                                      _eventEditBloc
-                                          .endDateChanged(selectedDate);
-                                      _eventEditBloc
-                                          .endTimeChanged(selectedDate);
-                                    });
+                                    // DatePicker.showDateTimePicker(context,
+                                    //     showTitleActions: true,
+                                    //     onConfirm: (selectedDate) {
+                                    //   _eventEditBloc
+                                    //       .endDateChanged(selectedDate);
+                                    //   _eventEditBloc
+                                    //       .endTimeChanged(selectedDate);
+                                    // });
                                   },
                                   child: Row(
                                     mainAxisAlignment:

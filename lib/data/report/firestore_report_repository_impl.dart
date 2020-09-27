@@ -38,25 +38,35 @@ class FirestoreReportRepositoryImpl implements FirestoreReportRepository {
     String postId,
     String message,
   ) {
-    var report = <String, dynamic>{
-      'byAdmin': byAdmin,
-      'createdAt': FieldValue.serverTimestamp(),
-      'email': ownerEmail,
-      'fullName': ownerName,
-      'image': ownerImage,
-      'ownerId': ownerId,
-      'reportReason': message,
-      'reportType': 0,
-      'status': 0,
-      'time': DateTime.now().millisecondsSinceEpoch,
-      'timeUpdated': DateTime.now().millisecondsSinceEpoch,
-      'tokenId': token,
-      'uid': ownerId,
-      'updatedAt': FieldValue.serverTimestamp(),
-      'visibility': 0,
-      'postId': postId,
+    final TransactionHandler transactionHandler = (tranaction) async {
+      final report = <String, dynamic>{
+        'byAdmin': byAdmin,
+        'createdAt': FieldValue.serverTimestamp(),
+        'email': ownerEmail,
+        'fullName': ownerName,
+        'image': ownerImage,
+        'ownerId': ownerId,
+        'reportReason': message,
+        'reportType': 0,
+        'status': 0,
+        'time': DateTime.now().millisecondsSinceEpoch,
+        'timeUpdated': DateTime.now().millisecondsSinceEpoch,
+        'tokenId': token,
+        'uid': ownerId,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'visibility': 0,
+        'postId': postId,
+      };
+
+      _firestore.collection('reportBase').add(report);
+
+      _firestore.document('userBase/$ownerId').updateData({
+        'muted': FieldValue.arrayUnion([postId]),
+      });
     };
 
-    return _firestore.collection('reportBase').add(report);
+    return _firestore.runTransaction(transactionHandler).then((_) {
+      //
+    });
   }
 }

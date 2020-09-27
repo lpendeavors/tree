@@ -95,6 +95,7 @@ class _PostDetailsPageState extends State<PostDetailsPage>
                         context: context,
                         tickerProvider: this,
                         likeFeedItem: (id) => print(id),
+                        isFeed: false,
                       ),
                       ListView.builder(
                         reverse: true,

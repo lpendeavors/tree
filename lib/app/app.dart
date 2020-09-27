@@ -301,6 +301,7 @@ class MyApp extends StatelessWidget {
                 userRepository: Injector.of(context).userRepository,
                 postRepository: Injector.of(context).postRepository,
                 groupRepository: Injector.of(context).groupRepository,
+                requestRepository: Injector.of(context).requestRepository,
                 userId: routerSettings.arguments as String,
               );
             },

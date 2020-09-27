@@ -58,6 +58,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     return _firestore
         .collection('chatBase')
         .where('chatId', isEqualTo: roomId)
+        .limit(30)
         .snapshots()
         .map(_toEntities);
   }
@@ -121,16 +122,19 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
 
   @override
   Future<void> markRead(List<String> messageIds, String uid) async {
-    print(messageIds.length);
-    
     var batch = _firestore.batch();
 
     messageIds.forEach((id) {
-      batch.updateData(_firestore.document('chatBase/$id'), {
+      return batch.updateData(_firestore.document('chatBase/$id'), {
         'readBy': FieldValue.arrayUnion([uid]),
       });
     });
 
     await batch.commit();
+  }
+
+  @override
+  Future<void> delete(String messageId) async {
+    await _firestore.document('chatBase/$messageId').delete();
   }
 }

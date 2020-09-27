@@ -12,7 +12,7 @@ abstract class FirestoreNotificationRepository {
 
   Future<Map<String, String>> save(NotificationEntity notification);
 
-  Future<void> markRead(
+  void markRead(
     List<String> notificationIds,
     String uid,
   );

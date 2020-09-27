@@ -156,14 +156,19 @@ class ExploreBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
+      print(loginState.receivedRequests);
       return Rx.combineLatest6(
           userRepository.getSuggestionsByChurch(church: loginState.church),
           userRepository.getSuggestionsByCity(city: loginState.city),
           userRepository.getPublicFigures(),
           userRepository.get(),
           postRepository.postsForCollage(),
-          requestRepository.requestsByUser(uid: loginState.uid), (churchUsers,
-              cityUsers, publicFigures, newestUsers, posts, requests) {
+          loginState.receivedRequests.isNotEmpty
+              ? requestRepository.requestsByUser(
+                  uids: loginState.receivedRequests)
+              : Stream.value(List<UserEntity>()),
+          (churchUsers, cityUsers, publicFigures, newestUsers, posts,
+              requests) {
         var filiteredPosts = (posts as List<PostEntity>).where((p) {
           return p.postData != null && p.postData.length > 0;
         }).toList();
@@ -182,13 +187,15 @@ class ExploreBloc implements BaseBloc {
 
         suggestions.toSet().toList();
 
-        (requests as List<UserEntity>)
-            .removeWhere((r) => loginState.connections.contains(r.id));
+        // (requests as List<UserEntity>)
+        //     .removeWhere((r) => loginState.connections.contains(r.id));
+
+        print(requests);
 
         return _kInitialExploreState.copyWith(
-          connectionItems: _userEntitiesToItems(suggestions),
+          connectionItems: _userEntitiesToItems(suggestions, List<String>()),
           postItems: _postEntitiesToItems(filiteredPosts),
-          requestItems: _userEntitiesToItems(requests),
+          requestItems: _userEntitiesToItems(requests, loginState.mutedChats),
           isLoading: false,
         );
       }).startWith(_kInitialExploreState).onErrorReturnWith((e) {
@@ -209,6 +216,7 @@ class ExploreBloc implements BaseBloc {
 
   static List<ConnectionItem> _userEntitiesToItems(
     List<UserEntity> entities,
+    List<String> muted,
   ) {
     return entities.map((entity) {
       return ConnectionItem(
@@ -223,6 +231,8 @@ class ExploreBloc implements BaseBloc {
             ? entity.churchInfo.churchDenomination
             : "None",
       );
+    }).where((item) {
+      return !muted.contains(item.id);
     }).toList();
   }
 

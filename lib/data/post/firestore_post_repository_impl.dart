@@ -79,14 +79,17 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
         }).toList(),
       );
 
+      post.addAll({
+        'time': DateTime.now().millisecondsSinceEpoch,
+        'createdAt': FieldValue.serverTimestamp(),
+        'likes': [],
+        'isReported': false,
+        'type': 0,
+        'visiblity': 0,
+      });
+
       if (media.isNotEmpty) {
         post.addAll({
-          'time': DateTime.now().millisecondsSinceEpoch,
-          'createdAt': FieldValue.serverTimestamp(),
-          'likes': [],
-          'isReported': false,
-          'type': 0,
-          'visiblity': 0,
           'postData': imageUrls.map((media) {
             return {
               'imageUrl': media,

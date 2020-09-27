@@ -921,7 +921,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                                                         flex: 1,
                                                         fit: FlexFit.tight,
                                                         child: Text(
-                                                            address.isEmpty
+                                                            (address ?? "")
+                                                                    .isEmpty
                                                                 ? "Enter your business address"
                                                                 : address,
                                                             style: TextStyle(
@@ -929,7 +930,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                                                                 color: Colors
                                                                     .black
                                                                     .withOpacity(
-                                                                        address.isEmpty
+                                                                        (address ?? "").isEmpty
                                                                             ? (.2)
                                                                             : 1),
                                                                 fontFamily:
@@ -1085,7 +1086,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 _profileSettingsBloc.setMinistryType(ministrySelected);
               }
 
-              if (denominationSelected == null) {
+              if (denominationSelected == null &&
+                  user.churchDenomination != null) {
                 denominationSelected =
                     treeDenominations.indexOf(user.churchDenomination);
                 _profileSettingsBloc

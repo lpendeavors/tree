@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:treeapp/models/old/group_member.dart';
 import 'package:treeapp/pages/chat_room/widgets/chat_input.dart';
+import 'package:treeapp/util/asset_utils.dart';
 import '../../widgets/empty_list_view.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -89,14 +90,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               );
             }
 
+            var user = widget.userBloc.loginState$.value as LoggedInUser;
+
             if (data.messages.isNotEmpty) {
-              var uid = (widget.userBloc.loginState$.value as LoggedInUser).uid;
               var unread = data.messages
-                  .where((m) => !m.isRead && m.members.contains(uid))
+                  .where((m) => !m.isRead && m.members.contains(user.uid))
                   .toList();
               if (unread.isNotEmpty) {
                 _chatRoomBloc.markRead(unread.map((u) => u.id).toList());
               }
+            }
+
+            if (data.details != null &&
+                !data.details.members.contains(user.uid)) {
+              _chatRoomBloc.joinMembers();
             }
 
             return Column(
@@ -320,8 +327,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               ),
                             ],
                             data.messages[index].isMine
-                                ? _outgoingMessage(data.messages[index])
-                                : _incommingMessage(data.messages[index]),
+                                ? _outgoingMessage(
+                                    data.messages[index], data.details.isAdmin)
+                                : _incommingMessage(
+                                    data.messages[index], data.details.isAdmin),
                           ],
                         );
                       },
@@ -349,7 +358,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     List<String> members,
   ) async {
     var memberDetails = List<MemberItem>();
-    print('get members');
 
     var snapshots = await _firestore
         .collection('userBase')
@@ -371,14 +379,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     return memberDetails;
   }
 
-  Widget _outgoingMessage(ChatMessageItem messageItem) {
+  Widget _outgoingMessage(ChatMessageItem messageItem, bool isAdmin) {
     Widget messageWidget;
 
     switch (messageItem.type) {
       case MessageType.text:
         messageWidget = GestureDetector(
           onLongPress: () {
-            // TODO: show chat options
+            if (isAdmin) {
+              _showMessageOptions(messageItem);
+            }
           },
           child: Container(
             margin: EdgeInsets.fromLTRB(60, 0, 20, 15),
@@ -427,7 +437,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     return messageWidget;
   }
 
-  Widget _incommingMessage(ChatMessageItem messageItem) {
+  Widget _incommingMessage(ChatMessageItem messageItem, bool isAdmin) {
     Widget messageWidget;
 
     switch (messageItem.type) {
@@ -436,7 +446,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           children: <Widget>[
             GestureDetector(
               onLongPress: () {
-                // TODO: show options
+                if (isAdmin) {
+                  _showMessageOptions(messageItem);
+                }
               },
               child: Container(
                 margin: EdgeInsets.fromLTRB(40, 0, 60, 15),
@@ -511,5 +523,110 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
 
     return messageWidget;
+  }
+
+  Future<void> _showMessageOptions(ChatMessageItem message) async {
+    switch (await showDialog<MessageOption>(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            elevation: 0.0,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Container(
+              height: 140,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 15,
+                          ),
+                          Image.asset(
+                            ic_launcher,
+                            height: 20,
+                            width: 20,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Flexible(
+                            flex: 1,
+                            child: Text(
+                              'Tree',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Container(
+                      height: 0.5,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.1),
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: 90,
+                        ),
+                        child: Scrollbar(
+                          child: ListView(
+                            children: <Widget>[
+                              SizedBox(height: 5),
+                              SimpleDialogOption(
+                                child: Text('Copy'),
+                                onPressed: () =>
+                                    Navigator.pop(context, MessageOption.copy),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                              SizedBox(height: 5),
+                              SimpleDialogOption(
+                                child: Text('Delete'),
+                                onPressed: () => Navigator.pop(
+                                    context, MessageOption.delete),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        })) {
+      case MessageOption.delete:
+        _chatRoomBloc.deleteMessage(message.id);
+        break;
+      case MessageOption.copy:
+        print('copy');
+        break;
+    }
   }
 }

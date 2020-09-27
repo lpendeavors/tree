@@ -86,14 +86,7 @@ class _ProfilePageState extends State<ProfilePage>
                 builder: (context, snapshot) {
                   var data = snapshot.data;
 
-                  if (!data.isLoading) {
-                    return Column(
-                      children: <Widget>[
-                        _appBar(data),
-                        _profile(data),
-                      ],
-                    );
-                  } else {
+                  if (data.isLoading) {
                     return Container(
                       height: 800,
                       child: Center(
@@ -101,6 +94,13 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     );
                   }
+
+                  return Column(
+                    children: <Widget>[
+                      _appBar(data),
+                      _profile(data),
+                    ],
+                  );
                 }),
             StreamBuilder<RecentFeedState>(
                 stream: _profileBloc.recentFeedState$,
@@ -108,15 +108,15 @@ class _ProfilePageState extends State<ProfilePage>
                 builder: (context, snapshot) {
                   var data = snapshot.data;
 
-                  if (!data.isLoading) {
-                    return Column(
-                      children: <Widget>[
-                        _recentPostList(data),
-                      ],
-                    );
-                  } else {
+                  if (data.isLoading) {
                     return Container();
                   }
+
+                  return Column(
+                    children: <Widget>[
+                      _recentPostList(data),
+                    ],
+                  );
                 }),
           ],
         ),
@@ -315,8 +315,8 @@ class _ProfilePageState extends State<ProfilePage>
                                     Flexible(
                                       child: Text(
                                         data.profile.isChurch
-                                            ? data.profile.churchName
-                                            : data.profile.fullName,
+                                            ? data.profile.churchName ?? ""
+                                            : data.profile.fullName ?? "",
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
@@ -684,7 +684,11 @@ class _ProfilePageState extends State<ProfilePage>
 
     return RaisedButton(
       onPressed: () {
-        _profileBloc.sendConnectRequest();
+        var request = <String, String>{
+          'name': profileItem.fullName ?? profileItem.churchName,
+          'id': profileItem.id,
+        };
+        _profileBloc.sendConnectRequest(request);
       },
       color: Theme.of(context).primaryColor,
       shape: RoundedRectangleBorder(
@@ -1145,6 +1149,7 @@ class _ProfilePageState extends State<ProfilePage>
           ...List.generate(data.feedItems.length, (index) {
             return FeedListItem(
               context: context,
+              isFeed: false,
               tickerProvider: this,
               admin:
                   (widget.userBloc.loginState$.value as LoggedInUser).isAdmin,

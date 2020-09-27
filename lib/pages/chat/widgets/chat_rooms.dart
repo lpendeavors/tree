@@ -68,9 +68,13 @@ class _ChatRoomsState extends State<ChatRooms> {
             physics: BouncingScrollPhysics(),
             shrinkWrap: true,
             itemBuilder: (context, index) {
+              var nonDefaultRooms =
+                  data.chatRooms.where((r) => !r.isDefault).toList();
               return _chatRoomItem(
                 room: data.chatRooms[index],
-                color: chatRoomColors[index],
+                color: data.chatRooms[index].isDefault
+                    ? chatRoomColors[index - nonDefaultRooms.length]
+                    : null,
               );
             },
           );
@@ -117,7 +121,9 @@ class _ChatRoomsState extends State<ChatRooms> {
                             ),
                     ),
                     Container(
-                      color: Color(color).withOpacity(0.7),
+                      color: color != null
+                          ? Color(color).withOpacity(0.7)
+                          : Colors.transparent,
                       height: 150,
                     ),
                     Container(

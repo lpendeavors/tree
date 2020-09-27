@@ -95,7 +95,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               );
             }
 
-            var unread = data.notificationItems.where((n) => n.isNew).toList();
+            var unread = data.notificationItems.where((n) => !n.isNew).toList();
             if (unread.isNotEmpty) {
               _notificationsBloc.markRead(unread.map((u) => u.id).toList());
             }

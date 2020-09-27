@@ -3,6 +3,7 @@ import 'package:treeapp/pages/create_message/create_message_state.dart';
 import 'package:treeapp/user_bloc/user_login_state.dart';
 import './firestore_group_repository.dart';
 import '../../models/old/group_entity.dart';
+import '../../util/model_utils.dart';
 
 class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
   final Firestore _firestore;
@@ -40,6 +41,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
     String ownerId,
     bool byAdmin,
     bool isVerified,
+    String groupName,
   ) async {
     final TransactionHandler transactionHandler = (transaction) async {
       final group = <String, dynamic>{
@@ -60,6 +62,12 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         'ownerId': ownerId,
         'updatedAt': FieldValue.serverTimestamp(),
       };
+
+      if (isGroup) {
+        group.addAll({
+          'searchData': createSearchData(groupName),
+        });
+      }
 
       var room =
           await _firestore.collection('groupBase').add(group).then((doc) {
@@ -214,6 +222,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
     return _firestore
         .collection('groupBase')
         .where('isGroup', isEqualTo: true)
+        .where('isRoom', isEqualTo: false)
         .where('parties', arrayContains: uid)
         .snapshots()
         .map(_toEntities);
@@ -225,6 +234,22 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         .collection('groupBase')
         .where('byAdmin', isEqualTo: false)
         .where('parties', arrayContains: uid)
+        .snapshots()
+        .map(_toEntities);
+  }
+
+  @override
+  Future<void> joinGroup(String groupId, String uid) async {
+    await _firestore.document('groupBase/$groupId').updateData({
+      'parties': FieldValue.arrayUnion([uid]),
+    });
+  }
+
+  @override
+  Stream<List<GroupEntity>> getChurchRoom(String churchId) {
+    return _firestore
+        .collection('groupBase')
+        .where('ownerId', isEqualTo: churchId)
         .snapshots()
         .map(_toEntities);
   }

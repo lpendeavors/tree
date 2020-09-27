@@ -93,7 +93,10 @@ class HomeTabsBloc extends BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.combineLatest2(
-          requestRepository.requestsByUser(uid: loginState.uid),
+          loginState.receivedRequests.isNotEmpty
+              ? requestRepository.requestsByUser(
+                  uids: loginState.receivedRequests)
+              : Stream.value(List<UserEntity>()),
           chatRepository.getByUser(uid: loginState.uid), (requests, chats) {
         return _kInitialHomeTabsState.copyWith(
           hasMessages: _hasNewChats(chats, loginState.uid),
@@ -129,11 +132,13 @@ class HomeTabsBloc extends BaseBloc {
     List<ChatEntity> chats,
     String uid,
   ) {
-    var newChats = chats
-        .map((c) => !c.readBy.contains(uid) && c.parties.contains(uid))
-        .toList();
+    var newChats = List<ChatEntity>();
+    chats.forEach((chat) {
+      if (!chat.readBy.contains(uid) && chat.parties.contains(uid)) {
+        newChats.add(chat);
+      }
+    });
 
-    print('${newChats.length} new chats');
     return newChats.length > 0;
   }
 
@@ -141,10 +146,14 @@ class HomeTabsBloc extends BaseBloc {
     List<UserEntity> requests,
     List<String> connections,
   ) {
-    var newRequests =
-        requests.map((r) => !connections.contains(r.uid)).toList();
+    var newRequests = List<UserEntity>();
 
-    print('${newRequests.length} requests');
+    requests.forEach((request) {
+      if (!connections.contains(request.uid)) {
+        newRequests.add(request);
+      }
+    });
+
     return newRequests.length > 0;
   }
 }

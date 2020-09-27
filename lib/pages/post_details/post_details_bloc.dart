@@ -148,6 +148,7 @@ class PostDetailsBloc extends BaseBloc {
       abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
       isShared: entity.isPostPrivate == 1,
       pollData: entity.pollData ?? [],
+      likes: entity.likes ?? [],
     );
   }
 

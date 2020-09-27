@@ -149,6 +149,7 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
         children: <Widget>[
           ExploreConnectionsTab(
             bloc: _exploreBloc,
+            userBloc: widget.userBloc,
           ),
           ExplorePostsTab(
             bloc: _exploreBloc,

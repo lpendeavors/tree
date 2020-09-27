@@ -27,12 +27,14 @@ class ChatRoomBloc implements BaseBloc {
   /// Input functions
   ///
   final void Function(List<String>) markRead;
+  final void Function() joinMembers;
   final void Function() sendMessage;
   final void Function(String) messageChanged;
   final void Function(int) messageTypeChanged;
   final void Function(bool) isGifChanged;
   final void Function(String) gifChanged;
   final void Function(List<String>) membersChanged;
+  final void Function(String) deleteMessage;
 
   ///
   /// Output streams
@@ -52,6 +54,8 @@ class ChatRoomBloc implements BaseBloc {
   final void Function() _dispose;
 
   ChatRoomBloc._({
+    @required this.deleteMessage,
+    @required this.joinMembers,
     @required this.markRead,
     @required this.sendMessage,
     @required this.gifChanged,
@@ -169,6 +173,8 @@ class ChatRoomBloc implements BaseBloc {
         sendMessage: () => sendMessageSubject.add(null),
         markRead: (messages) =>
             _markMessagesRead(chatRepository, messages, userBloc),
+        joinMembers: () => _joinRoomMembers(groupRepository, roomId, userBloc),
+        deleteMessage: (id) => _deleteMessage(chatRepository, id, userBloc),
         gif$: gifSubject.stream,
         isGif$: isGifSubject.stream,
         members$: membersSubject.stream,
@@ -209,9 +215,8 @@ class ChatRoomBloc implements BaseBloc {
           chatRepository.getByGroup(roomId), (group, chats) {
         return _kInitialChatRoomState.copyWith(
           isLoading: false,
-          details: group != null
-              ? _entityToChatRoomItem(group, loginState.mutedChats)
-              : null,
+          details:
+              group != null ? _entityToChatRoomItem(group, loginState) : null,
           messages: _entitiesToChatMessageItems(chats, loginState.uid),
         );
       }).startWith(_kInitialChatRoomState).onErrorReturnWith((e) {
@@ -232,7 +237,7 @@ class ChatRoomBloc implements BaseBloc {
 
   static ChatRoomItem _entityToChatRoomItem(
     GroupEntity entity,
-    List<String> mutedChats,
+    LoginState loginState,
   ) {
     return ChatRoomItem(
       id: entity.documentId,
@@ -242,7 +247,9 @@ class ChatRoomBloc implements BaseBloc {
       image: entity.image,
       groupImage: entity.groupImage,
       name: entity.groupName,
-      isMuted: (mutedChats ?? []).contains(entity.documentId),
+      isMuted: ((loginState as LoggedInUser).mutedChats ?? [])
+          .contains(entity.documentId),
+      isAdmin: entity.ownerId == (loginState as LoggedInUser).uid,
     );
   }
 
@@ -341,6 +348,28 @@ class ChatRoomBloc implements BaseBloc {
     var loginState = userBloc.loginState$.value;
     if (loginState is LoggedInUser) {
       chatRepository.markRead(messages, loginState.uid);
+    }
+  }
+
+  static void _joinRoomMembers(
+    FirestoreGroupRepository groupRepository,
+    String roomId,
+    UserBloc userBloc,
+  ) {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      groupRepository.joinGroup(roomId, loginState.uid);
+    }
+  }
+
+  static void _deleteMessage(
+    FirestoreChatRepository chatRepository,
+    String messageId,
+    UserBloc userBloc,
+  ) {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      chatRepository.delete(messageId);
     }
   }
 }

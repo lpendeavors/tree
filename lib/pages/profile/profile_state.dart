@@ -6,21 +6,21 @@ import '../../models/old/trophy.dart';
 
 ///
 /// Message
-/// 
+///
 abstract class ProfileMessage {
   const ProfileMessage();
 }
 
 ///
-/// Error 
-/// 
+/// Error
+///
 class ProfileNotLoggedInError {
   const ProfileNotLoggedInError();
 }
 
-/// 
+///
 /// State
-/// 
+///
 @immutable
 class ProfileState extends Equatable {
   final ProfileItem profile;
@@ -46,11 +46,11 @@ class ProfileState extends Equatable {
 
   @override
   List get props => [
-    profile,
-    isLoading,
-    error,
-    isAdmin,
-  ];
+        profile,
+        isLoading,
+        error,
+        isAdmin,
+      ];
 
   @override
   bool get stringify => true;
@@ -77,11 +77,7 @@ class RecentFeedState extends Equatable {
   }
 
   @override
-  List get props => [
-    feedItems,
-    isLoading,
-    error
-  ];
+  List get props => [feedItems, isLoading, error];
 
   @override
   bool get stringify => true;
@@ -143,31 +139,31 @@ class ProfileItem extends Equatable {
 
   @override
   List get props => [
-    id,
-    uid,
-    photo,
-    isVerified,
-    isChurch,
-    fullName,
-    churchName,
-    connections,
-    shares,
-    trophies,
-    type,
-    churchDenomination,
-    churchAddress,
-    aboutMe,
-    title,
-    city,
-    relationStatus,
-    churchInfo,
-    myProfile,
-    isFriend,
-    sent,
-    received,
-    isChurchUpdated,
-    isProfileUpdated
-  ];
+        id,
+        uid,
+        photo,
+        isVerified,
+        isChurch,
+        fullName,
+        churchName,
+        connections,
+        shares,
+        trophies,
+        type,
+        churchDenomination,
+        churchAddress,
+        aboutMe,
+        title,
+        city,
+        relationStatus,
+        churchInfo,
+        myProfile,
+        isFriend,
+        sent,
+        received,
+        isChurchUpdated,
+        isProfileUpdated
+      ];
 
   @override
   bool get stringify => true;

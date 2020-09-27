@@ -172,3 +172,32 @@ class FeedItem extends Equatable {
   @override
   bool get stringify => true;
 }
+
+@immutable
+class LastCommentItem extends Equatable {
+  final String id;
+  final String ownerId;
+  final String ownerImage;
+  final String ownerName;
+  final String comment;
+
+  const LastCommentItem({
+    @required this.id,
+    @required this.ownerId,
+    @required this.ownerImage,
+    @required this.ownerName,
+    @required this.comment,
+  });
+
+  @override
+  List get props => [
+        id,
+        ownerId,
+        ownerImage,
+        ownerName,
+        comment,
+      ];
+
+  @override
+  bool get stringify => true;
+}

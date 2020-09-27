@@ -36,4 +36,6 @@ abstract class FirestoreChatRepository {
   );
 
   Future<void> markRead(List<String> messageIds, String uid);
+
+  Future<void> delete(String messageId);
 }

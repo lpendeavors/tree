@@ -135,7 +135,7 @@ class ChatRoomDetailsBloc implements BaseBloc {
       image: entity.groupImage,
       members: _entitiesToRoomMemberItem(entity.groupMembers),
       isAdmin: true,
-      description: entity.groupDescription,
+      description: entity.groupDescription ?? "Hey I'm new to Tree",
       wallEnabled: entity.canPostOnWall ?? false,
     );
   }
