@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuple/tuple.dart';
 import '../../../generated/l10n.dart';
 import '../../../widgets/empty_list_view.dart';
 import '../events_state.dart';
@@ -59,7 +60,24 @@ class EventsList extends StatelessWidget {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               return EventsListItem(
-                eventItem: onlyMine ? data.myEvents[index] : data.eventItems[index],
+                eventItem:
+                    onlyMine ? data.myEvents[index] : data.eventItems[index],
+                onDelete: () {
+                  bloc.deleteEvent(
+                    onlyMine
+                        ? data.myEvents[index].id
+                        : data.eventItems[index].id,
+                  );
+                },
+                onReport: () {},
+                onStatusUpdate: (status) {
+                  bloc.updateStatus(Tuple2<String, int>(
+                    onlyMine
+                        ? data.myEvents[index].id
+                        : data.eventItems[index].id,
+                    status,
+                  ));
+                },
               );
             },
             separatorBuilder: (context, index) {

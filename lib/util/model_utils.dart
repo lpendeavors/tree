@@ -10,8 +10,8 @@ Timestamp timestampFromJson(Timestamp timestamp) => timestamp;
 Timestamp timestampToJson(Timestamp timestamp) => timestamp;
 
 Map<String, dynamic> withId(DocumentSnapshot doc) => CombinedMapView([
-      doc.data,
-      <String, dynamic>{'documentId': doc.documentID}
+      doc.data(),
+      <String, dynamic>{'documentId': doc.id}
     ]);
 
 List<String> createSearchData(String text) {
@@ -20,7 +20,7 @@ List<String> createSearchData(String text) {
 
   for (int i = 0; i < text.length; i++) {
     temp = temp + text[i];
-    searchList.add(temp);
+    searchList.add(temp.toLowerCase());
   }
 
   return searchList;

@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_text_view/smart_text_view.dart';
 import '../../util/asset_utils.dart';
@@ -38,8 +38,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     _eventDetailsBloc = widget.initEventDetailsBloc();
     _subscriptions = [
       widget.userBloc.loginState$
-        .where((state) => state is Unauthenticated)
-        .listen((_) => Navigator.popUntil(context, ModalRoute.withName('/login'))),
+          .where((state) => state is Unauthenticated)
+          .listen((_) =>
+              Navigator.popUntil(context, ModalRoute.withName('/login'))),
       _eventDetailsBloc.message$.listen(_showMessageResult),
     ];
   }
@@ -67,9 +68,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: Text(
-              S.of(context).event_details_title
-            ),
+            title: Text(S.of(context).event_details_title),
           ),
           body: Column(
             children: <Widget>[
@@ -79,20 +78,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   children: <Widget>[
                     if (data.eventDetails != null) ...[
                       GestureDetector(
-                        onTap: () {
-
-                        },
+                        onTap: () {},
                         child: Container(
                           child: Stack(
                             alignment: Alignment.bottomCenter,
                             children: <Widget>[
-                                Container(
-                                  child: Image(
-                                    image: CacheImage(data.eventDetails.image),
-                                  ),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
+                              Container(
+                                child: CachedNetworkImage(
+                                    imageUrl: data.eventDetails.image),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
                                     color: Colors.black.withOpacity(0.9),
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
@@ -101,134 +97,150 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                         Colors.black.withOpacity(0.1),
                                         Colors.black.withOpacity(0.9),
                                       ],
-                                    )
-                                  ),
-                                ),
-                                if (data.eventDetails.attendees.length > 0) ...[
-                                  Padding(
-                                    padding: EdgeInsets.all(8),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: <Widget>[
-                                        Text(
-                                          S.of(context).event_attendees_title,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
+                                    )),
+                              ),
+                              if (data.eventDetails.attendees.length > 0) ...[
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Text(
+                                        S.of(context).event_attendees_title,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
                                         ),
-                                        SizedBox(height: 5),
-                                        Row(
-                                          children: <Widget>[
-                                            ...List.generate(
-                                              data.eventDetails.attendees.length <= 4
-                                                ? data.eventDetails.attendees.length
-                                                : 4,
-                                            (index) {
-                                                if (data.eventDetails.attendees.length == 4) {
-                                                  return Container(
-                                                    height: 50,
-                                                    width: 50,
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                      '',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.white,
+                                      ),
+                                      SizedBox(height: 5),
+                                      Row(
+                                        children: <Widget>[
+                                          ...List.generate(
+                                              data.eventDetails.attendees
+                                                          .length <=
+                                                      4
+                                                  ? data.eventDetails.attendees
+                                                      .length
+                                                  : 4, (index) {
+                                            if (data.eventDetails.attendees
+                                                    .length ==
+                                                4) {
+                                              return Container(
+                                                height: 50,
+                                                width: 50,
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  '',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .primaryColor
+                                                      .withOpacity(0.4),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              );
+                                            }
+                                            return ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(0),
+                                              child: AnimatedContainer(
+                                                width: 50,
+                                                height: 50,
+                                                curve: Curves.ease,
+                                                alignment: Alignment.center,
+                                                duration: Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                padding: EdgeInsets.all(0.5),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.rectangle,
+                                                ),
+                                                child: Stack(
+                                                  children: <Widget>[
+                                                    Card(
+                                                      elevation: 0.5,
+                                                      margin: EdgeInsets.all(0),
+                                                      clipBehavior:
+                                                          Clip.antiAlias,
+                                                      color: Colors.transparent,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
+                                                      ),
+                                                      child: Stack(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        children: <Widget>[
+                                                          Container(
+                                                            width: 50,
+                                                            height: 50,
+                                                            child: Center(
+                                                              child: Icon(
+                                                                Icons.event,
+                                                                size: 14,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          if (data.eventDetails
+                                                              .image.isNotEmpty)
+                                                            CachedNetworkImage(
+                                                              width: 50,
+                                                              height: 50,
+                                                              fit: BoxFit.cover,
+                                                              imageUrl: data
+                                                                  .eventDetails
+                                                                  .image,
+                                                            ),
+                                                        ],
                                                       ),
                                                     ),
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context).primaryColor.withOpacity(0.4),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  );
-                                                }
-                                                return ClipRRect(
-                                                  borderRadius: BorderRadius.circular(0),
-                                                  child: AnimatedContainer(
-                                                    width: 50,
-                                                    height: 50,
-                                                    curve: Curves.ease,
-                                                    alignment: Alignment.center,
-                                                    duration: Duration(
-                                                      milliseconds: 300,
-                                                    ),
-                                                    padding: EdgeInsets.all(0.5),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      shape: BoxShape.rectangle,
-                                                    ),
-                                                    child: Stack(
-                                                      children: <Widget>[
-                                                        Card(
-                                                          elevation: 0.5,
-                                                          margin: EdgeInsets.all(0),
-                                                          clipBehavior: Clip.antiAlias,
-                                                          color: Colors.transparent,
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(5),
-                                                          ),
-                                                          child: Stack(
-                                                            alignment: Alignment.center,
-                                                            children: <Widget>[
-                                                              Container(
-                                                                width: 50,
-                                                                height: 50,
-                                                                child: Center(
-                                                                  child: Icon(
-                                                                    Icons.event,
-                                                                    size: 14,
-                                                                    color: Colors.white,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              if (data.eventDetails.image.isNotEmpty)
-                                                                Image(
-                                                                  width: 50,
-                                                                  height: 50,
-                                                                  fit: BoxFit.cover,
-                                                                  image: CacheImage(data.eventDetails.image),
-                                                                ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              }
-                                            )
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          })
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
-                                if (data.eventDetails.isSponsored) ...[
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8),
-                                      child: Container(
-                                        padding: EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Color(0xffe8e8e8).withOpacity(0.5),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          S.of(context).event_sponsored_title,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black,
-                                          ),
+                                ),
+                              ],
+                              if (data.eventDetails.isSponsored) ...[
+                                Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Container(
+                                      padding: EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Color(0xffe8e8e8).withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        S.of(context).event_sponsored_title,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -239,7 +251,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         color: Colors.black.withOpacity(0.1),
                         margin: EdgeInsets.all(0),
                       ),
-                      if (data.eventDetails.isMine && data.eventDetails.isRejected) ...[
+                      if (data.eventDetails.isMine &&
+                          data.eventDetails.isRejected) ...[
                         Container(
                           padding: EdgeInsets.all(10),
                           margin: EdgeInsets.all(10),
@@ -267,9 +280,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                           ),
                         ),
                       ],
-                      if (data.eventDetails.isMine && data.eventDetails.isSponsored) ...[
-
-                      ],
+                      if (data.eventDetails.isMine &&
+                          data.eventDetails.isSponsored)
+                        ...[],
                       Container(
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -298,10 +311,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                   width: 30,
                                   padding: EdgeInsets.all(8),
                                   child: Image.asset(
-                                    eventTypes[data.eventDetails.type].assetImage,
+                                    eventTypes[data.eventDetails.type]
+                                        .assetImage,
                                     height: 15,
                                     width: 15,
-                                    color: eventTypes[data.eventDetails.type].useColor
+                                    color: eventTypes[data.eventDetails.type]
+                                            .useColor
                                         ? Colors.white
                                         : null,
                                   ),
@@ -365,9 +380,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     SizedBox(width: 5),
                                     Flexible(
                                       child: Text(
-                                        eventTypes[
-                                        data.eventDetails.type
-                                        ].eventTitle,
+                                        eventTypes[data.eventDetails.type]
+                                            .eventTitle,
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.black.withOpacity(0.7),
@@ -386,7 +400,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     SizedBox(width: 5),
                                     Flexible(
                                       child: Text(
-                                        data.eventDetails.price.toStringAsFixed(2),
+                                        data.eventDetails.price
+                                            .toStringAsFixed(2),
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -396,7 +411,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     ),
                                   ],
                                 ),
-                                if (data.eventDetails.webAddress.isNotEmpty) ...[
+                                if (data
+                                    .eventDetails.webAddress.isNotEmpty) ...[
                                   Container(
                                     height: 40,
                                     child: Row(
@@ -436,13 +452,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                               ),
                             ),
                             SizedBox(height: 5),
-                            Text(
-                                data.eventDetails.details,
+                            Text(data.eventDetails.details,
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.black.withOpacity(0.7),
-                                )
-                            )
+                                ))
                           ],
                         ),
                       ),
@@ -474,9 +488,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                                     colors: [
                                       Colors.black.withOpacity(0.1),
                                       Colors.black.withOpacity(0.9),
-                                    ]
-                                )
-                            ),
+                                    ])),
                             child: RaisedButton(
                               color: Colors.white,
                               shape: RoundedRectangleBorder(
@@ -485,16 +497,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                               child: Text(S.of(context).view_map),
                               onPressed: () async {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return EventDetailsMap(
-                                        LatLng(
-                                          data.eventDetails.latitude,
-                                          data.eventDetails.longitude,
-                                        ),
-                                      );
-                                    }
-                                  ),
+                                  MaterialPageRoute(builder: (context) {
+                                    return EventDetailsMap(
+                                      LatLng(
+                                        data.eventDetails.latitude,
+                                        data.eventDetails.longitude,
+                                      ),
+                                    );
+                                  }),
                                 );
                               },
                             ),
@@ -510,14 +520,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 if (!data.eventDetails.isMine) ...[
                   RaisedButton(
                     color: data.eventDetails.isAttending
-                      ? Color(0xffe94f4f)
-                      : Theme.of(context).primaryColor,
+                        ? Color(0xffe94f4f)
+                        : Theme.of(context).primaryColor,
                     padding: EdgeInsets.all(20),
                     child: Center(
                       child: Text(
                         data.eventDetails.isAttending
-                          ? S.of(context).cancel
-                          : S.of(context).event_attend_title,
+                            ? S.of(context).cancel
+                            : S.of(context).event_attend_title,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -527,7 +537,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     ),
                     onPressed: () {
                       _eventDetailsBloc
-                        .toggleAttendance(!data.eventDetails.isAttending);
+                          .toggleAttendance(!data.eventDetails.isAttending);
                     },
                   ),
                 ],

@@ -197,7 +197,9 @@ class _AdminPanelState extends State<AdminPanel> {
                               Divider(),
                               InkWell(
                                 onTap: () {
-                                  print('ok');
+                                  Navigator.of(context).pushNamed(
+                                    '/reports',
+                                  );
                                 },
                                 child: Container(
                                   padding: EdgeInsets.fromLTRB(0, 8, 0, 8),

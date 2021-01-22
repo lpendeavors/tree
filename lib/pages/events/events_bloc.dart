@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:tuple/tuple.dart';
+
 import '../../bloc/bloc_provider.dart';
 import '../../data/event/firestore_event_repository.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -21,6 +23,8 @@ class EventsBloc implements BaseBloc {
   /// Input functions
   ///
   final void Function(bool) hideEventsOnMapChanged;
+  final void Function(String) deleteEvent;
+  final void Function(Tuple2<String, int>) updateStatus;
 
   ///
   /// Output streams
@@ -37,6 +41,8 @@ class EventsBloc implements BaseBloc {
     @required this.hideEventsOnMap$,
     @required this.eventsListState$,
     @required this.hideEventsOnMapChanged,
+    @required this.deleteEvent,
+    @required this.updateStatus,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -81,6 +87,10 @@ class EventsBloc implements BaseBloc {
         hideEventsOnMap$: hideEventsOnMapSubject.stream,
         hideEventsOnMapChanged: hideEventsOnMapSubject.add,
         eventsListState$: eventsListState$,
+        deleteEvent: (eventId) =>
+            _deleteEvent(eventRepository, userBloc, eventId),
+        updateStatus: (values) =>
+            _updateStatus(eventRepository, userBloc, values),
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
           await Future.wait(controllers.map((c) => c.close()));
@@ -270,6 +280,28 @@ class EventsBloc implements BaseBloc {
       }).toList();
     } else {
       return [];
+    }
+  }
+
+  static Future<void> _deleteEvent(
+    FirestoreEventRepository eventRepository,
+    UserBloc userBloc,
+    String eventId,
+  ) async {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      await eventRepository.deleteEvent(eventId);
+    }
+  }
+
+  static Future<void> _updateStatus(
+    FirestoreEventRepository eventRepository,
+    UserBloc userBloc,
+    Tuple2<String, int> values,
+  ) async {
+    var loginState = userBloc.loginState$.value;
+    if (loginState is LoggedInUser) {
+      await eventRepository.updateStatus(values.item1, values.item2);
     }
   }
 }

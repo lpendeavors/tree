@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/group_member.dart';
 import '../../data/chat/firestore_chat_repository.dart';
 import '../../data/group/firestore_group_repository.dart';
 import '../../bloc/bloc_provider.dart';
@@ -34,6 +35,7 @@ class ChatRoomBloc implements BaseBloc {
   final void Function(bool) isGifChanged;
   final void Function(String) gifChanged;
   final void Function(List<String>) membersChanged;
+  final void Function(bool) showDateChanged;
   final void Function(String) deleteMessage;
 
   ///
@@ -47,6 +49,7 @@ class ChatRoomBloc implements BaseBloc {
   final ValueStream<List<String>> members$;
   final ValueStream<String> gif$;
   final ValueStream<bool> isGif$;
+  final ValueStream<String> chatMessage$;
 
   ///
   /// Clean up
@@ -63,9 +66,11 @@ class ChatRoomBloc implements BaseBloc {
     @required this.membersChanged,
     @required this.messageChanged,
     @required this.messageTypeChanged,
+    @required this.showDateChanged,
     @required this.isGif$,
     @required this.gif$,
     @required this.members$,
+    @required this.chatMessage$,
     @required this.chatRoomState$,
     @required this.messageError$,
     @required this.message$,
@@ -94,6 +99,7 @@ class ChatRoomBloc implements BaseBloc {
     ///
     /// Stream controllers
     ///
+    final showDateSubject = BehaviorSubject<bool>.seeded(false);
     final isGifSubject = BehaviorSubject<bool>.seeded(false);
     final gifSubject = BehaviorSubject<String>.seeded('');
     final membersSubject = BehaviorSubject<List<String>>.seeded([]);
@@ -112,7 +118,7 @@ class ChatRoomBloc implements BaseBloc {
 
     final allFieldsAreValid$ = Rx.combineLatest(
       [
-        messageError$,
+        // messageError$,
       ],
       (allError) => allError.every((error) {
         print(error);
@@ -129,8 +135,8 @@ class ChatRoomBloc implements BaseBloc {
     ).publishValueSeeded(_kInitialChatRoomState);
 
     final message$ = sendMessageSubject
-        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-        .where((isValid) => isValid)
+        // .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        // .where((isValid) => isValid)
         .exhaustMap(
           (_) => sendNewMessage(
             userBloc,
@@ -140,6 +146,7 @@ class ChatRoomBloc implements BaseBloc {
             gifSubject.value,
             isGifSubject.value,
             membersSubject.value,
+            showDateSubject.value,
             isLoadingSubject,
             roomId,
             isRoom,
@@ -170,6 +177,7 @@ class ChatRoomBloc implements BaseBloc {
         membersChanged: membersSubject.add,
         messageChanged: messageSubject.add,
         messageTypeChanged: messageTypeSubject.add,
+        showDateChanged: showDateSubject.add,
         sendMessage: () => sendMessageSubject.add(null),
         markRead: (messages) =>
             _markMessagesRead(chatRepository, messages, userBloc),
@@ -178,6 +186,7 @@ class ChatRoomBloc implements BaseBloc {
         gif$: gifSubject.stream,
         isGif$: isGifSubject.stream,
         members$: membersSubject.stream,
+        chatMessage$: messageSubject.stream,
         chatRoomState$: chatRoomState$,
         messageError$: messageError$,
         isLoading$: isLoadingSubject,
@@ -209,7 +218,7 @@ class ChatRoomBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       return Rx.combineLatest2(
-          isGroup
+          (isGroup || roomId.length == 20)
               ? groupRepository.getById(groupId: roomId)
               : Stream.value(null),
           chatRepository.getByGroup(roomId), (group, chats) {
@@ -249,7 +258,8 @@ class ChatRoomBloc implements BaseBloc {
       name: entity.groupName,
       isMuted: ((loginState as LoggedInUser).mutedChats ?? [])
           .contains(entity.documentId),
-      isAdmin: entity.ownerId == (loginState as LoggedInUser).uid,
+      isAdmin: _getIsChatAdmin(
+          entity.groupMembers, (loginState as LoggedInUser).uid),
     );
   }
 
@@ -267,10 +277,11 @@ class ChatRoomBloc implements BaseBloc {
         showDate: entity.showDate,
         sentDate: DateTime.fromMillisecondsSinceEpoch(entity.time),
         message: entity.message,
-        image: entity.image,
+        image: entity.image ?? '',
         name: entity.fullName,
         userId: entity.ownerId,
         members: entity.parties,
+        gif: entity.imagePath ?? '',
       );
     }).toList();
   }
@@ -301,6 +312,7 @@ class ChatRoomBloc implements BaseBloc {
     String gif,
     bool isGif,
     List<String> members,
+    bool showDate,
     Sink<bool> isLoading,
     String chatId,
     bool isRoom,
@@ -324,7 +336,7 @@ class ChatRoomBloc implements BaseBloc {
           loginState.isChurch,
           isRoom,
           loginState.token,
-          false,
+          showDate,
           members,
           isGif,
           gif,
@@ -358,7 +370,12 @@ class ChatRoomBloc implements BaseBloc {
   ) {
     var loginState = userBloc.loginState$.value;
     if (loginState is LoggedInUser) {
-      groupRepository.joinGroup(roomId, loginState.uid);
+      groupRepository.joinGroup(
+        roomId,
+        loginState.uid,
+        loginState.image,
+        loginState.fullName,
+      );
     }
   }
 
@@ -371,5 +388,16 @@ class ChatRoomBloc implements BaseBloc {
     if (loginState is LoggedInUser) {
       chatRepository.delete(messageId);
     }
+  }
+
+  static bool _getIsChatAdmin(
+    List<GroupMember> members,
+    String uid,
+  ) {
+    if (members.map((m) => m.uid).contains(uid)) {
+      var me = members.where((m) => m.uid == uid).first;
+      return me.groupAdmin;
+    }
+    return false;
   }
 }

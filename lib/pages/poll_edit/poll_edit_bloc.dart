@@ -20,7 +20,7 @@ class EditPollBloc implements BaseBloc {
   /// Input functions
   ///
   final void Function(int) typeChanged;
-  final void Function(List<TaggedItem>) taggedChanged;
+  final void Function(List<Map<String, String>>) taggedChanged;
   final void Function(List<PollAnswerItem>) answersChanged;
   final void Function(int) correctAnswerChanged;
   final void Function(DateTime) endDateChanged;
@@ -32,7 +32,7 @@ class EditPollBloc implements BaseBloc {
   ///
   final ValueStream<String> question$;
   final ValueStream<int> type$;
-  final ValueStream<List<TaggedItem>> tagged$;
+  final ValueStream<List<Map<String, String>>> tagged$;
   final ValueStream<List<PollAnswerItem>> answers$;
   final ValueStream<int> correctAnswer$;
   final ValueStream<DateTime> endDate$;
@@ -87,7 +87,7 @@ class EditPollBloc implements BaseBloc {
     final typeSubject = BehaviorSubject<int>.seeded(0);
     final answersSubject = BehaviorSubject<List<PollAnswerItem>>.seeded([]);
     final correctAnswerSubject = BehaviorSubject<int>.seeded(0);
-    final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
+    final taggedSubject = BehaviorSubject<List<Map<String, String>>>.seeded([]);
     final endDateSubject = BehaviorSubject<DateTime>.seeded(null);
     final savePollSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
@@ -107,7 +107,7 @@ class EditPollBloc implements BaseBloc {
             correctAnswerSubject.value,
             typeSubject.value,
             endDateSubject.value,
-            taggedSubject.value.map((t) => t.id).toList(),
+            taggedSubject.value.map((t) => t["id"]).toList(),
             isLoadingSubject,
           ),
         )
@@ -258,6 +258,16 @@ class EditPollBloc implements BaseBloc {
 
     if (loginState is LoggedInUser) {
       try {
+        var pollAnswers = answers.map((a) {
+          return <String, dynamic>{
+            'answerTitle': a.answer.toString(),
+            'answerPosition': -1,
+            'label': a.label,
+            'isAnswer': answers.indexOf(a) == correctAnswer,
+            'answerResponse': List<String>(),
+          };
+        }).toList();
+
         await postRepository.savePoll(
           pollId,
           groupId,
@@ -272,14 +282,7 @@ class EditPollBloc implements BaseBloc {
           pollType == 1,
           loginState.isVerified,
           loginState.connections,
-          answers.map((a) {
-            return <String, dynamic>{
-              'answerTitle': a.answer,
-              'answerPosition': -1,
-              'label': a.label,
-              'isAnswer': answers.indexOf(a) == correctAnswer,
-            };
-          }).toList(),
+          pollAnswers,
           endDate,
           question,
           tagged,

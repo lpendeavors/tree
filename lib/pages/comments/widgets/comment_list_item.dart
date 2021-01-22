@@ -1,4 +1,3 @@
-import 'package:cache_image/cache_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -22,7 +21,6 @@ class CommentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(comment.id);
     return GestureDetector(
       onLongPress: () {
         _showCommentOptions();
@@ -226,11 +224,11 @@ class CommentListItem extends StatelessWidget {
                             ),
                           ),
                           if (comment.image.isNotEmpty) ...[
-                            Image(
+                            CachedNetworkImage(
                               height: 50,
                               width: 50,
                               fit: BoxFit.cover,
-                              image: CacheImage(comment.image),
+                              imageUrl: comment.image,
                             ),
                           ],
                         ],

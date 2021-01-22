@@ -11,12 +11,14 @@ class PollData extends Equatable {
   final String answerTitle;
   final bool isAnswer;
   final String label;
+  final List<String> answerResponse;
 
   const PollData({
     this.answerPosition,
     this.answerTitle,
     this.isAnswer,
     this.label,
+    this.answerResponse,
   });
 
   factory PollData.fromJson(Map<String, dynamic> json) =>
@@ -30,6 +32,7 @@ class PollData extends Equatable {
       answerTitle,
       isAnswer,
       label,
+      answerResponse,
     ];
   }
 

@@ -44,6 +44,7 @@ class ReportPostBloc implements BaseBloc {
   void dispose() => _dispose;
 
   factory ReportPostBloc({
+    @required String userId,
     @required String postId,
     @required UserBloc userBloc,
     @required FirestoreReportRepository reportRepository,
@@ -51,6 +52,7 @@ class ReportPostBloc implements BaseBloc {
     ///
     /// Assert
     ///
+    assert(userId != null, 'userId cannot be null');
     assert(postId != null, 'postId cannot be null');
     assert(userBloc != null, 'userBloc cannot be null');
     assert(reportRepository != null, 'reportRepository cannot be null');
@@ -86,6 +88,7 @@ class ReportPostBloc implements BaseBloc {
         .exhaustMap(
           (_) => performSave(
             postId,
+            userId,
             userBloc,
             reportRepository,
             messageSubject.value,
@@ -120,6 +123,7 @@ class ReportPostBloc implements BaseBloc {
 
   static Stream<ReportPostMessage> performSave(
     String postId,
+    String userId,
     UserBloc userBloc,
     FirestoreReportRepository reportRepository,
     String message,
@@ -142,6 +146,9 @@ class ReportPostBloc implements BaseBloc {
           loginState.isChurch,
           postId,
           message,
+          userId,
+          0,
+          null,
         );
         yield ReportPostSuccess();
       } catch (e) {

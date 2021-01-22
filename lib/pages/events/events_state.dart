@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 ///
 enum EventOption { report, edit, delete, changeStatus, updateReach }
 enum EventFilter { none, pending, inactive, completed }
+enum EventStatus { pending, approved, unknown, inactive, complete }
 
 ///
 /// Message

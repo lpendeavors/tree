@@ -24,6 +24,7 @@ class ChatTabsBloc implements BaseBloc {
   ///
   /// Input functions
   ///
+  final Function(String) unsubscribe;
 
   ///
   /// Output streams
@@ -37,6 +38,7 @@ class ChatTabsBloc implements BaseBloc {
 
   ChatTabsBloc._({
     @required this.chatTabsState$,
+    @required this.unsubscribe,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -71,6 +73,8 @@ class ChatTabsBloc implements BaseBloc {
 
     return ChatTabsBloc._(
         chatTabsState$: chatTabsState$,
+        unsubscribe: (roomId) =>
+            _unsubscribe(roomId, userBloc, groupRepository),
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
         });
@@ -94,7 +98,6 @@ class ChatTabsBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      print('uid=${loginState.uid}');
       return Rx.combineLatest5(
           chatRepository.getByUser(uid: loginState.uid),
           groupRepository.getRoomsByUser(loginState.uid),
@@ -109,7 +112,7 @@ class ChatTabsBloc implements BaseBloc {
           (chats, myRooms, defaultRooms, groups, church) {
         return _kInitialChatState.copyWith(
           isLoading: false,
-          messages: _entitiesToMessageItems(chats, loginState.uid),
+          messages: _entitiesToMessageItems(chats, groups, loginState.uid),
           chatRooms: _filterRooms(myRooms, defaultRooms, church, loginState),
           groups: _entitiesToGroupItems(groups, false),
         );
@@ -153,6 +156,7 @@ class ChatTabsBloc implements BaseBloc {
 
   static List<MessageItem> _entitiesToMessageItems(
     List<ChatEntity> entities,
+    List<GroupEntity> groups,
     String uid,
   ) {
     var grouped = groupBy(entities, (e) {
@@ -182,7 +186,7 @@ class ChatTabsBloc implements BaseBloc {
         isMine: entity.ownerId == uid,
         isConversation:
             (!(entity.isRoom ?? false) && entity.parties.length > 2),
-        isGroup: false,
+        isGroup: groups.map((g) => g.id).contains(entity.chatId),
       );
     }).toList();
   }
@@ -229,5 +233,20 @@ class ChatTabsBloc implements BaseBloc {
     all.addAll(rooms);
 
     return all.toSet().toList();
+  }
+
+  static Future<void> _unsubscribe(
+    String roomId,
+    UserBloc userBloc,
+    FirestoreGroupRepository groupRepository,
+  ) async {
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      await groupRepository.leave(
+        roomId,
+        loginState.uid,
+      );
+    }
   }
 }

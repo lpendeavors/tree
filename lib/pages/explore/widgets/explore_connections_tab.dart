@@ -40,7 +40,7 @@ class ExploreConnectionsTab extends StatelessWidget {
             );
           }
 
-          if (data.connectionItems.isEmpty) {
+          if (data.connectionItems.isEmpty && data.requestItems.isEmpty) {
             return Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height - 150,
@@ -134,7 +134,9 @@ class ExploreConnectionsTab extends StatelessWidget {
                     return ConnectionListItem(
                       isRequest: false,
                       connectionItem: data.connectionItems[index],
-                      onRemove: (connection) => userBloc.mute(connection.id),
+                      onRemove: (connection) {
+                        userBloc.mute(connection.id);
+                      },
                       onConnect: bloc.addConnection,
                       onAccept: null,
                       onDecline: null,

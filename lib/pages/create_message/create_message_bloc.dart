@@ -64,6 +64,7 @@ class CreateMessageBloc implements BaseBloc {
 
   factory CreateMessageBloc({
     int type,
+    String groupId,
     @required UserBloc userBloc,
     @required FirestoreChatRepository chatRepository,
     @required FirestoreGroupRepository groupRepository,
@@ -113,7 +114,8 @@ class CreateMessageBloc implements BaseBloc {
             groupRepository,
             chatRepository,
             membersSubject.value,
-            MessageType.values[type],
+            groupId,
+            isLoadingSubject,
           ),
         )
         .publish();
@@ -150,9 +152,22 @@ class CreateMessageBloc implements BaseBloc {
         submitCreateMessage: () => submitCreateMessageSubject.add(null),
         toggleMember: (member) {
           var members = membersSubject.value;
-          members.contains(member)
-              ? members.remove(member)
-              : members.add(member);
+          var isExisting = false;
+          int existingIndex = -1;
+
+          members.forEach((m) {
+            if (m.id == member.id) {
+              isExisting = true;
+              existingIndex = members.indexOf(m);
+            }
+          });
+
+          if (isExisting) {
+            members.remove(members[existingIndex]);
+          } else {
+            members.add(member);
+          }
+
           membersSubject.add(members);
         },
         dispose: () async {
@@ -215,6 +230,7 @@ class CreateMessageBloc implements BaseBloc {
         name: entity.fullName,
         about: entity.aboutMe ?? "I am new to tree",
         image: entity.image ?? "",
+        token: entity.tokenID ?? "",
       );
     }).toList();
   }
@@ -241,28 +257,35 @@ class CreateMessageBloc implements BaseBloc {
     FirestoreGroupRepository groupRepository,
     FirestoreChatRepository chatRepository,
     List<MemberItem> members,
-    MessageType type,
+    String groupId,
+    Sink<bool> isLoading,
   ) async* {
     print('[DEBUG] CreateMessageBloc#performSave');
     LoginState loginState = userBloc.loginState$.value;
 
     if (loginState is LoggedInUser) {
       try {
+        isLoading.add(true);
         var details = await groupRepository.save(
-          null,
+          groupId,
           members,
           true, //  isPrivate
-          true, //  isGroup
+          groupId != null, //  isGroup
           false, // isRoom
           true, //  isConversation
           loginState.uid,
           loginState.isAdmin,
           loginState.isVerified,
-          "",
+          null,
+          null,
+          null,
+          false,
         );
         yield MessageCreateSuccess(details);
       } catch (e) {
         yield MessageCreateError(e);
+      } finally {
+        isLoading.add(false);
       }
     } else {
       yield MessageCreateError(NotLoggedInError());

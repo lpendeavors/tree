@@ -19,7 +19,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-
   @override
   void initState() {
     super.initState();
@@ -32,65 +31,62 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Text('Settings'),
       ),
       body: StreamBuilder<Object>(
-        stream: widget.userBloc.loginState$,
-        initialData: widget.userBloc.loginState$.value,
-        builder: (context, snapshot) {
-          if(!(snapshot.data is LoggedInUser)){
-            backToLogin((){
-              Navigator.pushReplacementNamed(context, '/login');
-            });
-          }
+          stream: widget.userBloc.loginState$,
+          initialData: widget.userBloc.loginState$.value,
+          builder: (context, snapshot) {
+            if (!(snapshot.data is LoggedInUser)) {
+              backToLogin(() {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/getting_started', (route) => false);
+              });
+            }
 
-          return Scrollbar(
-            child: ListView(
-              physics: ClampingScrollPhysics(),
-              padding: EdgeInsets.only(bottom: 60),
-              children: <Widget>[
-                _menuItem(
-                  title: 'Profile Settings',
-                  listItems: [
-                    'Update Personal Information',
-                    'Update Church Information',
-                    'Update Phone Number',
-                  ],
-                  onClicked: (index) =>
-                      Navigator.of(context).pushNamed('/update_info', arguments: index),
-                  alertBackground: false,
-                ),
-                _menuItem(
-                  title: 'App & Settings',
-                  listItems: [
-                    'Notification Settings'
-                  ],
-                  onClicked: (index) =>
-                      Navigator.of(context).pushNamed('/notification_settings'),
-                  alertBackground: false,
-                ),
-                _menuItem(
-                  title: 'App Usage',
-                  listItems: [
-                    'Privacy Policy',
-                    'Terms and Conditions',
-                  ],
-                  onClicked: (index) =>
-                      _showAppPolicy(PolicyType.values[index]),
-                  alertBackground: false,
-                ),
-                _menuItem(
-                    title: 'Account',
+            return Scrollbar(
+              child: ListView(
+                physics: ClampingScrollPhysics(),
+                padding: EdgeInsets.only(bottom: 60),
+                children: <Widget>[
+                  _menuItem(
+                    title: 'Profile Settings',
                     listItems: [
-                      'Deactivate Account',
-                      'Logout',
+                      'Update Personal Information',
+                      'Update Church Information',
+                      'Update Phone Number',
+                    ],
+                    onClicked: (index) => Navigator.of(context)
+                        .pushNamed('/update_info', arguments: index),
+                    alertBackground: false,
+                  ),
+                  _menuItem(
+                    title: 'App & Settings',
+                    listItems: ['Notification Settings'],
+                    onClicked: (index) => Navigator.of(context)
+                        .pushNamed('/notification_settings'),
+                    alertBackground: false,
+                  ),
+                  _menuItem(
+                    title: 'App Usage',
+                    listItems: [
+                      'Privacy Policy',
+                      'Terms and Conditions',
                     ],
                     onClicked: (index) =>
-                        _showLogoutConfirmation(LogoutType.values[index]),
-                    alertBackground: true
-                ),
-              ],
-            ),
-          );
-        }
-      ),
+                        _showAppPolicy(PolicyType.values[index]),
+                    alertBackground: false,
+                  ),
+                  _menuItem(
+                      title: 'Account',
+                      listItems: [
+                        'Deactivate Account',
+                        'Logout',
+                      ],
+                      onClicked: (index) =>
+                          _showLogoutConfirmation(LogoutType.values[index]),
+                      alertBackground: true),
+                ],
+              ),
+            );
+          }),
     );
   }
 
@@ -127,7 +123,7 @@ class _SettingsPageState extends State<SettingsPage> {
             color: Colors.black.withOpacity(0.04),
           ),
           ...List.generate(
-            listItems.length, 
+            listItems.length,
             (index) {
               return InkWell(
                 onTap: () => onClicked(index),
@@ -136,8 +132,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: <Widget>[
                       Container(
                         color: (alertBackground && index == 0)
-                          ? Colors.red
-                          : Colors.white,
+                            ? Colors.red
+                            : Colors.white,
                         alignment: Alignment.centerLeft,
                         padding: EdgeInsets.all(16),
                         child: Row(
@@ -148,15 +144,15 @@ class _SettingsPageState extends State<SettingsPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 color: (alertBackground && index == 0)
-                                  ? Colors.white
-                                  : Colors.black,
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                             ),
                             Icon(
                               Icons.navigate_next,
                               color: (alertBackground && index == 0)
-                                ? Colors.white
-                                : Colors.black.withOpacity(0.4),
+                                  ? Colors.white
+                                  : Colors.black.withOpacity(0.4),
                             ),
                           ],
                         ),
@@ -195,12 +191,11 @@ class _SettingsPageState extends State<SettingsPage> {
     switch (type) {
       case LogoutType.logOut:
         showDialog(
-          context: context,
-          builder: (context){
-            return LogoutModal();
-          }
-        ).then((value){
-          if(value){
+            context: context,
+            builder: (context) {
+              return LogoutModal();
+            }).then((value) {
+          if (value) {
             widget.userBloc.signOut.add(null);
           }
         });

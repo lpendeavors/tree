@@ -35,6 +35,10 @@ ReportEntity _$ReportEntityFromJson(Map<String, dynamic> json) {
     byAdmin: json['byAdmin'] as bool,
     reportReason: json['reportReason'] as String,
     reportType: json['reportType'] as int,
+    groupId: json['groupId'] as String,
+    postId: json['postId'] as String,
+    commentId: json['commentId'] as String,
+    userId: json['userId'] as String,
   );
 }
 
@@ -63,6 +67,10 @@ Map<String, dynamic> _$ReportEntityToJson(ReportEntity instance) =>
       'userImage': instance.userImage,
       'username': instance.username,
       'visibility': instance.visibility,
+      'postId': instance.postId,
+      'groupId': instance.groupId,
+      'commentId': instance.commentId,
+      'userId': instance.userId,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

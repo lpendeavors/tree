@@ -22,6 +22,7 @@ class ChatInput extends StatefulWidget {
 
 class _ChatInputState extends State<ChatInput> {
   TextEditingController gifSearchController = TextEditingController();
+  TextEditingController _chatMessageController = TextEditingController();
   FocusNode _keyboardFocus = FocusNode();
   GiphyCollection gifImages;
 
@@ -100,6 +101,7 @@ class _ChatInputState extends State<ChatInput> {
                             focusNode: _keyboardFocus,
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
+                            controller: _chatMessageController,
                             onChanged: widget.chatRoomBloc.messageChanged,
                             decoration: InputDecoration(
                               hintText: 'Send message...',
@@ -130,8 +132,16 @@ class _ChatInputState extends State<ChatInput> {
                                 gifImages = gifs;
                               });
                             } else {
-                              widget.chatRoomBloc.sendMessage();
+                              if (widget
+                                  .chatRoomBloc.chatMessage$.value.isNotEmpty) {
+                                widget.chatRoomBloc.sendMessage();
+                                widget.chatRoomBloc.gifChanged('');
+                                widget.chatRoomBloc.isGifChanged(false);
+                              }
                               _keyboardFocus.unfocus();
+                              setState(() {
+                                _chatMessageController.text = '';
+                              });
                             }
                           },
                         ),
@@ -169,6 +179,7 @@ class _ChatInputState extends State<ChatInput> {
                             gifImages.data[index].images.original.url,
                           );
                           widget.chatRoomBloc.sendMessage();
+
                           widget.chatRoomBloc.isGifChanged(false);
                         },
                         child: CachedNetworkImage(

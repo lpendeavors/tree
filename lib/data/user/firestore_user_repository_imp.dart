@@ -6,16 +6,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+import 'package:treeapp/util/asset_utils.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../models/old/user_preview_entity.dart';
+import '../../notification_util.dart';
 import '../../util/model_utils.dart';
 
 class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   final FirebaseAuth _firebaseAuth;
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
 
   const FirestoreUserRepositoryImpl(
     this._firebaseAuth,
@@ -24,10 +26,6 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Stream<UserEntity> getUserById({String uid}) => _getUserByUid$(uid);
-
-  @override
-  Stream<List<UserPreviewEntity>> getUserConnections({String uid}) =>
-      _getUserConnections$(uid);
 
   @override
   Stream<List<UserEntity>> get() {
@@ -41,7 +39,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   List<UserEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return UserEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -75,34 +73,44 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<void> registerWithPhone(
-      {FirebaseUser user,
-      String email,
-      String churchName,
-      String firstName,
-      String lastName,
-      String password}) async {
+  Future<void> registerWithPhone({
+    User user,
+    String email,
+    String churchName,
+    String firstName,
+    String lastName,
+    String password,
+  }) async {
     print('[USER_REPO] registerWithPhone phone=${user.phoneNumber}');
     AuthCredential emailCredential =
-        EmailAuthProvider.getCredential(email: email, password: password);
+        EmailAuthProvider.credential(email: email, password: password);
     user.linkWithCredential(emailCredential);
 
+    var userData = UserEntity.createWith({
+      'joined': FieldValue.serverTimestamp(),
+      'phoneNo': user.phoneNumber,
+      'email': email,
+      'churchName': churchName == '' ? null : churchName,
+      'isChurch': churchName == '' ? false : true,
+      'firstName': firstName,
+      'lastName': lastName,
+      'password': password,
+      'fullName': "$firstName $lastName",
+      'uid': user.uid,
+      'searchData': createSearchData(
+          churchName == '' ? '$firstName $lastName' : churchName),
+    });
+
+    if (churchName != null && churchName.isNotEmpty) {
+      userData.addAll({
+        'status': 0,
+      });
+    }
+
     await updateUserData(
-        user.uid,
-        UserEntity.createWith({
-          'joined': FieldValue.serverTimestamp(),
-          'phoneNo': user.phoneNumber,
-          'email': email,
-          'churchName': churchName == '' ? null : churchName,
-          'isChurch': churchName == '' ? false : true,
-          'firstName': firstName,
-          'lastName': lastName,
-          'password': password,
-          'fullName': "$firstName $lastName",
-          'uid': user.uid,
-          'searchData': createSearchData(
-              churchName == null ? '$firstName $lastName' : churchName),
-        }));
+      user.uid,
+      userData,
+    );
 
     if (!(churchName == '')) {
       var churchRoom = <String, dynamic>{
@@ -130,8 +138,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
       await _firestore
           .collection('groupBase')
-          .document('${user.uid}')
-          .setData(churchRoom);
+          .doc('${user.uid}')
+          .set(churchRoom);
     }
 
     print('[USER_REPO] registerWithPhone firebaseUser=$user');
@@ -139,7 +147,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> updateUserData(String uid, [Map<String, dynamic> addition]) {
-    return _firestore.document('userBase/$uid').setData(addition, merge: true);
+    return _firestore
+        .doc('userBase/$uid')
+        .set(addition, SetOptions(merge: true));
   }
 
   @override
@@ -161,7 +171,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Stream<UserEntity> user() {
-    return _firebaseAuth.onAuthStateChanged
+    return _firebaseAuth
+        .authStateChanges()
         .switchMap((user) => _getUserByUid$(user?.uid));
   }
 
@@ -169,28 +180,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     if (uid == null) {
       return null;
     }
-    return _firestore.collection('userBase').document(uid).snapshots().map(
+    return _firestore.collection('userBase').doc(uid).snapshots().map(
         (snapshot) =>
             snapshot.exists ? UserEntity.fromDocumentSnapshot(snapshot) : null);
-  }
-
-  Stream<List<UserPreviewEntity>> _getUserConnections$(String uid) {
-    if (uid == null) {
-      return null;
-    }
-    return _firestore
-        .collection('userBase')
-        .document(uid)
-        .snapshots()
-        .asyncMap((snapshot) {
-      return Future.wait(
-          (snapshot.data['connections'] as List<dynamic>).map((uid) {
-        return _firestore.collection('userBase').document(uid).get().then(
-            (snapshot) => snapshot.exists
-                ? UserPreviewEntity.fromDocumentSnapshot(snapshot)
-                : null);
-      }));
-    });
   }
 
   @override
@@ -217,7 +209,6 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<Tuple2<String, bool>> phoneRegister(String phone) async {
     var completer = Completer<Tuple2<String, bool>>();
 
-    print(phone);
     var exists = await _firestore
         .collection('userBase')
         .where('phoneNo',
@@ -227,8 +218,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
                 .replaceAll("(", "")
                 .replaceAll(")", ""))
         .limit(1)
-        .getDocuments()
-        .then((value) => value.documents.length > 0);
+        .get()
+        .then((value) => value.docs.length > 0);
 
     if (exists) {
       Timer(Duration(milliseconds: 100), () {
@@ -254,9 +245,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<AuthResult> verifyPhoneCode(
+  Future<UserCredential> verifyPhoneCode(
       String smsCode, String verificationId) async {
-    AuthCredential credential = PhoneAuthProvider.getCredential(
+    AuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId, smsCode: smsCode);
 
     return _firebaseAuth
@@ -290,8 +281,13 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   }
 
   @override
-  Future<void> saveNotifications(
-      {String user, bool messages, bool chat, bool group, bool online}) {
+  Future<void> saveNotifications({
+    String user,
+    bool messages,
+    bool chat,
+    bool group,
+    bool online,
+  }) {
     var addition = <String, dynamic>{
       'messageNotification': messages,
       'chatNotification': chat,
@@ -299,50 +295,115 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
       'chatOnlineStatus': online,
     };
 
-    return _firestore.document('userBase/$user').setData(addition, merge: true);
+    return _firestore
+        .doc('userBase/$user')
+        .set(addition, SetOptions(merge: true));
   }
 
   @override
-  Future<void> sendConnectionRequest(String from, String to) {
-    return _firestore.document('userBase/$from').updateData({
-      'sentRequests': FieldValue.arrayUnion([to])
-    }).then((value) {
-      return _firestore.document('userBase/$to').updateData({
+  Future<void> sendConnectionRequest(String from, String to) async {
+    var toUser = await _firestore.doc('userBase/$to').snapshots().first;
+    var toEntity = UserEntity.fromDocumentSnapshot(toUser);
+
+    var fromUser = await _firestore.doc('userBase/$from').snapshots().first;
+    var fromEntity = UserEntity.fromDocumentSnapshot(fromUser);
+    var fromName =
+        fromEntity.isChurch ? fromEntity.churchName : fromEntity.fullName;
+
+    final TransactionHandler transactionHandler = (transaction) async {
+      final notification = <String, dynamic>{
+        'title': 'New Request',
+        'fullName': fromName,
+        'body': 'accepted your friend request',
+        'image': toEntity.image,
+        'ownerId': toEntity.id,
+        'message': '$fromName accepted your friend request'
+      };
+
+      // NotificationService.sendPlainPush(
+      //   title: 'New request',
+      //   body: '$fromName sent you a friend request',
+      //   token: toEntity.pushNotificationToken,
+      //   image: fromEntity.image,
+      // );
+
+      // _firestore.collection('notificationBase').add(notification);
+
+      _firestore.doc('userBase/$from').update({
+        'sentRequests': FieldValue.arrayUnion([to])
+      });
+
+      _firestore.doc('userBase/$to').update({
         'receivedRequests': FieldValue.arrayUnion([from])
       });
+    };
+
+    return _firestore.runTransaction(transactionHandler).then((_) {
+      print('done');
     });
   }
 
   @override
   Future<void> cancelConnectionRequest(String from, String to) {
-    return _firestore.document('userBase/$from').updateData({
+    return _firestore.doc('userBase/$from').update({
       'sentRequests': FieldValue.arrayRemove([to])
     }).then((value) {
-      return _firestore.document('userBase/$to').updateData({
+      return _firestore.doc('userBase/$to').update({
         'receivedRequests': FieldValue.arrayRemove([from])
       });
     });
   }
 
   @override
-  Future<void> acceptConnectionRequest(String from, String to) {
-    return _firestore.document('userBase/$to').updateData({
-      'receivedRequests': FieldValue.arrayRemove([from]),
-      'connections': FieldValue.arrayUnion([from])
-    }).then((value) {
-      return _firestore.document('userBase/$from').updateData({
+  Future<void> acceptConnectionRequest(String from, String to) async {
+    var toUser = await _firestore.doc('userBase/$to').snapshots().first;
+    var toEntity = UserEntity.fromDocumentSnapshot(toUser);
+
+    var fromUser = await _firestore.doc('userBase/$from').snapshots().first;
+    var fromEntity = UserEntity.fromDocumentSnapshot(fromUser);
+    var fromName =
+        fromEntity.isChurch ? fromEntity.churchName : fromEntity.fullName;
+
+    final TransactionHandler transactionHandler = (transaction) async {
+      final notification = <String, dynamic>{
+        'title': 'Friend Request',
+        'fullName': fromName,
+        'body': 'sent you a friend request',
+        'image': fromEntity.image,
+        'ownerId': toEntity.id,
+        'message': '$fromName sent you a friend request',
+        'tokenId': toEntity.id,
+      };
+
+      // NotificationService.sendPlainPush(
+      //   title: 'New request',
+      //   body: '$fromName sent you a friend request',
+      //   token: toEntity.pushNotificationToken,
+      //   image: fromEntity.image,
+      // );
+
+      // _firestore.collection('notificationBase').add(notification);
+
+      _firestore.doc('userBase/$to').update({
+        'receivedRequests': FieldValue.arrayRemove([from]),
+        'connections': FieldValue.arrayUnion([from])
+      });
+
+      _firestore.doc('userBase/$from').update({
         'sentRequests': FieldValue.arrayRemove([to]),
         'connections': FieldValue.arrayUnion([to])
       });
-    });
+    };
+
+    await _firestore.runTransaction(transactionHandler);
   }
 
   @override
   Future<void> disconnect(String from, String to) {
-    return _firestore.document('userBase/$from').updateData({
+    return _firestore.doc('userBase/$from').update({
       'connections': FieldValue.arrayRemove([to])
     }).then((value) {
-      return _firestore.document('userBase/$to').updateData({
+      return _firestore.doc('userBase/$to').update({
         'connections': FieldValue.arrayRemove([from])
       });
     });
@@ -351,29 +412,29 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   @override
   Future<void> uploadImage(String uid, File image) {
     var refId = new Uuid().v1();
-    StorageReference storageReference =
-        FirebaseStorage.instance.ref().child(refId);
-    StorageUploadTask uploadTask = storageReference.putFile(image);
-    return uploadTask.onComplete
-        .then((value) => value.ref.getDownloadURL())
-        .then((url) {
-      _firestore.document('userBase/$uid').updateData({'image': url});
+    Reference storageReference = FirebaseStorage.instance.ref().child(refId);
+    UploadTask uploadTask = storageReference.putFile(image);
+    return uploadTask.then((value) => value.ref.getDownloadURL()).then((url) {
+      _firestore.doc('userBase/$uid').update({'image': url});
     });
   }
 
   @override
   Future<void> approveAccount(String uid) {
-    return _firestore
-        .document('userBase/$uid')
-        .updateData({'isVerified': true});
+    return _firestore.doc('userBase/$uid').update({'isVerified': true});
   }
 
-  Stream<List<UserEntity>> getMyConnections(List<String> connections) {
-    return _firestore
-        .collection('userBase')
-        .where('docId', whereIn: connections)
-        .snapshots()
-        .map(_toEntities);
+  Stream<List<UserEntity>> getMyConnections(List<String> connections) async* {
+    List<UserEntity> users = List();
+    for (var id in connections) {
+      var connection =
+          await _firestore.collection('userBase').doc(id).snapshots().first;
+
+      if (connection.exists)
+        users.add(UserEntity.fromDocumentSnapshot(connection));
+    }
+
+    yield* Stream.value(users);
   }
 
   @override
@@ -387,28 +448,29 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> updateUserPhone(
-      FirebaseUser user, String smsCode, String verificationId) async {
-    var credential = PhoneAuthProvider.getCredential(
+      User user, String smsCode, String verificationId) async {
+    var credential = PhoneAuthProvider.credential(
         verificationId: verificationId, smsCode: smsCode);
-    return await user.updatePhoneNumberCredential(credential);
+    return await user.linkWithCredential(credential);
   }
 
   @override
   Future<List<UserEntity>> runSearchQuery(String query, SearchType searchType) {
+    print(query);
     if (searchType == SearchType.CHURCH) {
       return _firestore
           .collection('userBase')
           .where('searchData', arrayContains: query)
           .where('isChurch', isEqualTo: true)
           .limit(30)
-          .getDocuments()
+          .get()
           .then(_toEntities);
     } else if (searchType == SearchType.USERS) {
       return _firestore
           .collection('userBase')
           .where('searchData', arrayContains: query)
           .limit(30)
-          .getDocuments()
+          .get()
           .then(_toEntities);
     }
   }
@@ -419,11 +481,8 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   ) {
     var entities = <UserEntity>[];
     uids.forEach((id) async {
-      var user = await _firestore
-          .collection('userBase')
-          .document(id)
-          .snapshots()
-          .first;
+      var user =
+          await _firestore.collection('userBase').doc(id).snapshots().first;
       entities.add(UserEntity.fromDocumentSnapshot(user));
     });
 
@@ -432,7 +491,7 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> removeConnection(String uid, String userId) {
-    return _firestore.collection('userBase').document(uid).updateData({
+    return _firestore.collection('userBase').doc(uid).update({
       'connections': FieldValue.arrayRemove([userId]),
     });
   }
@@ -450,14 +509,16 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
   Future<void> saveApproval(
     String userId,
     bool approved,
+    String userToken,
+    String userImage,
   ) {
     if (approved) {
-      return _firestore.collection('userBase').document(userId).setData({
+      return _firestore.collection('userBase').doc(userId).update({
         'isVerified': true,
         'status': 1,
-      }, merge: true);
+      });
     } else {
-      return _firestore.collection('userBase').document(userId).setData({
+      return _firestore.collection('userBase').doc(userId).update({
         'status': 3,
         'reason': '',
       });
@@ -466,15 +527,15 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> deleteUser(String userId) async {
-    await _firestore.document('userBase/$userId').updateData({
-      'deleted': true,
+    await _firestore.doc('userBase/$userId').update({
+      'isDeleted': true,
     });
   }
 
   @override
   Future<void> suspendUser(String userId) async {
-    await _firestore.document('userBase/$userId').updateData({
-      'suspended': true,
+    await _firestore.doc('userBase/$userId').update({
+      'isSuspended': true,
     });
   }
 
@@ -483,8 +544,41 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
     String uid,
     String id,
   ) {
-    return _firestore.document('userBase/$uid').updateData({
+    return _firestore.doc('userBase/$uid').update({
       'muted': FieldValue.arrayUnion([id]),
     });
+  }
+
+  @override
+  Future<void> toggleAdmin(bool admin, String user) async {
+    print(admin);
+    print(user);
+    await _firestore.doc('userBase/$user').update({
+      'isAdmin': admin,
+    }).then((value) => print('saved?'));
+  }
+
+  @override
+  Future<void> updateToken(String userId, String token) async {
+    await _firestore.doc('userBase/$userId').update({
+      'pushNotificationToken': token,
+    });
+  }
+
+  @override
+  Stream<List<UserEntity>> getConnections(String userId) async* {
+    var userDoc = await _firestore.doc('userBase/$userId').snapshots().first;
+    var user = UserEntity.fromDocumentSnapshot(userDoc);
+
+    List<UserEntity> users = List();
+    for (var id in user.connections) {
+      var connection =
+          await _firestore.collection('userBase').doc(id).snapshots().first;
+
+      if (connection.exists)
+        users.add(UserEntity.fromDocumentSnapshot(connection));
+    }
+
+    yield* Stream.value(users);
   }
 }

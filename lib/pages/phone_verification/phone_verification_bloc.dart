@@ -4,8 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:treeapp/user_bloc/user_login_state.dart';
-import '../../user_bloc/user_bloc.dart';
 import '../../pages/phone_verification/phone_verification_state.dart';
 import '../../util/validation_utils.dart';
 import '../../bloc/bloc_provider.dart';
@@ -74,30 +72,31 @@ class PhoneVerificationBloc implements BaseBloc {
     });
 
     final allFieldsAreValid$ = Rx.combineLatest(
-      [
-        codeError$,
-      ],
-      (allErrors) => allErrors.every((error) {
-        print(error);
-        return error == null;
-      }));
+        [
+          codeError$,
+        ],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final message$ = submitLoginController
-      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => update ? sendConfirmationCodeUpdate(
-          verificationCodeController.value,
-          verificationId,
-          userRepository,
-          isLoadingController,
-        ) : sendConfirmationCode(
-          verificationCodeController.value,
-          verificationId,
-          userRepository,
-          isLoadingController,
-        )
-      ).publish();
+        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        .where((isValid) => isValid)
+        .exhaustMap((_) => update
+            ? sendConfirmationCodeUpdate(
+                verificationCodeController.value,
+                verificationId,
+                userRepository,
+                isLoadingController,
+              )
+            : sendConfirmationCode(
+                verificationCodeController.value,
+                verificationId,
+                userRepository,
+                isLoadingController,
+              ))
+        .publish();
 
     ///
     /// Subscriptions and controllers
@@ -134,10 +133,11 @@ class PhoneVerificationBloc implements BaseBloc {
     FirestoreUserRepository userRepository,
     Sink<bool> isLoadingController,
   ) async* {
-    print('[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
+    print(
+        '[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
     try {
       isLoadingController.add(true);
-      AuthResult result = await userRepository.verifyPhoneCode(
+      UserCredential result = await userRepository.verifyPhoneCode(
         code,
         id,
       );
@@ -150,30 +150,29 @@ class PhoneVerificationBloc implements BaseBloc {
   }
 
   static Stream<VerificationMessage> sendConfirmationCodeUpdate(
-      String code,
-      String id,
-      FirestoreUserRepository userRepository,
-      Sink<bool> isLoadingController,
+    String code,
+    String id,
+    FirestoreUserRepository userRepository,
+    Sink<bool> isLoadingController,
   ) async* {
-    print('[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
+    print(
+        '[PHONE_VERIFICATION_BLOC] send confirmation code id=$id, code=$code');
     try {
       isLoadingController.add(true);
       var error;
-      await FirebaseAuth.instance.currentUser().then((value) async {
-        try{
-          await userRepository.updateUserPhone(
-            value,
-            code,
-            id,
-          );
-        }catch(e){
-          error = _getVerificationError(e);
-        }
-      });
+      try {
+        await userRepository.updateUserPhone(
+          FirebaseAuth.instance.currentUser,
+          code,
+          id,
+        );
+      } catch (e) {
+        error = _getVerificationError(e);
+      }
 
-      if(error == null){
+      if (error == null) {
         yield PhoneVerificationSuccess(null);
-      }else{
+      } else {
         yield error;
       }
     } finally {
@@ -185,7 +184,6 @@ class PhoneVerificationBloc implements BaseBloc {
     if (error is PlatformException) {
       switch (error.code) {
         case 'ERROR_INVALID_VERIFICATION_ID':
-
       }
     }
     return PhoneVerificationError(UnknownVerificationError(error));

@@ -6,7 +6,7 @@ import '../../models/old/chat_entity.dart';
 import '../../data/chat/firestore_chat_repository.dart';
 
 class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
 
   const FirestoreChatRepositoryImpl(
     this._firestore,
@@ -21,7 +21,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
   Stream<ChatEntity> getById({String chatId}) {
     return _firestore
         .collection('chatBase')
-        .document(chatId)
+        .doc(chatId)
         .snapshots()
         .map((snapshot) => ChatEntity.fromDocumentSnapshot(snapshot));
   }
@@ -48,7 +48,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
   }
 
   List<ChatEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return ChatEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -58,6 +58,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     return _firestore
         .collection('chatBase')
         .where('chatId', isEqualTo: roomId)
+        .orderBy('time', descending: true)
         .limit(30)
         .snapshots()
         .map(_toEntities);
@@ -101,7 +102,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
       'showDate': showDate,
       'timeUpdated': DateTime.now().millisecondsSinceEpoch,
       'tokenID': token,
-      'type': 0,
+      'type': gif.isNotEmpty ? 2 : 0,
       'uid': ownerId,
       'updatedAt': FieldValue.serverTimestamp(),
       'userImage': '',
@@ -111,7 +112,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
       'createdAt': FieldValue.serverTimestamp(),
     };
 
-    if (isGif) {
+    if (gif.isNotEmpty) {
       newMessage.addAll({
         'imagePath': gif,
       });
@@ -125,7 +126,7 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
     var batch = _firestore.batch();
 
     messageIds.forEach((id) {
-      return batch.updateData(_firestore.document('chatBase/$id'), {
+      return batch.update(_firestore.doc('chatBase/$id'), {
         'readBy': FieldValue.arrayUnion([uid]),
       });
     });
@@ -135,6 +136,6 @@ class FirestoreChatRepositoryImpl implements FirestoreChatRepository {
 
   @override
   Future<void> delete(String messageId) async {
-    await _firestore.document('chatBase/$messageId').delete();
+    await _firestore.doc('chatBase/$messageId').delete();
   }
 }

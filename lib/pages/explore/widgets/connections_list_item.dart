@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import '../../../util/asset_utils.dart';
 import '../../../widgets/image_holder.dart';
 import '../explore_state.dart';
@@ -56,7 +53,7 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
-                            widget.connectionItem.name,
+                            widget.connectionItem.name ?? "",
                             maxLines: 2,
                             style: TextStyle(
                               fontSize: 16,
@@ -171,53 +168,68 @@ class _ConnectionListItemState extends State<ConnectionListItem> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Flexible(
-                          child: RaisedButton(
-                            color: Theme.of(context).primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            onPressed: () {
-                              if (widget.isRequest) {
-                                widget.onAccept(widget.connectionItem);
-                              } else {
-                                widget.onConnect(widget.connectionItem);
-                              }
-                            },
+                        if (widget.connectionItem.requested)
+                          Flexible(
                             child: Center(
                               child: Text(
-                                widget.isRequest ? 'Accept' : 'Connect',
+                                'Request pending',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          )
+                        else ...[
+                          Flexible(
+                            child: RaisedButton(
+                              color: Theme.of(context).primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              onPressed: () {
+                                if (widget.isRequest) {
+                                  widget.onAccept(widget.connectionItem);
+                                } else {
+                                  widget.onConnect(widget.connectionItem);
+                                }
+                              },
+                              child: Center(
+                                child: Text(
+                                  widget.isRequest ? 'Accept' : 'Connect',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 10),
-                        Flexible(
-                          child: RaisedButton(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            onPressed: () {
-                              if (widget.isRequest) {
-                                widget.onDecline(widget.connectionItem);
-                              } else {
-                                widget.onRemove(widget.connectionItem);
-                              }
-                            },
-                            child: Center(
-                              child: Text(
-                                widget.isRequest ? 'Decline' : 'Remove',
-                                style: TextStyle(
-                                  fontSize: 12,
+                          SizedBox(width: 10),
+                          Flexible(
+                            child: RaisedButton(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              onPressed: () {
+                                if (widget.isRequest) {
+                                  widget.onDecline(widget.connectionItem);
+                                } else {
+                                  widget.onRemove(widget.connectionItem);
+                                }
+                              },
+                              child: Center(
+                                child: Text(
+                                  widget.isRequest ? 'Decline' : 'Remove',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],

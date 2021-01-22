@@ -9,7 +9,6 @@ part of 'report_post.dart';
 ReportPost _$ReportPostFromJson(Map<String, dynamic> json) {
   return ReportPost(
     tokenID: json['tokenID'] as String,
-    isChurch: json['isChurch'] as bool,
     updatedAt: timestampFromJson(json['updatedAt'] as Timestamp),
     createdAt: timestampFromJson(json['createdAt'] as Timestamp),
     byAdmin: json['byAdmin'] as bool,
@@ -31,14 +30,10 @@ ReportPost _$ReportPostFromJson(Map<String, dynamic> json) {
     gender: json['gender'] as int,
     postMessage: json['postMessage'] as String,
     parties: (json['parties'] as List)?.map((e) => e as String)?.toList(),
-    isReported: json['isReported'] as bool,
     isHostPrivate: json['isHostPrivate'] as int,
-    fileUploaded: json['fileUploaded'] as bool,
     fileToUpload:
         (json['fileToUpload'] as List)?.map((e) => e as String)?.toList(),
     type: json['type'] as int,
-    isAdmin: json['isAdmin'] as bool,
-    isHidden: json['isHidden'] as bool,
     tags: (json['tags'] as List)?.map((e) => e as String)?.toList(),
   );
 }
@@ -52,15 +47,10 @@ Map<String, dynamic> _$ReportPostToJson(ReportPost instance) =>
       'docId': instance.docId,
       'email': instance.email,
       'fileToUpload': instance.fileToUpload,
-      'fileUploaded': instance.fileUploaded,
       'fullName': instance.fullName,
       'gender': instance.gender,
       'image': instance.image,
-      'isAdmin': instance.isAdmin,
-      'isChurch': instance.isChurch,
-      'isHidden': instance.isHidden,
       'isHostPrivate': instance.isHostPrivate,
-      'isReported': instance.isReported,
       'ownerId': instance.ownerId,
       'parties': instance.parties,
       'phoneNo': instance.phoneNo,

@@ -1,5 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import '../explore_state.dart';
 
 class PostListItem extends StatefulWidget {
@@ -24,11 +24,13 @@ class _PostListItemState extends State<PostListItem> {
             arguments: widget.postItem.id,
           );
         },
-        child: Image(
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-          image: CacheImage(widget.postItem.image),
-        ),
+        child: widget.postItem.type == 2
+            ? Container()
+            : CachedNetworkImage(
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                imageUrl: widget.postItem.image,
+              ),
       );
     } else {
       return Container();

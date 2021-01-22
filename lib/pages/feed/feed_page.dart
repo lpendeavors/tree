@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:treeapp/pages/events/events_state.dart';
+import 'package:treeapp/pages/post_share/post_share_page.dart';
 import 'package:treeapp/pages/settings/settings_state.dart';
 import '../../util/asset_utils.dart';
 import '../../widgets/curved_scaffold.dart';
@@ -15,12 +16,12 @@ import './feed_state.dart';
 
 class FeedPage extends StatefulWidget {
   final UserBloc userBloc;
-  final FeedBloc feedBloc;
+  final FeedBloc Function() initFeedBloc;
 
   const FeedPage({
     Key key,
     @required this.userBloc,
-    @required this.feedBloc,
+    @required this.initFeedBloc,
   }) : super(key: key);
 
   @override
@@ -38,12 +39,12 @@ class _FeedPageState extends State<FeedPage>
   void initState() {
     super.initState();
 
-    _feedBloc = widget.feedBloc;
+    _feedBloc = widget.initFeedBloc();
     _subscriptions = [
       widget.userBloc.loginState$
           .where((state) => state is Unauthenticated)
           .listen((_) =>
-              Navigator.popUntil(context, ModalRoute.withName('/login'))),
+              Navigator.pushReplacementNamed(context, '/getting_started')),
       _feedBloc.message$.listen(_showMessageResult),
       _feedBloc.deleteMessage$.listen(_showMessageResult),
       _feedBloc.unconnectMessage$.listen(_showMessageResult),
@@ -165,7 +166,8 @@ class _FeedPageState extends State<FeedPage>
                     Navigator.of(context).pushNamed('/notifications');
                   },
                 ),
-                if (_feedBloc.feedListState$.value.hasNotifications)
+                if (_feedBloc.feedListState$.value != null &&
+                    _feedBloc.feedListState$.value.hasNotifications)
                   Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: IgnorePointer(
@@ -244,8 +246,34 @@ class _FeedPageState extends State<FeedPage>
                       _feedBloc.unconnect(data.feedItems[index].userId),
                   reportPost: () => Navigator.of(context).pushNamed(
                     '/report_post',
-                    arguments: data.feedItems[index].id,
+                    arguments: <String, String>{
+                      'post': data.feedItems[index].id,
+                      'user':
+                          (widget.userBloc.loginState$.value as LoggedInUser)
+                              .uid,
+                    },
                   ),
+                  share: (comment) async {
+                    if (comment) {
+                      String message = await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) {
+                          return PostSharePage(
+                            feedItem: data.feedItems[index],
+                            loginState: widget.userBloc.loginState$.value,
+                          );
+                        }),
+                      );
+                      _feedBloc.share(data.feedItems[index], message);
+                    } else {
+                      _feedBloc.share(data.feedItems[index], null);
+                    }
+                  },
+                  answerPoll: (answerIndex) async {
+                    _feedBloc.answerPoll(
+                      data.feedItems[index].id,
+                      answerIndex,
+                    );
+                  },
                 );
               },
             );

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import './email_login_bloc.dart';
 import './phone_login_bloc.dart';
 import './login_state.dart';
@@ -94,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                     GestureDetector(
                       onTap: () {
                         showDialog(
-                        context: context,
+                          context: context,
                           builder: (BuildContext context) {
                             return CountryCodeModal();
                           },
@@ -102,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                           if (country != null) {
                             var selectedCountry = country as Country;
                             _phoneLoginBloc
-                              .countryCodeChanged(selectedCountry.phoneCode);
+                                .countryCodeChanged(selectedCountry.phoneCode);
                           }
                         });
                       },
@@ -266,24 +265,23 @@ class _LoginPageState extends State<LoginPage> {
     if (_emailLoginBloc.isLoading$.value) {
       final s = S.of(context);
       final exitSignIn = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(s.exit_login),
-            content: Text(s.exit_login_message),
-            actions: <Widget>[
-              FlatButton(
-                child: Text(s.no),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              FlatButton(
-                child: Text(s.exit),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-            ],
-          );
-        }
-      );
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(s.exit_login),
+              content: Text(s.exit_login_message),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text(s.no),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                FlatButton(
+                  child: Text(s.exit),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          });
       return exitSignIn ?? false;
     }
     return true;
@@ -298,9 +296,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _returnedFromVerification(Object message){
+  void _returnedFromVerification(Object message) {
     final s = S.of(context);
-    if(message is PhoneVerificationSuccess){
+    if (message is PhoneVerificationSuccess) {
       _showSnackBar(s.login_success);
       Navigator.popUntil(context, ModalRoute.withName('/'));
     }
@@ -310,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
     final s = S.of(context);
     if (message is LoginMessageSuccess) {
       _showSnackBar(s.login_success);
-      Navigator.popUntil(context, ModalRoute.withName('/'));
+      Navigator.pushReplacementNamed(context, '/');
     }
     if (message is LoginPhoneSuccess) {
       _showSnackBar(s.phone_login_success);
@@ -322,7 +320,7 @@ class _LoginPageState extends State<LoginPage> {
     if (message is LoginMessageError) {
       final error = message.error;
       print('[DEBUG] error=$error');
-      
+
       if (error is NetworkError) {
         _showSnackBar(s.network_error);
       }

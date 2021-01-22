@@ -89,6 +89,9 @@ class CommentEntity extends Equatable implements FirebaseModel {
 
   Map<String, dynamic> toJson() => _$CommentEntityToJson(this);
 
+  factory CommentEntity.fromJson(Map<String, dynamic> json) =>
+      _$CommentEntityFromJson(json);
+
   @override
   List get props {
     return [

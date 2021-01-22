@@ -1,26 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../notification_util.dart';
 import './firestore_request_repository.dart';
 import '../../models/old/request_entity.dart';
 import '../../models/old/user_entity.dart';
 
 class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
 
   const FirestoreRequestRepositoryImpl(
     this._firestore,
   );
 
   @override
-  Stream<RequestEntity> requestById({String requestId}) {
+  Stream<RequestEntity> requestById({
+    String requestId,
+  }) {
     return _firestore
         .collection('requestBase')
-        .document(requestId)
+        .doc(requestId)
         .snapshots()
         .map((snapshot) => RequestEntity.fromDocumentSnapshot(snapshot));
   }
 
   @override
-  Stream<List<UserEntity>> requestsByOwner({String uid}) {
+  Stream<List<UserEntity>> requestsByOwner({
+    String uid,
+  }) {
     return _firestore
         .collection('requestBase')
         .where('ownerId', isEqualTo: uid)
@@ -29,28 +34,22 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
   }
 
   @override
-  Stream<List<UserEntity>> requestsByUser({List<String> uids}) async* {
-    List<String> userIds = await _firestore
-        .collection('requestBase')
-        .where('personId', whereIn: uids)
-        .getDocuments()
-        .then((requests) {
-      return requests.documents.map((doc) => doc['ownerId'] as String).toList();
-    });
+  Stream<List<UserEntity>> requestsByUser({
+    List<String> uids,
+  }) async* {
+    List<UserEntity> users = List();
+    for (var u in uids) {
+      var request =
+          await _firestore.collection('userBase').doc(u).snapshots().first;
 
-    if (userIds.isEmpty) {
-      yield* Stream.value([]);
-    } else {
-      yield* _firestore
-          .collection('userBase')
-          .where('uid', whereIn: userIds)
-          .snapshots()
-          .map(_toEntities);
+      users.add(UserEntity.fromDocumentSnapshot(request));
     }
+
+    yield* Stream.value(users);
   }
 
   List<UserEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return UserEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -71,27 +70,40 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
         'body': 'accepted your friend request',
         'image': image,
         'ownerId': toId,
-        'message': '$toName accepted your friend request',
-        'tokenId': token,
+        'message': '$fromName accepted your friend request'
       };
 
-      _firestore.collection('notificationBase').add(notification);
+      var user = await _firestore.doc('userBase/$toId').snapshots().first;
+      var userEntity = UserEntity.fromDocumentSnapshot(user);
 
-      _firestore.collection('userBase').document(toId).updateData({
+      // NotificationService.sendPlainPush(
+      //   title: 'Request accepted',
+      //   body: '$fromName accepted your friend request',
+      //   token: userEntity.pushNotificationToken,
+      //   image: image,
+      // );
+
+      // _firestore.collection('notificationBase').add(notification);
+
+      _firestore.collection('userBase').doc(toId).update({
         'connections': FieldValue.arrayUnion([fromId]),
       });
 
-      _firestore.collection('userBase').document(toId).updateData({
-        'receivedRequests': FieldValue.arrayRemove([fromId]),
+      _firestore.collection('userBase').doc(fromId).update({
+        'connections': FieldValue.arrayUnion([toId]),
       });
 
-      _firestore.collection('userBase').document(fromId).updateData({
-        'sentRequests': FieldValue.arrayRemove([toId]),
+      _firestore.collection('userBase').doc(fromId).update({
+        'receivedRequests': FieldValue.arrayRemove([toId]),
+      });
+
+      _firestore.collection('userBase').doc(toId).update({
+        'sentRequests': FieldValue.arrayRemove([fromId]),
       });
     };
 
     return _firestore.runTransaction(transactionHandler).then((_) {
-      // Send push notification
+      print('done');
     });
   }
 
@@ -103,11 +115,19 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
     String fromId,
     String image,
     String token,
-  }) {
+  }) async {
+    var toUser = await _firestore.doc('userBase/$toId').snapshots().first;
+    var toEntity = UserEntity.fromDocumentSnapshot(toUser);
+
+    var fromUser = await _firestore.doc('userBase/$fromId').snapshots().first;
+    var fromEntity = UserEntity.fromDocumentSnapshot(fromUser);
+    var fromName =
+        fromEntity.isChurch ? fromEntity.churchName : fromEntity.fullName;
+
     final TransactionHandler transactionHandler = (transaction) async {
       final request = <String, dynamic>{
-        'ownerId': fromId,
-        'personId': toId,
+        'ownerId': toId,
+        'personId': fromId,
         'image': image,
         'pushNotificationToken': token,
         'createdAt': FieldValue.serverTimestamp(),
@@ -126,20 +146,25 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
 
       _firestore.collection('requestBase').add(request);
 
-      _firestore.collection('notificationBase').add(notification);
+      // _firestore.collection('notificationBase').add(notification);
 
-      _firestore.collection('userBase').document(toId).updateData({
+      _firestore.collection('userBase').doc(toId).update({
         'receivedRequests': FieldValue.arrayUnion([fromId]),
       });
 
-      _firestore.collection('userBase').document(fromId).updateData({
+      _firestore.collection('userBase').doc(fromId).update({
         'sentRequests': FieldValue.arrayUnion([toId]),
       });
     };
 
-    return _firestore.runTransaction(transactionHandler).then((_) {
-      // Send push notification
-    });
+    await _firestore.runTransaction(transactionHandler);
+
+    // NotificationService.sendPlainPush(
+    //   title: 'New request',
+    //   body: '$fromName sent you a friend request',
+    //   token: toEntity.pushNotificationToken,
+    //   image: fromEntity.image,
+    // );
   }
 
   @override
@@ -150,31 +175,42 @@ class FirestoreRequestRepositoryImpl implements FirestoreRequestRepository {
     String fromId,
     String image,
     String token,
-  }) {
+  }) async {
     final TransactionHandler transactionHandler = (transaction) async {
       final notification = <String, dynamic>{
         'title': 'Request declined',
-        'fullName': toName,
+        'fullName': fromName,
         'body': 'declined your friend request',
         'image': image,
         'ownerId': toId,
-        'message': '$toName declined your friend request',
+        'message': '$fromName declined your friend request',
         'tokenId': token,
       };
 
-      _firestore.collection('notificationBase').add(notification);
+      // _firestore.collection('notificationBase').add(notification);
 
-      _firestore.collection('userBase').document(toId).updateData({
-        'receivedRequests': FieldValue.arrayRemove([fromId]),
+      _firestore.collection('userBase').doc(toId).update({
+        'sentRequests': FieldValue.arrayRemove([fromId]),
       });
 
-      _firestore.collection('userBase').document(fromId).updateData({
-        'sentRequests': FieldValue.arrayRemove([toId]),
+      _firestore.collection('userBase').doc(fromId).update({
+        'receivedRequests': FieldValue.arrayRemove([toId]),
       });
+
+      var request = await _firestore
+          .collection('requestBase')
+          .where('ownerId', isEqualTo: toId)
+          .where('personId', isEqualTo: fromId)
+          .snapshots()
+          .map(_toEntities)
+          .first;
+
+      if (request.isNotEmpty) {
+        var requestId = request[0].documentId;
+        await _firestore.collection('requestBase').doc(requestId).delete();
+      }
     };
 
-    return _firestore.runTransaction(transactionHandler).then((_) {
-      // Send push notification
-    });
+    await _firestore.runTransaction(transactionHandler);
   }
 }

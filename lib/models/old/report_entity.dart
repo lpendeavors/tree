@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/comment_entity.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import 'report_post.dart';
@@ -34,6 +35,10 @@ class ReportEntity extends Equatable implements FirebaseModel {
   final String userImage;
   final String username;
   final int visibility;
+  final String postId;
+  final String groupId;
+  final String commentId;
+  final String userId;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -72,6 +77,10 @@ class ReportEntity extends Equatable implements FirebaseModel {
     this.byAdmin,
     this.reportReason,
     this.reportType,
+    this.groupId,
+    this.postId,
+    this.commentId,
+    this.userId,
   });
 
   String get id => this.documentId;
@@ -109,6 +118,10 @@ class ReportEntity extends Equatable implements FirebaseModel {
       byAdmin,
       reportReason,
       reportType,
+      groupId,
+      postId,
+      commentId,
+      userId,
     ];
   }
 

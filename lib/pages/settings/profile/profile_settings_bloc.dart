@@ -440,6 +440,7 @@ class ProfileSettingsBloc implements BaseBloc {
       'aboutMe': aboutMe,
       'city': city,
       'businessAddress': address,
+      'churchName': churchName,
     };
 
     if (ministryType != null) {
@@ -464,14 +465,21 @@ class ProfileSettingsBloc implements BaseBloc {
       data['parentChurch'] = churchParent;
     }
 
-    if (church != null) {
+    if (church != null &&
+        churchId.toLowerCase() == church.id.substring(0, 7).toLowerCase()) {
       data['churchID'] = church.id;
       data['churchInfo'] = {
         'churchName': church.churchName,
         'churchAddress': church.churchAddress,
         'churchDenomination': church.churchDenomination
       };
-    } else if (unknownChurch != null) {
+    } else if (church != null &&
+        churchId.toLowerCase() != church.id.substring(0, 7).toLowerCase()) {
+      yield SettingsMessageError("Invalid church code");
+      return;
+    }
+
+    if (unknownChurch != null) {
       data['churchInfo'] = {
         'churchName': unknownChurch,
         'churchAddress': null,
@@ -490,17 +498,23 @@ class ProfileSettingsBloc implements BaseBloc {
     if (state is LoggedInUser) {
       if (saveType == 0 || saveType == 3) {
         data['isProfileUpdated'] = true;
-        data['searchData'] = createSearchData('$firstName $lastName');
       }
 
       if (saveType == 1 || saveType == 4) {
         data['isChurchUpdated'] = true;
-        data['searchData'] = createSearchData('$churchName');
+      }
+
+      if (state.isChurch) {
+        data['searchData'] = createSearchData(churchName);
+      } else {
+        data['searchData'] = createSearchData('$firstName $lastName');
       }
 
       await userRepository.updateUserData(state.uid, data);
-    }
 
-    yield SettingsMessageSuccess();
+      yield SettingsMessageSuccess();
+    } else {
+      yield SettingsMessageError(SettingsNotLoggedInError());
+    }
   }
 }

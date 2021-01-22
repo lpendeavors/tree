@@ -48,15 +48,17 @@ class PerformSearch extends StatefulWidget {
   final FirestoreUserRepository userRepository;
   final FirestoreEventRepository eventRepository;
   final FirestoreGroupRepository groupRepository;
+  final UserBloc userBloc;
 
-  const PerformSearch(
-      {Key key,
-      this.searchType = SearchType.USERS,
-      this.searchFilter,
-      @required this.userRepository,
-      @required this.eventRepository,
-      @required this.groupRepository})
-      : super(key: key);
+  const PerformSearch({
+    Key key,
+    this.searchType = SearchType.USERS,
+    this.searchFilter,
+    @required this.userBloc,
+    @required this.userRepository,
+    @required this.eventRepository,
+    @required this.groupRepository,
+  }) : super(key: key);
 
   @override
   _PerformSearchState createState() => _PerformSearchState();
@@ -75,6 +77,7 @@ class _PerformSearchState extends State<PerformSearch> {
     super.initState();
 
     _searchBloc = SearchBloc(
+        userBloc: widget.userBloc,
         userRepository: widget.userRepository,
         eventRepository: widget.eventRepository,
         groupRepository: widget.groupRepository,
@@ -466,6 +469,34 @@ class _PerformSearchState extends State<PerformSearch> {
                             );
                           }
                         },
+                        onLongPress: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (context) {
+                              var alreadyAdmin = item.isAdmin ?? false;
+                              var adminAction = alreadyAdmin
+                                  ? 'Remove this user from'
+                                  : 'Add this user to';
+                              return AlertDialog(
+                                title: Text('Admin'),
+                                content: Text('$adminAction admins?'),
+                                actions: [
+                                  FlatButton(
+                                    child: Text('Confirm'),
+                                    onPressed: () {
+                                      if (alreadyAdmin) {
+                                        _searchBloc.removeAdmin(item.uid);
+                                      } else {
+                                        _searchBloc.makeAdmin(item.uid);
+                                      }
+                                      Navigator.of(context).pop();
+                                    },
+                                  )
+                                ],
+                              );
+                            },
+                          );
+                        },
                         child: Container(
                           padding: EdgeInsets.all(15),
                           child: Row(
@@ -507,12 +538,14 @@ class _PerformSearchState extends State<PerformSearch> {
                                                   size: 14,
                                                 )),
                                               ),
-                                              CachedNetworkImage(
-                                                width: 60,
-                                                height: 60,
-                                                imageUrl: item.image ?? "",
-                                                fit: BoxFit.cover,
-                                              ),
+                                              if (item.image != null &&
+                                                  item.image.isNotEmpty)
+                                                CachedNetworkImage(
+                                                  width: 60,
+                                                  height: 60,
+                                                  imageUrl: item.image ?? "",
+                                                  fit: BoxFit.cover,
+                                                ),
                                             ],
                                           ),
                                         ),

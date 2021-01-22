@@ -1,13 +1,10 @@
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class PreviewImage extends StatelessWidget {
   final String imageURL;
 
-  PreviewImage({
-    Key key,
-    this.imageURL
-  }) : super(key: key);
+  PreviewImage({Key key, this.imageURL}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +15,8 @@ class PreviewImage extends StatelessWidget {
         children: <Widget>[
           Align(
             alignment: Alignment.center,
-            child: Image(
-              image: CacheImage(imageURL),
+            child: CachedNetworkImage(
+              imageUrl: imageURL,
             ),
           ),
           SafeArea(

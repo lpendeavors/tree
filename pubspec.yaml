@@ -1,5 +1,5 @@
 name: treeapp
-description: A new Flutter project.
+description: A Christian Social Network
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 6.0.0+2
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -31,19 +31,19 @@ dependencies:
   collection: ^1.14.11
   equatable: ^1.1.0
   rxdart: ^0.23.1
-  firebase_core: ^0.4.4+3
-  firebase_auth: ^0.15.2
+  firebase_core: ^0.5.2
+  firebase_auth: ^0.18.3
   firebase_analytics: ^5.0.9
-  firebase_storage: ^3.0.8
+  firebase_storage: ^5.0.1
   firebase_messaging: ^6.0.9
-  cloud_firestore: ^0.13.4+2
+  cloud_firestore: ^0.14.3
+  cloud_functions: ^0.7.0+1
   firebase_dynamic_links: ^0.5.0+11
-  firebase_crashlytics: ^0.1.3+3
+  firebase_crashlytics: ^0.2.3
   json_serializable: ^3.0.0
   shared_preferences: ^0.5.6+3
   built_value: ^7.0.0
   distinct_value_connectable_stream: ^1.0.3+1
-  cache_image: ^1.0.5
   flutter_masked_text: ^0.8.0
   webview_flutter: ^0.3.22+1
   country_code_picker: ^1.3.11
@@ -62,7 +62,10 @@ dependencies:
   image_cropper: ^1.2.3
   google_map_location_picker: ^3.3.1
   cached_network_image: ^2.2.0+1
-  video_player: ^0.10.11+1
+  #video_player: ^0.10.11+1
+  cached_video_player: ^1.0.3
+  flutter_local_notifications: ^3.0.2
+
   geolocator: 5.3.2+2
   map_launcher: ^0.6.0
   giphy_client: ^0.2.0

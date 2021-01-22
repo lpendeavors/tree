@@ -1,4 +1,4 @@
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../generated/l10n.dart';
 import '../../../widgets/empty_list_view.dart';
@@ -70,6 +70,7 @@ class _ChatRoomsState extends State<ChatRooms> {
             itemBuilder: (context, index) {
               var nonDefaultRooms =
                   data.chatRooms.where((r) => !r.isDefault).toList();
+
               return _chatRoomItem(
                 room: data.chatRooms[index],
                 color: data.chatRooms[index].isDefault
@@ -109,8 +110,8 @@ class _ChatRoomsState extends State<ChatRooms> {
                     Align(
                       alignment: Alignment.center,
                       child: room.image != null
-                          ? Image(
-                              image: CacheImage(room.image),
+                          ? CachedNetworkImage(
+                              imageUrl: room.image,
                               height: 150,
                               width: MediaQuery.of(context).size.width,
                               alignment: Alignment.center,

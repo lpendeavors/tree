@@ -3,6 +3,12 @@ import 'package:meta/meta.dart';
 import 'package:treeapp/pages/feed/feed_state.dart';
 
 ///
+/// Enums
+///
+enum PostType { feed, quiz, poll, group, ad, user }
+enum ChatOption { update, viewMembers, delete, suspend, mute, leave }
+
+///
 /// Message
 ///
 abstract class ChatRoomDetailsMessage {
@@ -99,17 +105,23 @@ class ChatRoomDetailsItem extends Equatable {
 @immutable
 class ChatRoomMemberItem extends Equatable {
   final String id;
+  final String name;
   final String image;
+  final bool isAdmin;
 
   const ChatRoomMemberItem({
     @required this.id,
+    @required this.name,
     @required this.image,
+    @required this.isAdmin,
   });
 
   @override
   List get props => [
         id,
         image,
+        isAdmin,
+        name,
       ];
 
   @override

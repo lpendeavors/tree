@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
-import 'package:treeapp/pages/perform_search/perform_search_state.dart';
 import '../../models/old/user_preview_entity.dart';
 import 'package:tuple/tuple.dart';
 import '../../models/old/user_entity.dart';
@@ -39,7 +38,7 @@ abstract class FirestoreUserRepository {
 
   Future<Tuple2<String, bool>> phoneRegister(String phone);
 
-  Future<AuthResult> verifyPhoneCode(
+  Future<UserCredential> verifyPhoneCode(
     String verificationId,
     String smsCode,
   );
@@ -50,24 +49,26 @@ abstract class FirestoreUserRepository {
     @required String password,
   });
 
-  Future<void> registerWithPhone(
-      {@required FirebaseUser user,
-      @required String email,
-      @required String churchName,
-      @required String firstName,
-      @required String lastName,
-      @required String password});
+  Future<void> registerWithPhone({
+    @required User user,
+    @required String email,
+    @required String churchName,
+    @required String firstName,
+    @required String lastName,
+    @required String password,
+  });
 
   Future<void> updateUserData(String uid, [Map<String, dynamic> addition]);
 
   Future<void> updateUserPhone(
-      @required FirebaseUser user, String smsCode, String verificationId);
+    User user,
+    String smsCode,
+    String verificationId,
+  );
 
   Future<void> sendPasswordResetEmail(String email);
 
   Stream<UserEntity> getUserById({@required String uid});
-
-  Stream<List<UserPreviewEntity>> getUserConnections({@required String uid});
 
   Future<void> sendConnectionRequest(String from, String to);
 
@@ -103,6 +104,8 @@ abstract class FirestoreUserRepository {
   Future<void> saveApproval(
     String userId,
     bool approved,
+    String userToken,
+    String userImage,
   );
 
   Future<void> suspendUser(String userId);
@@ -110,4 +113,10 @@ abstract class FirestoreUserRepository {
   Future<void> deleteUser(String userId);
 
   Future<void> mute(String userId, String id);
+
+  Future<void> toggleAdmin(bool admin, String user);
+
+  Future<void> updateToken(String userId, String token);
+
+  Stream<List<UserEntity>> getConnections(String userId);
 }

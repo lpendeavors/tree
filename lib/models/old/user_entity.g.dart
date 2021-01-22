@@ -75,6 +75,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     muted: (json['muted'] as List)?.map((e) => e as String)?.toList(),
     isChurchUpdated: json['isChurchUpdated'] as bool,
     isProfileUpdated: json['isProfileUpdated'] as bool,
+    isSuspended: json['isSuspended'] as bool,
   );
 }
 
@@ -135,6 +136,7 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'muted': instance.muted,
       'isChurchUpdated': instance.isChurchUpdated,
       'isProfileUpdated': instance.isProfileUpdated,
+      'isSuspended': instance.isSuspended,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

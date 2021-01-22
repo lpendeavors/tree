@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:popup_menu/popup_menu.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:treeapp/data/notification/firestore_notification_repository.dart';
 import 'package:treeapp/pages/home_tabs/home_tabs_bloc.dart';
 import '../../data/request/firestore_request_repository.dart';
@@ -58,10 +62,15 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   GlobalKey _popupMenuKey = GlobalKey();
   HomeTabsBloc _homeTabsBloc;
 
+  bool _hasShownSuspsended = false;
+
   @override
   void initState() {
     super.initState();
     _homeTabsBloc = widget.initHomeTabsBloc();
+    _setupNotifications();
+    _setupFbMessaging();
+    _hasShownSuspsended = false;
   }
 
   @override
@@ -72,6 +81,11 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var user = widget.userBloc.loginState$.value;
+    if (user is LoggedInUser) {
+      _checkSuspended(context);
+    }
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -94,7 +108,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
         children: <Widget>[
           FeedPage(
             userBloc: widget.userBloc,
-            feedBloc: FeedBloc(
+            initFeedBloc: () => FeedBloc(
               userBloc: widget.userBloc,
               postRepository: widget.postRepository,
               notificationRepository: widget.notificationRepository,
@@ -103,7 +117,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           ExploreTabsPage(
             userBloc: widget.userBloc,
-            exploreBloc: ExploreBloc(
+            initExploreBloc: () => ExploreBloc(
               userBloc: widget.userBloc,
               postRepository: widget.postRepository,
               userRepository: widget.userRepository,
@@ -112,7 +126,7 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
           ),
           ChatTabsPage(
             userBloc: widget.userBloc,
-            chatBloc: ChatTabsBloc(
+            initChatBloc: () => ChatTabsBloc(
               userBloc: widget.userBloc,
               groupRepository: widget.groupRepository,
               chatRepository: widget.chatRepository,
@@ -243,46 +257,53 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
 
   void _showAddPopupMenu(BuildContext context) {
     var menu = PopupMenu(
-        context: context,
-        backgroundColor: Theme.of(context).primaryColor,
-        lineColor: Colors.white.withOpacity(0.5),
-        items: [
-          MenuItem(
-              title: 'Post',
-              textStyle: _menuItemTextStyle(),
-              image: _menuItemIconImage(post_icon)),
-          MenuItem(
-            title: 'Poll',
+      context: context,
+      backgroundColor: Theme.of(context).primaryColor,
+      lineColor: Colors.white.withOpacity(0.5),
+      items: [
+        MenuItem(
+            title: 'Post',
             textStyle: _menuItemTextStyle(),
-            image: _menuItemIconImage(poll_icon),
-          ),
-          MenuItem(
-            title: 'Event',
-            textStyle: _menuItemTextStyle(),
-            image: _menuItemIconImage(event_icon),
-          ),
-        ],
-        onClickMenu: (item) {
-          switch (item.menuTitle) {
-            case 'Post':
-              Navigator.of(context).pushNamed(
-                '/edit_post',
-                arguments: null,
-              );
-              break;
-            case 'Poll':
-              Navigator.of(context).pushNamed(
-                '/edit_poll',
-                arguments: null,
-              );
-              break;
-            case 'Event':
-              Navigator.of(context).pushNamed(
-                '/event_types',
-              );
-              break;
-          }
-        });
+            image: _menuItemIconImage(post_icon)),
+        MenuItem(
+          title: 'Poll',
+          textStyle: _menuItemTextStyle(),
+          image: _menuItemIconImage(poll_icon),
+        ),
+        MenuItem(
+          title: 'Event',
+          textStyle: _menuItemTextStyle(),
+          image: _menuItemIconImage(event_icon),
+        ),
+      ],
+      onClickMenu: (item) {
+        switch (item.menuTitle) {
+          case 'Post':
+            Navigator.of(context).pushNamed(
+              '/edit_post',
+              arguments: <String, dynamic>{
+                "postId": null,
+                "groupId": null,
+              },
+            );
+            break;
+          case 'Poll':
+            Navigator.of(context).pushNamed(
+              '/edit_poll',
+              arguments: <String, dynamic>{
+                "postId": null,
+                "groupId": null,
+              },
+            );
+            break;
+          case 'Event':
+            Navigator.of(context).pushNamed(
+              '/event_types',
+            );
+            break;
+        }
+      },
+    );
 
     menu.show(widgetKey: _popupMenuKey);
   }
@@ -311,4 +332,165 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
       _currentPage = page;
     });
   }
+
+  void _checkSuspended(BuildContext context) async {
+    var user = widget.userBloc.loginState$.value as LoggedInUser;
+    if (user.isSuspended && !_hasShownSuspsended) {
+      _hasShownSuspsended = true;
+      Future.delayed(Duration.zero, () async {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return WillPopScope(
+              onWillPop: () async => false,
+              child: AlertDialog(
+                title: Container(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Image.asset(
+                        ic_launcher,
+                        height: 20,
+                        width: 20,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Flexible(
+                        flex: 1,
+                        child: Text(
+                          'Tree',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.black.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 15),
+                    ],
+                  ),
+                ),
+                content: Container(
+                  height: 100,
+                  width: double.infinity,
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'You account has been suspended. Contact support@yourtreeapp.com',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      });
+    }
+  }
+
+  void _setupNotifications() async {
+    var notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification:
+            (int id, String title, String body, String payload) async {
+      print(payload);
+    });
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    notificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {});
+  }
+
+  void _setupFbMessaging() async {
+    var fbMessaging = FirebaseMessaging();
+    fbMessaging.configure(
+      onMessage: notificationOnMessage,
+      onLaunch: notificationOnLaunch,
+      onResume: notificationOnResume,
+      onBackgroundMessage: onBackgroundMessage,
+    );
+    fbMessaging.setAutoInitEnabled(true);
+    // fbMessaging.subscribeToTopic('all');
+    fbMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+    fbMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {});
+    Stream<String> fcmStream = fbMessaging.onTokenRefresh;
+
+    fcmStream.listen((token) async {
+      if (token != null) {
+        widget.userBloc.updateToken(token);
+      }
+    });
+
+    fbMessaging.getToken().then((String token) async {
+      if (token != null) {
+        widget.userBloc.updateToken(token);
+      }
+    });
+  }
+}
+
+Future onBackgroundMessage(Map<String, dynamic> message) async {
+  print("Maugost B ${message}");
+  await showNotification(message);
+}
+
+Future notificationOnMessage(Map<String, dynamic> message) async {
+  print("Maugost M ${message}");
+  await showNotification(message);
+}
+
+Future notificationOnResume(Map<String, dynamic> message) async {
+  print("Maugost R ${message}");
+  await showNotification(message);
+}
+
+Future notificationOnLaunch(Map<String, dynamic> message) async {
+  print("Maugost L ${message}");
+  await showNotification(message);
+}
+
+showNotification(Map<String, String> notification) async {
+  var notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  var android = AndroidNotificationDetails(
+    'your channel id',
+    'your channel name',
+    'your channel description',
+    importance: Importance.max,
+    priority: Priority.high,
+    channelShowBadge: true,
+    ticker: 'ticker',
+  );
+
+  var ios = IOSNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+  );
+
+  var platformChannelSpecifics = NotificationDetails(
+    android: android,
+    iOS: ios,
+  );
+
+  await notificationsPlugin.show(
+    0,
+    notification['title'],
+    notification['body'],
+    platformChannelSpecifics,
+    payload: jsonEncode(notification['payload']),
+  );
 }

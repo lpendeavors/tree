@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../bloc/bloc_provider.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../pages/register/register_state.dart';
@@ -26,7 +27,7 @@ class PhoneRegisterBloc implements BaseBloc {
   final void Function(String) lastNameChanged;
   final void Function(String) passwordChanged;
   final void Function(String) confirmPasswordChanged;
-  final void Function(AuthResult) verificationResultChanged;
+  final void Function(UserCredential) verificationResultChanged;
   final void Function(bool) submitUser;
 
   ///
@@ -81,7 +82,8 @@ class PhoneRegisterBloc implements BaseBloc {
     final lastNameController = BehaviorSubject<String>.seeded('');
     final passwordController = BehaviorSubject<String>.seeded('');
     final confirmPasswordController = BehaviorSubject<String>.seeded('');
-    final verificationResultController = BehaviorSubject<AuthResult>.seeded(null);
+    final verificationResultController =
+        BehaviorSubject<UserCredential>.seeded(null);
     final submitRegisterController = PublishSubject<void>();
     final submitUserController = BehaviorSubject<bool>();
     final isLoadingController = BehaviorSubject<bool>.seeded(false);
@@ -119,65 +121,68 @@ class PhoneRegisterBloc implements BaseBloc {
       return const PasswordMustBeAtLeast6Characters();
     });
 
-    final confirmPasswordError$ = Rx.combineLatest([
-      passwordController,
-      confirmPasswordController
-    ], (values) {
-      if(values[0] == values[1]){return null;}
+    final confirmPasswordError$ = Rx.combineLatest(
+        [passwordController, confirmPasswordController], (values) {
+      if (values[0] == values[1]) {
+        return null;
+      }
       return const PasswordsMustMatch();
     });
 
     final allFieldsAreValid$ = Rx.combineLatest(
-    [
-      phoneError$,
-    ],
-    (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
+        [
+          phoneError$,
+        ],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final allInfoIsValid$ = Rx.combineLatest(
-    [
-      emailError$,
-      churchNameError$,
-      firstNameError$,
-      lastNameError$,
-      passwordError$,
-      confirmPasswordError$
-    ],
-    (allErrors) => allErrors.every((error) {
-      print(error);
-      return error == null;
-    }));
-
+        [
+          emailError$,
+          churchNameError$,
+          firstNameError$,
+          lastNameError$,
+          passwordError$,
+          confirmPasswordError$
+        ],
+        (allErrors) => allErrors.every((error) {
+              print(error);
+              return error == null;
+            }));
 
     final message$ = submitRegisterController
-      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => sendVerificationCode(
-          countryCodeController.value,
-          phoneController.value,
-          userRepository,
-          isLoadingController,
-        ),
-      ).publish();
+        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        .where((isValid) => isValid)
+        .exhaustMap(
+          (_) => sendVerificationCode(
+            countryCodeController.value,
+            phoneController.value,
+            userRepository,
+            isLoadingController,
+          ),
+        )
+        .publish();
 
     final saveResult$ = submitUserController
-      .withLatestFrom(allInfoIsValid$, (isChurch, bool isValid){print('$isChurch $isValid'); return !isChurch || isValid;})
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => saveUserToDatabase(
-          userRepository,
-          verificationResultController.value,
-          emailController.value,
-          churchNameController.value,
-          firstNameController.value,
-          lastNameController.value,
-          passwordController.value,
-          submitUserController.value
-        ),
-      ).publish();
+        .withLatestFrom(allInfoIsValid$, (isChurch, bool isValid) {
+          print('$isChurch $isValid');
+          return !isChurch || isValid;
+        })
+        .where((isValid) => isValid)
+        .exhaustMap(
+          (_) => saveUserToDatabase(
+              userRepository,
+              verificationResultController.value,
+              emailController.value,
+              churchNameController.value,
+              firstNameController.value,
+              lastNameController.value,
+              passwordController.value,
+              submitUserController.value),
+        )
+        .publish();
 
     final subscriptions = <StreamSubscription>[
       message$.connect(),
@@ -223,18 +228,22 @@ class PhoneRegisterBloc implements BaseBloc {
 
   static Stream<RegisterMessage> saveUserToDatabase(
       FirestoreUserRepository userRepository,
-      AuthResult authResult,
+      UserCredential authResult,
       String email,
       String churchName,
       String firstName,
       String lastName,
       String password,
-      bool isChurch
-  ) async* {
-    try{
-      if(authResult != null) {
-        if (isChurch && (email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))){
-          print('$isChurch ${(email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))}');
+      bool isChurch) async* {
+    try {
+      if (authResult != null) {
+        if (isChurch &&
+            (email.contains("aol") ||
+                email.contains("gmail") ||
+                email.contains("yahoo") ||
+                email.contains("hotmail"))) {
+          print(
+              '$isChurch ${(email.contains("aol") || email.contains("gmail") || email.contains("yahoo") || email.contains("hotmail"))}');
           yield RegisterMessageError(InvalidBusinessEmailError());
           return;
         }
@@ -263,8 +272,8 @@ class PhoneRegisterBloc implements BaseBloc {
     print('[DEBUG] send verification code');
     try {
       isLoadingSink.add(true);
-      Tuple2<String, bool> verification = await userRepository.phoneRegister(
-          "$countryCode$phone");
+      Tuple2<String, bool> verification =
+          await userRepository.phoneRegister("$countryCode$phone");
       if (verification.item2) {
         yield const RegisterMessageSuccess();
       } else {
@@ -281,10 +290,9 @@ class PhoneRegisterBloc implements BaseBloc {
     print(error);
     if (error is PlatformException) {
       switch (error.code) {
-
       }
     }
-    if(error == "already_in_use"){
+    if (error == "already_in_use") {
       return RegisterMessageError(PhoneInUseError());
     }
     return RegisterMessageError(UnknownRegisterError(error));

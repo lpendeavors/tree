@@ -53,6 +53,10 @@ PostEntity _$PostEntityFromJson(Map<String, dynamic> json) {
     muted: (json['muted'] as List)?.map((e) => e as String)?.toList(),
     pollDuration:
         (json['pollDuration'] as List)?.map((e) => e as int)?.toList(),
+    sharedPost: json['sharedPost'] == null
+        ? null
+        : SharedPost.fromJson(json['sharedPost'] as Map<String, dynamic>),
+    isShared: json['isShared'] as bool,
   );
 }
 
@@ -94,6 +98,8 @@ Map<String, dynamic> _$PostEntityToJson(PostEntity instance) =>
       'likes': instance.likes,
       'muted': instance.muted,
       'pollDuration': instance.pollDuration,
+      'sharedPost': instance.sharedPost?.toJson(),
+      'isShared': instance.isShared,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

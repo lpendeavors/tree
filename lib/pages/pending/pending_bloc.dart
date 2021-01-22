@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 import '../../data/user/firestore_user_repository.dart';
 import '../../models/old/user_entity.dart';
 import '../../bloc/bloc_provider.dart';
@@ -20,7 +21,7 @@ class PendingBloc implements BaseBloc {
   /// Input functions
   ///
   Function(bool) approveUser;
-  Function(String) completeApproval;
+  Function(Tuple3<String, String, String>) completeApproval;
 
   ///
   /// Output streams
@@ -56,24 +57,24 @@ class PendingBloc implements BaseBloc {
     ///
     /// Stream controllers
     ///
-    final approveUser = PublishSubject<String>();
+    final approveUser = PublishSubject<Tuple3<String, String, String>>();
     final approveSubject = BehaviorSubject<bool>.seeded(false);
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
     ///
     /// Streams
     ///
-    final message$ = approveUser
-        .exhaustMap(
-          (user) => saveApproval(
-            userBloc,
-            userRepository,
-            user,
-            approveSubject.value,
-            isLoadingSubject,
-          ),
-        )
-        .publish();
+    final message$ = approveUser.exhaustMap((userInfo) {
+      return saveApproval(
+        userBloc,
+        userRepository,
+        userInfo.item1,
+        userInfo.item2,
+        userInfo.item3,
+        approveSubject.value,
+        isLoadingSubject,
+      );
+    }).publish();
 
     final pendingState$ = _getPending(
       userBloc,
@@ -160,6 +161,7 @@ class PendingBloc implements BaseBloc {
         churchAddress: entity.churchAddress ?? '',
         city: entity.city ?? '',
         churchName: entity.churchName ?? '',
+        token: entity.pushNotificationToken,
       );
     }).toList();
   }
@@ -180,6 +182,8 @@ class PendingBloc implements BaseBloc {
     UserBloc userBloc,
     FirestoreUserRepository userRepository,
     String userId,
+    String userToken,
+    String userImage,
     bool approved,
     Sink<bool> isLoading,
   ) async* {
@@ -192,6 +196,8 @@ class PendingBloc implements BaseBloc {
         await userRepository.saveApproval(
           userId,
           approved,
+          userToken,
+          userImage,
         );
         yield PendingApprovalSuccess();
       } catch (e) {

@@ -51,4 +51,8 @@ abstract class FirestoreEventRepository {
   Stream<List<EventEntity>> getCompleted();
 
   Future<void> approveEvent(String eventId);
+
+  Future<void> deleteEvent(String eventId);
+
+  Future<void> updateStatus(String eventId, int status);
 }

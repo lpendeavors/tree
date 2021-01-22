@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
+import 'package:treeapp/pages/post_share/post_share_page.dart';
 import '../../util/permission_utils.dart';
 import '../../widgets/modals/profile_image_modal.dart';
 import '../../widgets/modals/cancel_request_modal.dart';
@@ -121,36 +122,6 @@ class _ProfilePageState extends State<ProfilePage>
           ],
         ),
       ),
-      // print(data.profile);
-
-      // if (data.isLoading) {
-      //   return Center(
-      //     child: CircularProgressIndicator(),
-      //   );
-      // }
-
-      // if (data.error != null) {
-      //   print(data.error);
-      //   return Center(
-      //     child: Text(
-      //       S.of(context).error_occurred,
-      //     ),
-      //   );
-      // }
-
-      // return Scaffold(
-      //   body: SingleChildScrollView(
-      //     physics: BouncingScrollPhysics(),
-      //     child: Column(
-      //       children: <Widget>[
-      //         _appBar(data),
-      //         _profile(data),
-      //         _recentPostList(data)
-      //       ],
-      //     ),
-      //   ),
-      // );
-      // }
     );
   }
 
@@ -273,8 +244,8 @@ class _ProfilePageState extends State<ProfilePage>
                                 Icons.more_vert,
                                 color: Colors.white,
                               ),
-                              onPressed: () {
-                                showDialog(
+                              onPressed: () async {
+                                await showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
                                       var isAdmin = (widget.userBloc.loginState$
@@ -286,13 +257,57 @@ class _ProfilePageState extends State<ProfilePage>
                                         if (isAdmin) "Suspend User",
                                         if (isAdmin) "Delete User"
                                       ]);
-                                    }).then((value) {
+                                    }).then((value) async {
+                                  print(value);
                                   if (value == "Suspend User") {
-                                    _profileBloc.suspendUser();
+                                    await showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Suspend User'),
+                                          content: Text('Are you sure?'),
+                                          actions: [
+                                            FlatButton(
+                                              child: Text('Confirm'),
+                                              onPressed: () {
+                                                _profileBloc.suspendUser(
+                                                    data.profile.id);
+                                                Navigator.of(context).pop();
+                                              },
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    );
                                   }
 
                                   if (value == "Delete User") {
-                                    _profileBloc.deleteUser();
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: Text('Delete User'),
+                                          content: Text('Are you sure?'),
+                                          actions: [
+                                            FlatButton(
+                                              child: Text('Confirm'),
+                                              onPressed: () {
+                                                _profileBloc.deleteUser(
+                                                    data.profile.id);
+                                                Navigator.of(context).pop();
+                                              },
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+
+                                  if (value == "Report User") {
+                                    Navigator.of(context).pushNamed(
+                                      '/report_user',
+                                      arguments: data.profile.id,
+                                    );
                                   }
                                 });
                               },
@@ -592,31 +607,6 @@ class _ProfilePageState extends State<ProfilePage>
     bool received = profileItem.received;
     bool sent = profileItem.sent;
 
-    if (received) {
-      return RaisedButton(
-        onPressed: () {
-          _profileBloc.acceptConnectRequest();
-        },
-        color: Theme.of(context).primaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: <Widget>[
-            Icon(Icons.check, color: Colors.white, size: 15),
-            SizedBox(width: 5),
-            Text(
-              "Respond",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.white),
-            ),
-          ],
-        ),
-      );
-    }
-
     if (connected) {
       return RaisedButton(
         onPressed: () {
@@ -638,6 +628,31 @@ class _ProfilePageState extends State<ProfilePage>
             SizedBox(width: 5),
             Text(
               "UnConnect",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (received) {
+      return RaisedButton(
+        onPressed: () {
+          _profileBloc.acceptConnectRequest();
+        },
+        color: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.check, color: Colors.white, size: 15),
+            SizedBox(width: 5),
+            Text(
+              "Respond",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -1154,15 +1169,45 @@ class _ProfilePageState extends State<ProfilePage>
               admin:
                   (widget.userBloc.loginState$.value as LoggedInUser).isAdmin,
               feedItem: data.feedItems[index],
-              unconnect: null,
-              deletePost: null,
-              reportPost: null,
+              unconnect: () =>
+                  _profileBloc.unconnect(data.feedItems[index].userId),
+              deletePost: () =>
+                  _profileBloc.deletePost(data.feedItems[index].id),
+              reportPost: () => Navigator.of(context).pushNamed(
+                '/report_post',
+                arguments: <String, String>{
+                  'user':
+                      (widget.userBloc.loginState$.value as LoggedInUser).uid,
+                  'post': data.feedItems[index].id,
+                },
+              ),
               likeFeedItem: (item) {
                 if (!data.feedItems[index].isMine) {
                   _profileBloc.postToLikeChanged(item);
                   _profileBloc.likePostChanged(!data.feedItems[index].isLiked);
                   _profileBloc.saveLikeValue();
                 }
+              },
+              share: (comment) async {
+                if (comment) {
+                  String message = await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return PostSharePage(
+                        feedItem: data.feedItems[index],
+                        loginState: widget.userBloc.loginState$.value,
+                      );
+                    }),
+                  );
+                  _profileBloc.share(data.feedItems[index], message);
+                } else {
+                  _profileBloc.share(data.feedItems[index], null);
+                }
+              },
+              answerPoll: (answerIndex) async {
+                _profileBloc.answerPoll(
+                  data.feedItems[index].id,
+                  answerIndex,
+                );
               },
             );
           })

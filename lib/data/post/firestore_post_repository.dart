@@ -1,3 +1,5 @@
+import 'package:treeapp/pages/feed/feed_state.dart';
+
 import '../../models/old/post_entity.dart';
 import 'package:meta/meta.dart';
 
@@ -19,6 +21,20 @@ abstract class FirestorePostRepository {
   Stream<List<PostEntity>> postsForCollage();
 
   Stream<List<PostEntity>> getByAdmin();
+
+  Future<void> sharePost(
+    String postId,
+    bool byAdmin,
+    String ownerId,
+    String ownerName,
+    String ownerEmail,
+    String ownerImage,
+    String ownerToken,
+    bool ownerVerified,
+    bool isChurch,
+    String message,
+    List<String> parties,
+  );
 
   Future<Map<String, String>> savePost(
     String postId,
@@ -62,6 +78,12 @@ abstract class FirestorePostRepository {
     String question,
     List<String> tags,
     int pollType,
+  );
+
+  Future<void> answerPoll(
+    String pollId,
+    int answerIndex,
+    String userId,
   );
 
   Future<void> likeOrUnlikePost({

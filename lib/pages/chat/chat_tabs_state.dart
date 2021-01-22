@@ -3,6 +3,11 @@ import 'package:meta/meta.dart';
 import '../../models/old/group_member.dart';
 
 ///
+/// Enum
+///
+enum ChatRoomOption { mute, delete, report }
+
+///
 /// Error
 ///
 @immutable

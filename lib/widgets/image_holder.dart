@@ -35,7 +35,7 @@ class ImageHolder extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (image.isNotEmpty) ...[
+                if (image != null && image.isNotEmpty) ...[
                   CachedNetworkImage(
                     imageUrl: image,
                     height: size,

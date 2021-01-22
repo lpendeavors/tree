@@ -1,14 +1,14 @@
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
 
-/// 
+///
 /// Enums
-/// 
-enum MessageType { group, conversation }
+///
+enum MessageType { group, conversation, edit }
 
-/// 
+///
 /// MessageCreateMessage
-/// 
+///
 @immutable
 abstract class MessageCreateMessage {}
 
@@ -52,10 +52,10 @@ class CreateMessageState extends Equatable {
 
   @override
   List get props => [
-    myConnections,
-    isLoading,
-    error,
-  ];
+        myConnections,
+        isLoading,
+        error,
+      ];
 
   @override
   bool get stringify => true;
@@ -66,19 +66,25 @@ class MemberItem extends Equatable {
   final String id;
   final String image;
   final String name;
+  final bool groupAdmin;
+  final String token;
 
   const MemberItem({
     @required this.id,
     @required this.image,
     @required this.name,
+    @required this.groupAdmin,
+    @required this.token,
   });
 
   @override
   List get props => [
-    id,
-    image,
-    name,
-  ];
+        id,
+        image,
+        name,
+        groupAdmin,
+        token,
+      ];
 
   @override
   bool get stringify => true;
@@ -90,21 +96,24 @@ class ConnectionItem extends Equatable {
   final String name;
   final String about;
   final String image;
+  final String token;
 
   const ConnectionItem({
     @required this.id,
     @required this.name,
     @required this.about,
     @required this.image,
+    @required this.token,
   });
 
   @override
   List get props => [
-    id,
-    name,
-    about,
-    image,
-  ];
+        id,
+        name,
+        about,
+        image,
+        token,
+      ];
 
   @override
   bool get stringify => true;

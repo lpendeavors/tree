@@ -4,7 +4,7 @@ import '../../models/old/notification_entity.dart';
 
 class FirestoreNotificationRepositoryImpl
     implements FirestoreNotificationRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
 
   const FirestoreNotificationRepositoryImpl(this._firestore);
 
@@ -21,7 +21,7 @@ class FirestoreNotificationRepositoryImpl
   Stream<NotificationEntity> getById({String notificationId}) {
     return _firestore
         .collection('notificationBase')
-        .document(notificationId)
+        .doc(notificationId)
         .snapshots()
         .map((snapshot) => NotificationEntity.fromDocumentSnapshot(snapshot));
   }
@@ -33,7 +33,7 @@ class FirestoreNotificationRepositoryImpl
   }
 
   List<NotificationEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return NotificationEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -54,7 +54,7 @@ class FirestoreNotificationRepositoryImpl
     var batch = _firestore.batch();
 
     notificationIds.forEach((id) {
-      batch.updateData(_firestore.document('notificationBase/$id'), {
+      batch.update(_firestore.doc('notificationBase/$id'), {
         'readBy': FieldValue.arrayUnion([uid]),
       });
     });

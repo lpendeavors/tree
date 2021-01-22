@@ -36,6 +36,7 @@ class _EditPostPageState extends State<EditPostPage> {
 
   var _postMessageController = TextEditingController();
   var _editLoaded = false;
+  var _mediaChanged = false;
 
   @override
   void initState() {
@@ -112,7 +113,7 @@ class _EditPostPageState extends State<EditPostPage> {
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Text(
-                      'POST',
+                      existingPost.postItem != null ? 'SAVE' : 'POST',
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -190,45 +191,46 @@ class _EditPostPageState extends State<EditPostPage> {
                           ],
                         ),
                       ),
-                      // if (data.postItem != null) ...[
-                      // if (data.postItem.tagged.isNotEmpty) ...[
-                      //   Container(
-                      //     alignment: Alignment.centerLeft,
-                      //     padding: EdgeInsets.all(5),
-                      //     margin: EdgeInsets.all(8),
-                      //     decoration: BoxDecoration(
-                      //       color: Colors.grey[50],
-                      //       borderRadius: BorderRadius.circular(15),
-                      //       border: Border.all(
-                      //         width: 0.5,
-                      //         color: Colors.black.withOpacity(0.1),
-                      //       ),
-                      //     ),
-                      //     child: Wrap(
-                      //       spacing: 5,
-                      //       alignment: WrapAlignment.start,
-                      //       crossAxisAlignment: WrapCrossAlignment.start,
-                      //       runAlignment: WrapAlignment.start,
-                      //       children: List.generate(
-                      //         data.postItem.tagged.length,
-                      //         (index) {
-                      //           return Chip(
-                      //             avatar: ImageHolder(
-                      //               size: 30,
-                      //               image: '',
-                      //             ),
-                      //             label: Text(
-                      //               data.postItem.tagged[index],
-                      //               style: TextStyle(
-                      //                 fontSize: 10,
-                      //               ),
-                      //             ),
-                      //           );
-                      //         },
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ],
+                      if (existingPost.postItem != null) ...[
+                        if (existingPost.postItem.tagged.isNotEmpty) ...[
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.all(5),
+                            margin: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Wrap(
+                              spacing: 5,
+                              alignment: WrapAlignment.start,
+                              crossAxisAlignment: WrapCrossAlignment.start,
+                              runAlignment: WrapAlignment.start,
+                              children: List.generate(
+                                existingPost.postItem.tagged.length,
+                                (index) {
+                                  return Chip(
+                                    avatar: ImageHolder(
+                                      size: 30,
+                                      image: '',
+                                    ),
+                                    label: Text(
+                                      existingPost.postItem.tagged[index],
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                       Divider(height: 25),
                       StreamBuilder<List<String>>(
                           stream: _editPostBloc.postMedia$,
@@ -266,7 +268,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                               var mediaType =
                                                   snapshot.data ?? null;
 
-                                              if (mediaType - 1 ==
+                                              if (mediaType ==
                                                   PostMediaType.image.index) {
                                                 return Container(
                                                   margin: EdgeInsets.only(
@@ -295,7 +297,8 @@ class _EditPostPageState extends State<EditPostPage> {
                                                       color: Colors.grey
                                                           .withOpacity(0.5),
                                                       image: DecorationImage(
-                                                        image: _editLoaded
+                                                        image: (_editLoaded &&
+                                                                !_mediaChanged)
                                                             ? NetworkImage(
                                                                 media[0],
                                                               )
@@ -311,7 +314,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                                 );
                                               }
 
-                                              if (mediaType - 1 ==
+                                              if (mediaType ==
                                                   PostMediaType.video.index) {
                                                 return Container(
                                                   margin: EdgeInsets.only(
@@ -350,7 +353,7 @@ class _EditPostPageState extends State<EditPostPage> {
                                                             image:
                                                                 DecorationImage(
                                                               image: FileImage(
-                                                                File(media[0]),
+                                                                File(thumbnail),
                                                               ),
                                                             ),
                                                           ),
@@ -384,7 +387,46 @@ class _EditPostPageState extends State<EditPostPage> {
                                                         );
                                                       }
 
-                                                      return Container();
+                                                      return Container(
+                                                        height: 300,
+                                                        width: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .width,
+                                                        margin:
+                                                            EdgeInsets.all(2),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.grey
+                                                              .withOpacity(0.5),
+                                                        ),
+                                                        child: Center(
+                                                          child: Container(
+                                                            height: 50,
+                                                            width: 50,
+                                                            child: Icon(
+                                                              Icons.play_arrow,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Colors
+                                                                  .black
+                                                                  .withOpacity(
+                                                                      0.8),
+                                                              border:
+                                                                  Border.all(
+                                                                color: Colors
+                                                                    .white,
+                                                                width: 1.5,
+                                                              ),
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
                                                     },
                                                   ),
                                                 );
@@ -431,7 +473,6 @@ class _EditPostPageState extends State<EditPostPage> {
                               return Container();
                             }
                           }),
-                      // ],
                     ],
                   ),
                 ),
@@ -463,6 +504,8 @@ class _EditPostPageState extends State<EditPostPage> {
                             _editPostBloc.postMediaChanged([cropped.path]);
                             _editPostBloc.postMediaTypeChanged(
                                 PostMediaType.image.index);
+
+                            setState(() => _mediaChanged = true);
                           }
                         },
                         child: Row(
@@ -517,6 +560,8 @@ class _EditPostPageState extends State<EditPostPage> {
                             _editPostBloc.postVideoThumbnailChanged(thumbnail);
                             _editPostBloc.postMediaTypeChanged(
                                 PostMediaType.video.index);
+
+                            setState(() => _mediaChanged = true);
                           }
                         },
                         child: Row(
@@ -599,6 +644,8 @@ class _EditPostPageState extends State<EditPostPage> {
   }
 
   void _updateFields(FeedPostItem post) {
+    print('post=$post');
+
     _editPostBloc.postMessageChanged(post.message);
     _postMessageController.text = post.message;
 
@@ -614,7 +661,7 @@ class _EditPostPageState extends State<EditPostPage> {
       _editPostBloc.postMediaChanged(post.videos);
     }
 
-    if (post.tagged.isNotEmpty) {
+    if ((post.tagged ?? List<String>()).isNotEmpty) {
       // _editPostBloc.taggedChanged(post.tagged);
     }
   }

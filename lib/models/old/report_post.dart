@@ -16,15 +16,15 @@ class ReportPost extends Equatable {
   final String docId;
   final String email;
   final List<String> fileToUpload;
-  final bool fileUploaded;
+  // final bool fileUploaded;
   final String fullName;
   final int gender;
   final String image;
-  final bool isAdmin;
-  final bool isChurch;
-  final bool isHidden;
+  // final bool isAdmin;
+  // final bool isChurch;
+  // final bool isHidden;
   final int isHostPrivate;
-  final bool isReported;
+  // final bool isReported;
   final String ownerId;
   final List<String> parties;
   final String phoneNo;
@@ -52,7 +52,7 @@ class ReportPost extends Equatable {
 
   const ReportPost({
     this.tokenID,
-    this.isChurch,
+    // this.isChurch,
     this.updatedAt,
     this.createdAt,
     this.byAdmin,
@@ -74,17 +74,18 @@ class ReportPost extends Equatable {
     this.gender,
     this.postMessage,
     this.parties,
-    this.isReported,
+    // this.isReported,
     this.isHostPrivate,
-    this.fileUploaded,
+    // this.fileUploaded,
     this.fileToUpload,
     this.type,
-    this.isAdmin,
-    this.isHidden,
+    // this.isAdmin,
+    // this.isHidden,
     this.tags,
   });
 
-  factory ReportPost.fromJson(Map<String, dynamic> json) => _$ReportPostFromJson(json);
+  factory ReportPost.fromJson(Map<String, dynamic> json) =>
+      _$ReportPostFromJson(json);
   Map<String, dynamic> toJson() => _$ReportPostToJson(this);
 
   @override
@@ -97,15 +98,15 @@ class ReportPost extends Equatable {
       docId,
       email,
       fileToUpload,
-      fileUploaded,
+      // fileUploaded,
       fullName,
       gender,
       image,
-      isAdmin,
-      isChurch,
-      isHidden,
+      // isAdmin,
+      // isChurch,
+      // isHidden,
       isHostPrivate,
-      isReported,
+      // isReported,
       ownerId,
       parties,
       phoneNo,

@@ -2,8 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_text_view/smart_text_view.dart';
+import 'package:treeapp/models/old/poll_data.dart';
+import 'package:treeapp/models/old/user_entity.dart';
+import 'package:treeapp/pages/feed/widgets/shared_post_item.dart';
 import 'package:treeapp/util/asset_utils.dart';
 import 'package:treeapp/widgets/image_holder.dart';
+import 'package:cached_video_player/cached_video_player.dart';
 import '../../comments/comments_panel.dart';
 import '../../comments/comments_bloc.dart';
 import '../../../dependency_injection.dart';
@@ -19,6 +23,8 @@ class FeedListItem extends StatefulWidget {
   final Function() deletePost;
   final Function() reportPost;
   final Function() unconnect;
+  final Function(bool) share;
+  final Function(int) answerPoll;
   final bool admin;
   final bool isFeed;
 
@@ -32,15 +38,38 @@ class FeedListItem extends StatefulWidget {
     @required this.unconnect,
     @required this.admin,
     @required this.isFeed,
+    @required this.share,
+    @required this.answerPoll,
   });
 
   @override
   _FeedListItemState createState() => _FeedListItemState();
 }
 
-class _FeedListItemState extends State<FeedListItem> {
+class _FeedListItemState extends State<FeedListItem> with RouteAware {
   var _expanded = false;
-  Firestore _firestore = Firestore.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  CachedVideoPlayerController _controller;
+
+  @override
+  initState() {
+    super.initState();
+
+    if (widget.feedItem.type == 2) {
+      _controller =
+          CachedVideoPlayerController.network(widget.feedItem.postImages[0])
+            ..initialize().then((_) {
+              setState(() {});
+            });
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_controller != null) _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +161,9 @@ class _FeedListItemState extends State<FeedListItem> {
                                               ),
                                             ),
                                             if (widget.feedItem.userImage !=
-                                                null)
+                                                    null &&
+                                                widget.feedItem.userImage
+                                                    .isNotEmpty)
                                               CachedNetworkImage(
                                                 imageUrl:
                                                     widget.feedItem.userImage,
@@ -171,16 +202,58 @@ class _FeedListItemState extends State<FeedListItem> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text.rich(
-                                    TextSpan(children: [
+                                  if ((widget.feedItem.tags ?? []).isEmpty)
+                                    Text.rich(
                                       TextSpan(
-                                          text: widget.feedItem.name,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                    ]),
-                                  ),
+                                        children: [
+                                          TextSpan(
+                                            text: widget.feedItem.name,
+                                            style: TextStyle(
+                                              fontSize: widget.feedItem.isShared
+                                                  ? 12
+                                                  : 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    FutureBuilder<String>(
+                                      initialData: '',
+                                      future:
+                                          _getTaggedUsers(widget.feedItem.tags),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                                ConnectionState.none &&
+                                            snapshot.hasData == null) {
+                                          return Container();
+                                        }
+
+                                        if (snapshot.hasData != null &&
+                                            snapshot.data != null) {
+                                          return Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      '${widget.feedItem.name} ${snapshot.data}',
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        widget.feedItem.isShared
+                                                            ? 12
+                                                            : 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+
+                                        return Container();
+                                      },
+                                    ),
                                   Text(
                                     widget.feedItem.timePostedString,
                                     style: TextStyle(
@@ -285,18 +358,64 @@ class _FeedListItemState extends State<FeedListItem> {
                   ),
                 ),
               ],
+              if (widget.feedItem.isShared &&
+                  widget.feedItem.sharedPost != null) ...[
+                SharedPostItem(
+                  tickerProvider: widget.tickerProvider,
+                  feedItem: widget.feedItem.sharedPost,
+                  context: context,
+                ),
+              ],
               if (widget.feedItem.postImages.length > 0) ...[
                 Container(
                   width: MediaQuery.of(context).size.width,
                   child: widget.feedItem.postImages.length == 1
                       ? GestureDetector(
                           onTap: () {
-                            // TODO: preview image
+                            if (widget.feedItem.type == 2) {
+                              _controller.setLooping(true);
+                              setState(() {
+                                _controller.value.isPlaying
+                                    ? _controller.pause()
+                                    : _controller.play();
+                              });
+                            }
                           },
-                          child: CachedNetworkImage(
-                            imageUrl: widget.feedItem.postImages[0] ?? "",
-                            alignment: Alignment.center,
-                          ),
+                          child: (widget.feedItem.type == 2 &&
+                                  _controller != null)
+                              ? _controller.value.initialized
+                                  ? Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        AspectRatio(
+                                          aspectRatio:
+                                              _controller.value.aspectRatio,
+                                          child: CachedVideoPlayer(_controller),
+                                        ),
+                                        _controller.value.isPlaying
+                                            ? Container()
+                                            : Icon(
+                                                Icons.play_arrow_rounded,
+                                                size: 200,
+                                                color: Colors.grey[200],
+                                              ),
+                                      ],
+                                    )
+                                  : Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Container(
+                                          height: 300,
+                                          width: double.infinity,
+                                          color: Colors.grey[300],
+                                        ),
+                                        CircularProgressIndicator(),
+                                      ],
+                                    )
+                              : CachedNetworkImage(
+                                  imageUrl: widget.feedItem.postImages[0] ?? "",
+                                  alignment: Alignment.center,
+                                ),
                         )
                       : Container(
                           height: MediaQuery.of(context).size.height * 0.6,
@@ -313,12 +432,14 @@ class _FeedListItemState extends State<FeedListItem> {
                                     child: Stack(
                                       fit: StackFit.expand,
                                       children: <Widget>[
-                                        CachedNetworkImage(
-                                          imageUrl:
-                                              widget.feedItem.postImages[index],
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.center,
-                                        ),
+                                        widget.feedItem.type == 2
+                                            ? Container
+                                            : CachedNetworkImage(
+                                                imageUrl: widget
+                                                    .feedItem.postImages[index],
+                                                fit: BoxFit.cover,
+                                                alignment: Alignment.center,
+                                              ),
                                       ],
                                     ),
                                   );
@@ -406,8 +527,20 @@ class _FeedListItemState extends State<FeedListItem> {
                         ...List.generate(
                           widget.feedItem.pollData.length,
                           (index) {
+                            List<String> pollAnswers = [];
+                            widget.feedItem.pollData.forEach((p) {
+                              pollAnswers.addAll(p.answerResponse ?? []);
+                            });
+
+                            bool answered =
+                                pollAnswers.contains(widget.feedItem.userId);
+
                             return GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                if (!answered) {
+                                  widget.answerPoll(index);
+                                }
+                              },
                               child: Container(
                                 margin: EdgeInsets.all(5),
                                 decoration: BoxDecoration(
@@ -455,12 +588,80 @@ class _FeedListItemState extends State<FeedListItem> {
                                         ],
                                       ),
                                     ),
+                                    if (answered || widget.feedItem.isMine) ...[
+                                      Align(
+                                        alignment: Alignment.topCenter,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            left: 5,
+                                            right: 5,
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(15),
+                                              topRight: Radius.circular(15),
+                                            ),
+                                            child: LinearProgressIndicator(
+                                              value: _getProgress(
+                                                  (widget
+                                                              .feedItem
+                                                              .pollData[index]
+                                                              .answerResponse ??
+                                                          [])
+                                                      .length,
+                                                  (pollAnswers ?? []).length),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Container(
+                                          height: 40,
+                                          padding: EdgeInsets.all(8),
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                            _getPercentage(
+                                                widget.feedItem.pollData[index],
+                                                pollAnswers),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
                             );
                           },
                         ),
+                        if (widget.feedItem.isMine &&
+                            widget.feedItem.pollData
+                                .map((p) =>
+                                    (p.answerResponse ?? []).map((r) => r))
+                                .toList()
+                                .isNotEmpty)
+                          RaisedButton(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            onPressed: () {
+                              List<String> responders = [];
+
+                              widget.feedItem.pollData.forEach((p) => p
+                                  .answerResponse
+                                  .forEach((r) => responders.add(r)));
+
+                              Navigator.of(context).pushNamed(
+                                  '/poll_responders',
+                                  arguments: <String, dynamic>{
+                                    'pollId': widget.feedItem.id,
+                                    'responders': responders,
+                                  });
+                            },
+                            child: Center(
+                              child: Text('View Results'),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -552,7 +753,7 @@ class _FeedListItemState extends State<FeedListItem> {
                                     children: <Widget>[
                                       Container(
                                         padding: EdgeInsets.all(18),
-                                        margin: EdgeInsets.only(left: 14),
+                                        margin: EdgeInsets.only(left: 28),
                                         decoration: BoxDecoration(
                                           color: Colors.grey.withOpacity(0.05),
                                           borderRadius:
@@ -597,7 +798,7 @@ class _FeedListItemState extends State<FeedListItem> {
                                 absorbing: true,
                                 child: ImageHolder(
                                   image: comment.ownerImage ?? '',
-                                  size: 40,
+                                  size: widget.feedItem.isShared ? 40 : 50,
                                 ),
                               ),
                             ),
@@ -623,22 +824,86 @@ class _FeedListItemState extends State<FeedListItem> {
     // );
   }
 
+  String _getPercentage(
+    PollData pollData,
+    List<String> pollAnswers,
+  ) {
+    var value = '0%';
+    if ((pollData.answerResponse ?? []).length > 0 &&
+        (pollAnswers ?? []).length > 0)
+      return '${((pollData.answerResponse.length / pollAnswers.length) * 100).round()}%';
+
+    return value;
+  }
+
+  double _getProgress(
+    int responsesAmount,
+    int totalAnswersAmount,
+  ) {
+    if (responsesAmount > 0 && totalAnswersAmount > 0)
+      return responsesAmount / totalAnswersAmount;
+
+    return 0;
+  }
+
   Future<LastCommentItem> _getLastComment(String postId) async {
     var snapshots = await _firestore
         .collection('commentsBase')
         .where('postId', isEqualTo: postId)
         .orderBy('time')
-        .getDocuments();
+        .get();
 
-    var doc = snapshots.documents.last;
+    var doc = snapshots.docs.last;
 
     return LastCommentItem(
-      id: doc.documentID,
-      ownerImage: doc['image'],
+      id: doc.id,
+      ownerImage: doc['image'] ?? "",
       ownerId: doc['ownerId'],
       ownerName: doc['fullName'] ?? doc['churchName'],
       comment: doc['postMessage'],
     );
+  }
+
+  Future<String> _getTaggedUsers(
+    List<String> userIds,
+  ) async {
+    List<UserEntity> users = [];
+
+    for (final id in userIds) {
+      var snapshot = await _firestore.doc('userBase/$id').snapshots().first;
+      var userEntity = UserEntity.fromDocumentSnapshot(snapshot);
+      users.add(userEntity);
+    }
+
+    List<String> usersNames = [];
+    users.forEach((u) {
+      var church = u.isChurch ?? false;
+      if (church) {
+        usersNames.add(u.churchName);
+      } else {
+        usersNames.add(u.fullName);
+      }
+    });
+
+    var usersString = 'is with';
+
+    for (var i = 0; i < usersNames.length; i++) {
+      if (users.length == 1) {
+        usersString = '$usersString ${usersNames[i]}';
+      } else {
+        if (i == usersNames.length - 1) {
+          usersString = '$usersString and ${usersNames[i]}';
+        } else {
+          if (usersString == 'is with') {
+            usersString = '$usersString ${usersNames[i]}';
+          } else {
+            usersString = '$usersString, ${usersNames[i]}';
+          }
+        }
+      }
+    }
+
+    return usersString;
   }
 
   Widget _feedButton({
@@ -689,7 +954,6 @@ class _FeedListItemState extends State<FeedListItem> {
   }
 
   Future<void> _showShareOptions() async {
-    print('share');
     switch (await showDialog<ShareOption>(
         context: context,
         builder: (BuildContext context) {
@@ -785,10 +1049,10 @@ class _FeedListItemState extends State<FeedListItem> {
           );
         })) {
       case ShareOption.withComment:
-        print('comment');
+        widget.share(true);
         break;
       case ShareOption.withoutComment:
-        print('without');
+        widget.share(false);
         break;
     }
   }
@@ -919,12 +1183,18 @@ class _FeedListItemState extends State<FeedListItem> {
         if (widget.feedItem.isPoll) {
           Navigator.of(context).pushNamed(
             '/edit_poll',
-            arguments: widget.feedItem.id,
+            arguments: <String, dynamic>{
+              "pollId": widget.feedItem.id,
+              "groupId": widget.feedItem.id,
+            },
           );
         } else {
           Navigator.of(context).pushNamed(
             '/edit_post',
-            arguments: widget.feedItem.id,
+            arguments: <String, dynamic>{
+              "postId": widget.feedItem.id,
+              "groupId": widget.feedItem.id,
+            },
           );
         }
         break;

@@ -1,4 +1,4 @@
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,8 @@ class EventsMap extends StatefulWidget {
   _EventsMapState createState() => _EventsMapState();
 }
 
-class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixin {
+class _EventsMapState extends State<EventsMap>
+    with AutomaticKeepAliveClientMixin {
   var _kGooglePlex = CameraPosition(
     target: LatLng(
       37.42796133580664,
@@ -83,39 +84,36 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        ...List.generate(
-                          eventTypes.length,
-                          (index) {
-                            return IgnorePointer(
-                              child: Row(
-                                children: <Widget>[
-                                  Container(
-                                    height: 30,
-                                    width: 30,
-                                    padding: EdgeInsets.all(5),
-                                    child: Image.asset(
-                                      eventTypes[index].assetImage,
-                                      height: 15,
-                                      width: 15,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.5),
-                                      shape: BoxShape.circle,
-                                    ),
+                        ...List.generate(eventTypes.length, (index) {
+                          return IgnorePointer(
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  height: 30,
+                                  width: 30,
+                                  padding: EdgeInsets.all(5),
+                                  child: Image.asset(
+                                    eventTypes[index].assetImage,
+                                    height: 15,
+                                    width: 15,
                                   ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    eventTypes[index].eventTitle,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black,
-                                    ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.5),
+                                    shape: BoxShape.circle,
                                   ),
-                                ],
-                              ),
-                            );
-                          }
-                        ),
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  eventTypes[index].eventTitle,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                         GestureDetector(
                           onTap: () {
                             bool isHidden = widget.bloc.hideEventsOnMap$.value;
@@ -129,17 +127,16 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                               top: 10,
                             ),
                             child: StreamBuilder<bool>(
-                              stream: widget.bloc.hideEventsOnMap$,
-                              initialData: widget.bloc.hideEventsOnMap$.value,
-                              builder: (context, snapshot) {
-                                bool isHidden = snapshot.data ?? false;
-                                return Icon(
-                                  isHidden
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                );
-                              }
-                            ),
+                                stream: widget.bloc.hideEventsOnMap$,
+                                initialData: widget.bloc.hideEventsOnMap$.value,
+                                builder: (context, snapshot) {
+                                  bool isHidden = snapshot.data ?? false;
+                                  return Icon(
+                                    isHidden
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  );
+                                }),
                             decoration: BoxDecoration(
                               color: Theme.of(context).primaryColor,
                               shape: BoxShape.circle,
@@ -169,9 +166,7 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                           child: PageView.builder(
                             itemCount: data.eventItems.length,
                             scrollDirection: Axis.horizontal,
-                            onPageChanged: (int) => {
-                              
-                            },
+                            onPageChanged: (int) => {},
                             itemBuilder: (context, index) {
                               return GestureDetector(
                                 onTap: () {
@@ -193,21 +188,32 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                         Expanded(
                                           child: Stack(
                                             children: <Widget>[
-                                              Image(
-                                                width: MediaQuery.of(context).size.width / 2,
+                                              CachedNetworkImage(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    2,
                                                 alignment: Alignment.center,
                                                 fit: BoxFit.cover,
-                                                image: CacheImage(data.eventItems[index].image),
+                                                imageUrl: data
+                                                    .eventItems[index].image,
                                               ),
                                               Container(
-                                                width: MediaQuery.of(context).size.width / 2,
-                                                alignment: Alignment.bottomCenter,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    2,
+                                                alignment:
+                                                    Alignment.bottomCenter,
                                                 decoration: BoxDecoration(
-                                                  color: Theme.of(context).primaryColor,
+                                                  color: Theme.of(context)
+                                                      .primaryColor,
                                                   gradient: LinearGradient(
                                                     colors: [
-                                                      Colors.black.withOpacity(0.1),
-                                                      Colors.black.withOpacity(0.9),
+                                                      Colors.black
+                                                          .withOpacity(0.1),
+                                                      Colors.black
+                                                          .withOpacity(0.9),
                                                     ],
                                                     begin: Alignment.topCenter,
                                                     end: Alignment.bottomCenter,
@@ -216,13 +222,17 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                                 child: Padding(
                                                   padding: EdgeInsets.all(8),
                                                   child: Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          data.eventItems[index].location,
+                                                          data.eventItems[index]
+                                                              .location,
                                                           maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                           style: TextStyle(
                                                             fontSize: 15,
                                                             color: Colors.white,
@@ -232,17 +242,23 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                                       Container(
                                                         height: 25,
                                                         width: 25,
-                                                        padding: EdgeInsets.all(8),
+                                                        padding:
+                                                            EdgeInsets.all(8),
                                                         child: Image.asset(
-                                                          eventTypes[
-                                                            data.eventItems[index].eventType
-                                                          ].assetImage,
+                                                          eventTypes[data
+                                                                  .eventItems[
+                                                                      index]
+                                                                  .eventType]
+                                                              .assetImage,
                                                           height: 15,
                                                           width: 15,
                                                         ),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.white.withOpacity(0.5),
-                                                          shape: BoxShape.circle,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.white
+                                                              .withOpacity(0.5),
+                                                          shape:
+                                                              BoxShape.circle,
                                                         ),
                                                       ),
                                                     ],
@@ -276,7 +292,10 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                         ),
                                         Container(
                                           padding: EdgeInsets.all(10),
-                                          width: MediaQuery.of(context).size.width / 2,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              2,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             borderRadius: BorderRadius.only(
@@ -295,17 +314,23 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
                                                   children: <Widget>[
                                                     Text(
-                                                      DateFormat.MMM().format(data.eventItems[index].startDate),
+                                                      DateFormat.MMM().format(
+                                                          data.eventItems[index]
+                                                              .startDate),
                                                       style: TextStyle(
                                                         fontSize: 13,
-                                                        color: Theme.of(context).primaryColor,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
                                                       ),
                                                     ),
                                                     Text(
-                                                      DateFormat.d().format(data.eventItems[index].startDate),
+                                                      DateFormat.d().format(data
+                                                          .eventItems[index]
+                                                          .startDate),
                                                       style: TextStyle(
                                                         fontSize: 11,
                                                         color: Colors.black,
@@ -322,7 +347,8 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                                       '${DateFormat.jm().format(data.eventItems[index].startDate)}'
                                                       ' ${data.eventItems[index].title}',
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.black,
@@ -330,12 +356,15 @@ class _EventsMapState extends State<EventsMap> with AutomaticKeepAliveClientMixi
                                                     ),
                                                     SizedBox(height: 5),
                                                     Text(
-                                                      data.eventItems[index].details,
+                                                      data.eventItems[index]
+                                                          .details,
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         fontSize: 10,
-                                                        color: Colors.black.withOpacity(0.7),
+                                                        color: Colors.black
+                                                            .withOpacity(0.7),
                                                       ),
                                                     ),
                                                   ],

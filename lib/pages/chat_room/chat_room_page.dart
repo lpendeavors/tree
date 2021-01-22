@@ -1,16 +1,13 @@
 import 'dart:async';
 
-import 'package:cache_image/cache_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:treeapp/models/old/group_member.dart';
 import 'package:treeapp/pages/chat_room/widgets/chat_input.dart';
 import 'package:treeapp/util/asset_utils.dart';
-import '../../widgets/empty_list_view.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../user_bloc/user_login_state.dart';
@@ -35,13 +32,16 @@ class ChatRoomPage extends StatefulWidget {
 class _ChatRoomPageState extends State<ChatRoomPage> {
   ChatRoomBloc _chatRoomBloc;
   List<StreamSubscription> _subscriptions;
-  Firestore _firestore;
+  FirebaseFirestore _firestore;
+  FirebaseFunctions _functions;
 
   @override
   void initState() {
     super.initState();
 
-    _firestore = Firestore.instance;
+    _firestore = FirebaseFirestore.instance;
+    _functions = FirebaseFunctions.instance;
+
     _chatRoomBloc = widget.initChatRoomBloc();
     _subscriptions = [
       widget.userBloc.loginState$
@@ -93,18 +93,42 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             var user = widget.userBloc.loginState$.value as LoggedInUser;
 
             if (data.messages.isNotEmpty) {
-              var unread = data.messages
-                  .where((m) => !m.isRead && m.members.contains(user.uid))
-                  .toList();
-              if (unread.isNotEmpty) {
-                _chatRoomBloc.markRead(unread.map((u) => u.id).toList());
+              var unread = data.messages.where((m) => !m.isRead).toList();
+              if (unread.isNotEmpty && data.details != null) {
+                _markChatsRead(user.uid, data.details.id);
               }
             }
 
-            if (data.details != null &&
-                !data.details.members.contains(user.uid)) {
-              _chatRoomBloc.joinMembers();
+            if (data.details != null) {
+              _chatRoomBloc.membersChanged(
+                  data.details.members.map((m) => m.uid).toList());
+
+              if (!data.details.members.map((m) => m.uid).contains(user.uid)) {
+                _chatRoomBloc.joinMembers();
+              }
+
+              var otherMembers = data.details.members
+                  .where((m) =>
+                      m.uid !=
+                      (widget.userBloc.loginState$.value as LoggedInUser).uid)
+                  .toList();
+
+              print('otherMembers=${otherMembers.length}');
             }
+
+            if (data.messages.isEmpty) {
+              _chatRoomBloc.showDateChanged(true);
+            } else {
+              var lastSent = data.messages.first.sentDate;
+              var today = DateTime.now();
+              var hasDate = (lastSent.day == today.day) &&
+                  (lastSent.month == today.month) &&
+                  (lastSent.year == today.year);
+
+              _chatRoomBloc.showDateChanged(!hasDate);
+            }
+
+            print(data.details.id);
 
             return Column(
               mainAxisSize: MainAxisSize.max,
@@ -181,15 +205,39 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         ),
                                       ),
                                     ),
-                                    // if (otherMembers.length == 1 &&
-                                    //     otherMembers[0].image.isNotEmpty)
-                                    //   CachedNetworkImage(
-                                    //     width: 40,
-                                    //     height: 40,
-                                    //     fit: BoxFit.cover,
-                                    //     imageUrl: otherMembers[0].image,
-                                    //   ),
                                     if (data.details != null &&
+                                        !data.details.isGroup &&
+                                        data.details.members.length == 2)
+                                      CachedNetworkImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        imageUrl: data.details.members
+                                            .where((m) =>
+                                                m.uid !=
+                                                (widget.userBloc.loginState$
+                                                        .value as LoggedInUser)
+                                                    .uid)
+                                            .toList()[0]
+                                            .image,
+                                      )
+                                    else if (data.details != null &&
+                                        !data.details.isGroup &&
+                                        data.details.members.length > 2)
+                                      CachedNetworkImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        imageUrl: data.details.members
+                                            .where((m) =>
+                                                m.uid !=
+                                                (widget.userBloc.loginState$
+                                                        .value as LoggedInUser)
+                                                    .uid)
+                                            .toList()[0]
+                                            .image,
+                                      )
+                                    else if (data.details != null &&
                                         data.details.groupImage != null)
                                       CachedNetworkImage(
                                         width: 40,
@@ -206,7 +254,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    if (data.details != null)
+                                    if (data.details != null &&
+                                        data.details.name != null &&
+                                        data.details.name.isNotEmpty)
                                       Text(
                                         data.details.name,
                                         maxLines: 1,
@@ -217,45 +267,72 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           color: Colors.black,
                                         ),
                                       )
+                                    else if (data.details != null &&
+                                        (data.details.name == null ||
+                                            data.details.name.isEmpty))
+                                      Text(
+                                        data.details.members.length > 0
+                                            ? data.details.members.length == 2
+                                                ? data.details.members
+                                                    .where((m) =>
+                                                        m.uid !=
+                                                        (widget
+                                                                    .userBloc
+                                                                    .loginState$
+                                                                    .value
+                                                                as LoggedInUser)
+                                                            .uid)
+                                                    .toList()[0]
+                                                    .fullName
+                                                : '${data.details.members.where((m) => m.uid != (widget.userBloc.loginState$.value as LoggedInUser).uid).toList()[0].fullName} and ${data.details.members.length - 1} others'
+                                            : '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )
                                     else
                                       FutureBuilder(
-                                          future: _getOtherMembers(
-                                              data.messages.last.members),
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState ==
-                                                    ConnectionState.none &&
-                                                snapshot.hasData == null) {
-                                              return Container();
-                                            }
+                                        future: _getOtherMembers(
+                                            data.messages.length > 1
+                                                ? data.messages.last.members
+                                                : []),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                                  ConnectionState.none &&
+                                              snapshot.hasData == null) {
+                                            return Container();
+                                          }
 
-                                            var uid = (widget
-                                                    .userBloc
-                                                    .loginState$
-                                                    .value as LoggedInUser)
-                                                .uid;
-                                            var otherMembers =
-                                                List<MemberItem>();
-                                            if (snapshot.hasData) {
-                                              otherMembers = snapshot.data
-                                                  .where((m) => m.id != uid)
-                                                  .toList();
-                                            }
+                                          var uid = (widget.userBloc.loginState$
+                                                  .value as LoggedInUser)
+                                              .uid;
+                                          var otherMembers = List<MemberItem>();
+                                          if (snapshot.hasData) {
+                                            otherMembers = snapshot.data
+                                                .where((m) => m.id != uid)
+                                                .toList();
+                                          }
 
-                                            return Text(
-                                              otherMembers.length > 0
-                                                  ? otherMembers.length == 1
-                                                      ? otherMembers[0].name
-                                                      : '${otherMembers[0].name} and ${otherMembers.length - 1} others'
-                                                  : '',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            );
-                                          }),
+                                          return Text(
+                                            otherMembers.length > 0
+                                                ? otherMembers.length == 1
+                                                    ? otherMembers[0].name
+                                                    : '${otherMembers[0].name} and ${otherMembers.length - 1} others'
+                                                : '',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          );
+                                        },
+                                      ),
                                   ],
                                 ),
                               ),
@@ -328,9 +405,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             ],
                             data.messages[index].isMine
                                 ? _outgoingMessage(
-                                    data.messages[index], data.details.isAdmin)
+                                    data.messages[index],
+                                    data.details != null
+                                        ? data.details.isAdmin
+                                        : false,
+                                  )
                                 : _incommingMessage(
-                                    data.messages[index], data.details.isAdmin),
+                                    data.messages[index],
+                                    data.details != null
+                                        ? data.details.isAdmin
+                                        : false,
+                                  ),
                           ],
                         );
                       },
@@ -354,6 +439,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
+  void _markChatsRead(
+    String userId,
+    String chatId,
+  ) {
+    HttpsCallable markRead = _functions.httpsCallable('markChatsRead');
+    markRead.call({
+      'user': userId,
+      'group': chatId,
+    }).catchError((err) => print(err));
+  }
+
   Future<List<MemberItem>> _getOtherMembers(
     List<String> members,
   ) async {
@@ -362,31 +458,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     var snapshots = await _firestore
         .collection('userBase')
         .where('uid', whereIn: members)
-        .getDocuments();
+        .get();
 
-    for (var doc in snapshots.documents) {
+    for (var doc in snapshots.docs) {
       memberDetails.add(
         MemberItem(
-          id: doc.documentID,
+          id: doc.id,
           name: doc['fullName'],
           image: doc['image'],
         ),
       );
     }
 
-    print(memberDetails);
-
     return memberDetails;
   }
 
   Widget _outgoingMessage(ChatMessageItem messageItem, bool isAdmin) {
     Widget messageWidget;
-
     switch (messageItem.type) {
       case MessageType.text:
         messageWidget = GestureDetector(
           onLongPress: () {
-            if (isAdmin) {
+            if ((isAdmin ?? false) || messageItem.isMine) {
               _showMessageOptions(messageItem);
             }
           },
@@ -428,7 +521,39 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         messageWidget = Container();
         break;
       case MessageType.gif:
-        messageWidget = Container();
+        messageWidget = GestureDetector(
+          onLongPress: () {
+            if ((isAdmin ?? false) || messageItem.isMine) {
+              _showMessageOptions(messageItem);
+            }
+          },
+          child: Container(
+            margin: EdgeInsets.fromLTRB(60, 0, 20, 15),
+            padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+            decoration: BoxDecoration(
+              color: messageItem.isRead ? Color(0xFF6CA748) : Color(0xFF9CC83F),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                CachedNetworkImage(
+                  height: 200,
+                  imageUrl: messageItem.gif,
+                ),
+                SizedBox(height: 3),
+                Text(
+                  timeago.format(messageItem.sentDate),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.3),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
         break;
       default:
         messageWidget = Container();
@@ -446,7 +571,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           children: <Widget>[
             GestureDetector(
               onLongPress: () {
-                if (isAdmin) {
+                if ((isAdmin ?? false) || messageItem.isMine) {
                   _showMessageOptions(messageItem);
                 }
               },
@@ -516,7 +641,69 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         messageWidget = Container();
         break;
       case MessageType.gif:
-        messageWidget = Container();
+        messageWidget = Stack(
+          children: <Widget>[
+            GestureDetector(
+              onLongPress: () {
+                if ((isAdmin ?? false) || messageItem.isMine) {
+                  _showMessageOptions(messageItem);
+                }
+              },
+              child: Container(
+                margin: EdgeInsets.fromLTRB(40, 0, 60, 15),
+                padding: EdgeInsets.fromLTRB(15, 10, 15, 20),
+                decoration: BoxDecoration(
+                  color: Color(0xfffff3f3f3),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(height: 5),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          '/profile',
+                          arguments: messageItem.userId,
+                        );
+                      },
+                      child: Text(
+                        messageItem.name,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    CachedNetworkImage(
+                      imageUrl: messageItem.gif,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      timeago.format(messageItem.sentDate),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                print(messageItem.image);
+              },
+              child: ImageHolder(
+                size: 40,
+                image: messageItem.image,
+              ),
+            ),
+          ],
+        );
         break;
       default:
         messageWidget = Container();

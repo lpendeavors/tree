@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-/// 
+///
 /// Enum
-/// 
+///
 enum PostType { other, image, video }
 
 ///
@@ -50,7 +50,8 @@ class ExploreState extends Equatable {
     this.error,
   });
 
-  ExploreState copyWith({requestItems, connectionItems, postItems, isLoading, error}) {
+  ExploreState copyWith(
+      {requestItems, connectionItems, postItems, isLoading, error}) {
     return ExploreState(
       requestItems: requestItems ?? this.requestItems,
       connectionItems: connectionItems ?? this.connectionItems,
@@ -61,13 +62,8 @@ class ExploreState extends Equatable {
   }
 
   @override
-  List get props => [
-    requestItems,
-    connectionItems, 
-    postItems, 
-    isLoading, 
-    error
-  ];
+  List get props =>
+      [requestItems, connectionItems, postItems, isLoading, error];
 
   @override
   bool get stringify => true;
@@ -82,6 +78,7 @@ class ConnectionItem extends Equatable {
   final bool isChurch;
   final String image;
   final String denomination;
+  final bool requested;
 
   const ConnectionItem({
     @required this.id,
@@ -91,18 +88,20 @@ class ConnectionItem extends Equatable {
     @required this.isChurch,
     @required this.image,
     @required this.denomination,
+    @required this.requested,
   });
 
   @override
   List get props => [
-    id, 
-    name, 
-    church, 
-    city,
-    isChurch,
-    image,
-    denomination,
-  ];
+        id,
+        name,
+        church,
+        city,
+        isChurch,
+        image,
+        denomination,
+        requested,
+      ];
 
   @override
   bool get stringify => true;
@@ -122,10 +121,10 @@ class PostItem extends Equatable {
 
   @override
   List get props => [
-    id, 
-    image,
-    type,
-  ];
+        id,
+        image,
+        type,
+      ];
 
   @override
   bool get stringify => true;

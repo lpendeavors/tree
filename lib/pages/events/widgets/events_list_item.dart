@@ -1,5 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import 'package:intl/intl.dart';
 import '../../../generated/l10n.dart';
 import '../../../util/event_utils.dart';
@@ -9,11 +9,13 @@ class EventsListItem extends StatefulWidget {
   final EventItem eventItem;
   final Function() onDelete;
   final Function() onReport;
+  final Function(int) onStatusUpdate;
 
   const EventsListItem({
     @required this.eventItem,
     @required this.onDelete,
     @required this.onReport,
+    @required this.onStatusUpdate,
   });
 
   @override
@@ -27,12 +29,10 @@ class _EventsListItemState extends State<EventsListItem> {
       onTap: () async {
         Navigator.of(context).pushNamed(
           '/event_details',
-          arguments: widget.eventItem.id
+          arguments: widget.eventItem.id,
         );
       },
-      onLongPress: () {
-        
-      },
+      onLongPress: () {},
       child: Container(
         margin: EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -45,67 +45,66 @@ class _EventsListItemState extends State<EventsListItem> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Stack(
-              alignment: Alignment.bottomCenter,
+              // alignment: Alignment.bottomCenter,
               children: <Widget>[
                 if (widget.eventItem.image != null)
-                  Image(
+                  CachedNetworkImage(
+                    height: 250,
                     fit: BoxFit.cover,
                     width: MediaQuery.of(context).size.width,
                     colorBlendMode: BlendMode.darken,
-                    image: CacheImage(widget.eventItem.image),
+                    imageUrl: widget.eventItem.image,
                   ),
-                Center(
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.1),
-                          Colors.black.withOpacity(0.9),
-                        ],
-                      ),
+                Container(
+                  height: 300,
+                  alignment: Alignment.bottomCenter,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.1),
+                        Colors.black.withOpacity(0.9),
+                      ],
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Flexible(
-                            child: Text(
-                              widget.eventItem.location,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Flexible(
+                          child: Text(
+                            widget.eventItem.location,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.white,
                             ),
                           ),
-                          Container(
-                            height: 45,
-                            width: 45,
-                            padding: EdgeInsets.all(8),
-                            child: Image.asset(
-                              eventTypes[
-                                widget.eventItem.eventType
-                              ].assetImage,
-                              height: 15,
-                              width: 15,
-                              color: eventTypes[
-                                widget.eventItem.eventType
-                              ].useColor ? Colors.white : null,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.5),
-                              shape: BoxShape.circle,
-                            ),
+                        ),
+                        Container(
+                          height: 45,
+                          width: 45,
+                          padding: EdgeInsets.all(8),
+                          child: Image.asset(
+                            eventTypes[widget.eventItem.eventType].assetImage,
+                            height: 15,
+                            width: 15,
+                            color:
+                                eventTypes[widget.eventItem.eventType].useColor
+                                    ? Colors.white
+                                    : null,
                           ),
-                        ],
-                      ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -214,47 +213,96 @@ class _EventsListItemState extends State<EventsListItem> {
     );
   }
 
-  Future<void> _showEventOptions(
-    BuildContext context
-  ) async {
+  Future<int> _showEventStatuses(BuildContext context) async {
+    switch (await showDialog<EventStatus>(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(
+              'Tree',
+            ),
+            children: <Widget>[
+              if (widget.eventItem.isAdmin) ...[
+                SimpleDialogOption(
+                  child: Text('Pending'),
+                  onPressed: () => Navigator.pop(context, EventStatus.pending),
+                ),
+                SimpleDialogOption(
+                  child: Text('Approved'),
+                  onPressed: () => Navigator.pop(context, EventStatus.approved),
+                ),
+                SimpleDialogOption(
+                  child: Text('Inactive'),
+                  onPressed: () => Navigator.pop(context, EventStatus.inactive),
+                ),
+                SimpleDialogOption(
+                  child: Text('Completed'),
+                  onPressed: () => Navigator.pop(context, EventStatus.complete),
+                ),
+              ]
+            ],
+          );
+        })) {
+      case EventStatus.pending:
+        return 0;
+        break;
+      case EventStatus.approved:
+        return 1;
+        break;
+      case EventStatus.inactive:
+        return 3;
+        break;
+      case EventStatus.complete:
+        return 4;
+        break;
+      default:
+        return null;
+        break;
+    }
+  }
+
+  Future<void> _showEventOptions(BuildContext context) async {
     switch (await showDialog<EventOption>(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: Text(
-            'Tree',
-          ),
-          children: <Widget>[
-            if (widget.eventItem.isMine) ...[
-              SimpleDialogOption(
-                child: Text('Edit Event'),
-                onPressed: () => Navigator.pop(context, EventOption.edit),
-              ),
-              SimpleDialogOption(
-                child: Text('Delete Event'),
-                onPressed: () => Navigator.pop(context, EventOption.delete),
-              ),
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(
+              'Tree',
+            ),
+            children: <Widget>[
+              if (widget.eventItem.isMine || widget.eventItem.isAdmin) ...[
+                SimpleDialogOption(
+                  child: Text('Delete Event'),
+                  onPressed: () => Navigator.pop(context, EventOption.delete),
+                ),
+              ],
+              if (widget.eventItem.isMine) ...[
+                SimpleDialogOption(
+                  child: Text('Edit Event'),
+                  onPressed: () => Navigator.pop(context, EventOption.edit),
+                ),
+              ],
+              if (!widget.eventItem.isMine) ...[
+                SimpleDialogOption(
+                  child: Text('Report Event'),
+                  onPressed: () => Navigator.pop(context, EventOption.report),
+                ),
+              ],
+              if (widget.eventItem.isAdmin) ...[
+                SimpleDialogOption(
+                  child: Text('Change Status'),
+                  onPressed: () =>
+                      Navigator.pop(context, EventOption.changeStatus),
+                ),
+                SimpleDialogOption(
+                  child: Text('Update Max Reach'),
+                  onPressed: () =>
+                      Navigator.pop(context, EventOption.updateReach),
+                ),
+              ]
             ],
-            if (!widget.eventItem.isMine) ...[
-              SimpleDialogOption(
-                child: Text('Report Event'),
-                onPressed: () => Navigator.pop(context, EventOption.report),
-              ),
-            ],
-            if (widget.eventItem.isAdmin) ...[
-              SimpleDialogOption(
-                child: Text('Change Status'),
-                onPressed: () => Navigator.pop(context, EventOption.changeStatus),
-              ),
-              SimpleDialogOption(
-                child: Text('Update Max Reach'),
-                onPressed: () => Navigator.pop(context, EventOption.updateReach),
-              ),
-            ]
-          ],
-        );
-      }
-    )) {
+          );
+        })) {
       case EventOption.edit:
         Navigator.of(context).pushNamed(
           '/edit_event',
@@ -263,19 +311,22 @@ class _EventsListItemState extends State<EventsListItem> {
             'eventType': widget.eventItem.eventType,
           },
         );
-      break;
+        break;
       case EventOption.delete:
-        print('delete');
-      break;
+        widget.onDelete();
+        break;
       case EventOption.report:
-        print('repport');
-      break;
+        print('report');
+        break;
       case EventOption.updateReach:
         print('update reach');
-      break;
+        break;
       case EventOption.changeStatus:
-        print('change status');
-      break;
+        int result = await _showEventStatuses(context);
+        if (result != null) {
+          widget.onStatusUpdate(result);
+        }
+        break;
     }
   }
 }

@@ -3,8 +3,8 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import 'package:smart_text_view/smart_text_view.dart';
+import 'package:treeapp/pages/create_message/create_message_state.dart';
 import '../feed/widgets/feed_list_item.dart';
 import '../feed/feed_state.dart';
 import '../../util/asset_utils.dart';
@@ -14,6 +14,7 @@ import '../../generated/l10n.dart';
 import '../../widgets/image_holder.dart';
 import './chat_room_details_bloc.dart';
 import './chat_room_details_state.dart';
+import 'widgets/chat_members.dart';
 
 class ChatRoomDetailsPage extends StatefulWidget {
   final UserBloc userBloc;
@@ -90,7 +91,8 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                   child: Stack(
                     children: <Widget>[
                       if (data.chatRoomDetails.isGroup &&
-                          !data.chatRoomDetails.isConversation) ...[
+                          !data.chatRoomDetails.isConversation &&
+                          data.chatRoomDetails.image != null) ...[
                         Align(
                           alignment: Alignment.center,
                           child: CachedNetworkImage(
@@ -121,7 +123,8 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                         ),
                       ],
                       if (data.chatRoomDetails.isGroup &&
-                          data.chatRoomDetails.isConversation) ...[
+                          data.chatRoomDetails.isConversation &&
+                          data.chatRoomDetails.image != null) ...[
                         Align(
                           alignment: Alignment.center,
                           child: BackdropFilter(
@@ -129,12 +132,11 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                               sigmaX: 10,
                               sigmaY: 20,
                             ),
-                            child: Image(
+                            child: CachedNetworkImage(
                               width: MediaQuery.of(context).size.width,
                               alignment: Alignment.center,
                               fit: BoxFit.cover,
-                              image: CacheImage(
-                                  data.chatRoomDetails.members[0].image),
+                              imageUrl: data.chatRoomDetails.members[0].image,
                             ),
                           ),
                         ),
@@ -161,10 +163,12 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                             child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
-                                ImageHolder(
-                                  size: 80,
-                                  image: data.chatRoomDetails.members[0].image,
-                                ),
+                                if (data.chatRoomDetails.members.length <= 2)
+                                  ImageHolder(
+                                    size: 80,
+                                    image:
+                                        data.chatRoomDetails.members[0].image,
+                                  ),
                                 ...List.generate(
                                     data.chatRoomDetails.members.length,
                                     (index) {
@@ -180,11 +184,11 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                                     alignment: Alignment.bottomCenter,
                                     child: Padding(
                                       padding: EdgeInsets.only(
-                                        left: padding,
+                                        left: padding.toDouble(),
                                       ),
                                       child: ImageHolder(
                                         size: 35,
-                                        image: member.image,
+                                        image: member.image ?? "",
                                       ),
                                     ),
                                   );
@@ -217,17 +221,38 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                                           color: Colors.white,
                                         ),
                                         onPressed: () {
-                                          // TODO: add members
+                                          Navigator.of(context).pushNamed(
+                                            '/create_message',
+                                            arguments: <String, dynamic>{
+                                              "type": 1,
+                                              "groupId":
+                                                  data.chatRoomDetails.id,
+                                              "existingMembers": data
+                                                  .chatRoomDetails.members
+                                                  .map((m) => MemberItem(
+                                                        id: m.id,
+                                                        name: m.name,
+                                                        image: m.image,
+                                                        groupAdmin: m.isAdmin,
+                                                        token: "",
+                                                      ))
+                                                  .toList(),
+                                            },
+                                          );
                                         },
                                       ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.more_vert,
-                                          color: Colors.white,
-                                        ),
-                                        onPressed: () => _showGroupOptions(),
-                                      ),
                                     ],
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.more_vert,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () => _showGroupOptions(
+                                        data.chatRoomDetails.id,
+                                        data.chatRoomDetails.members,
+                                        data.chatRoomDetails.isAdmin,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -434,7 +459,10 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                             onPressed: () {
                               Navigator.of(context).pushNamed(
                                 '/edit_post',
-                                arguments: null,
+                                arguments: <String, dynamic>{
+                                  'groupId': data.chatRoomDetails.id,
+                                  'postId': null,
+                                },
                               );
                             },
                             child: Row(
@@ -502,7 +530,10 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                           onPressed: () {
                             Navigator.of(context).pushNamed(
                               '/edit_poll',
-                              arguments: null,
+                              arguments: <String, dynamic>{
+                                'groupId': data.chatRoomDetails.id,
+                                'pollId': null,
+                              },
                             );
                           },
                           child: Row(
@@ -573,6 +604,14 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
                         // _feedBloc.likePostChanged(!data.feedItems[index].isLiked);
                         // _feedBloc.saveLikeValue();
                       },
+                      admin: (widget.userBloc.loginState$.value as LoggedInUser)
+                          .isAdmin,
+                      answerPoll: (int) {},
+                      deletePost: () {},
+                      isFeed: true,
+                      reportPost: () {},
+                      share: (bool) {},
+                      unconnect: () {},
                     );
                   },
                 ),
@@ -584,5 +623,324 @@ class _ChatRoomDetailsPageState extends State<ChatRoomDetailsPage>
     );
   }
 
-  void _showGroupOptions() {}
+  Future<void> _showGroupOptions(
+    String groupId,
+    List<ChatRoomMemberItem> members,
+    bool admin,
+  ) async {
+    switch (await showDialog<ChatOption>(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            elevation: 0.0,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Container(
+              height: admin ? 250 : 180,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 15,
+                          ),
+                          Image.asset(
+                            ic_launcher,
+                            height: 20,
+                            width: 20,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Flexible(
+                            flex: 1,
+                            child: Text(
+                              'Tree',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Container(
+                      height: 0.5,
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.1),
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: admin ? 200 : 110,
+                        ),
+                        child: Scrollbar(
+                          child: ListView(
+                            children: <Widget>[
+                              SizedBox(height: 5),
+                              if (admin) ...[
+                                SimpleDialogOption(
+                                  child: Text('Update Group'),
+                                  onPressed: () =>
+                                      Navigator.pop(context, ChatOption.update),
+                                ),
+                                SizedBox(height: 5),
+                                Container(
+                                  height: 0.5,
+                                  width: double.infinity,
+                                  color: Colors.black.withOpacity(0.1),
+                                ),
+                                SimpleDialogOption(
+                                  child: Text('Delete Group'),
+                                  onPressed: () =>
+                                      Navigator.pop(context, ChatOption.delete),
+                                ),
+                                SizedBox(height: 5),
+                                Container(
+                                  height: 0.5,
+                                  width: double.infinity,
+                                  color: Colors.black.withOpacity(0.1),
+                                ),
+                                SimpleDialogOption(
+                                  child: Text('Suspend Group'),
+                                  onPressed: () => Navigator.pop(
+                                      context, ChatOption.suspend),
+                                ),
+                                SizedBox(height: 5),
+                                Container(
+                                  height: 0.5,
+                                  width: double.infinity,
+                                  color: Colors.black.withOpacity(0.1),
+                                ),
+                              ],
+                              SimpleDialogOption(
+                                child: Text('View Members'),
+                                onPressed: () => Navigator.pop(
+                                    context, ChatOption.viewMembers),
+                              ),
+                              SizedBox(height: 5),
+                              Container(
+                                height: 0.5,
+                                width: double.infinity,
+                                color: Colors.black.withOpacity(0.1),
+                              ),
+                              SimpleDialogOption(
+                                child: Text('Mute Notifications'),
+                                onPressed: () =>
+                                    Navigator.pop(context, ChatOption.mute),
+                              ),
+                              SizedBox(height: 5),
+                              if (!admin) ...[
+                                Container(
+                                  height: 0.5,
+                                  width: double.infinity,
+                                  color: Colors.black.withOpacity(0.1),
+                                ),
+                                SimpleDialogOption(
+                                  child: Text('Leave Group'),
+                                  onPressed: () =>
+                                      Navigator.pop(context, ChatOption.leave),
+                                ),
+                                SizedBox(height: 5),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        })) {
+      case ChatOption.update:
+        Navigator.of(context).pushNamed(
+          '/create_group',
+          arguments: <String, dynamic>{
+            'groupId': groupId,
+            'members': members.map((m) {
+              return MemberItem(
+                id: m.id,
+                name: m.name,
+                token: "",
+                image: m.image,
+                groupAdmin: m.isAdmin,
+              );
+            }).toList(),
+          },
+        );
+        break;
+      case ChatOption.delete:
+        await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(
+                  'Delete?',
+                ),
+                content: new Text(
+                  "Are you sure you want to delete this group?",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('NO',
+                        style:
+                            TextStyle(color: Theme.of(context).primaryColor)),
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('YES', style: TextStyle(color: Colors.grey)),
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                  ),
+                ],
+              );
+            }).then((value) {
+          if (value) {
+            _roomDetailsBloc.deleteGroup();
+          }
+        });
+
+        Navigator.of(context).pop();
+        break;
+      case ChatOption.mute:
+        await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(
+                  'Mute?',
+                ),
+                content: new Text(
+                  "Are you sure you want to mute notificaton from this group?",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('NO',
+                        style:
+                            TextStyle(color: Theme.of(context).primaryColor)),
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('YES', style: TextStyle(color: Colors.grey)),
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                  ),
+                ],
+              );
+            }).then((value) {
+          if (value) {
+            _roomDetailsBloc.muteGroup();
+          }
+        });
+        break;
+      case ChatOption.suspend:
+        await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(
+                  'Suspend?',
+                ),
+                content: new Text(
+                  "Are you sure you want to suspend this group?",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('NO',
+                        style:
+                            TextStyle(color: Theme.of(context).primaryColor)),
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('YES', style: TextStyle(color: Colors.grey)),
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                  ),
+                ],
+              );
+            }).then((value) {
+          if (value) {
+            _roomDetailsBloc.suspendGroup();
+          }
+        });
+
+        Navigator.of(context).pop();
+        break;
+      case ChatOption.viewMembers:
+        Future.delayed(Duration.zero, () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) {
+              return ChatMembersPage(
+                isAdmin: admin,
+                members: members,
+                onMakeAdmin: (userId) {
+                  _roomDetailsBloc.makeAdmin(userId);
+                },
+                onRemove: (userId) {
+                  _roomDetailsBloc.leaveGroup(userId);
+                },
+              );
+            }),
+          );
+        });
+        break;
+      case ChatOption.leave:
+        await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(
+                  'Leave?',
+                ),
+                content: new Text(
+                  "Are you sure you want to leave this group?",
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('NO',
+                        style:
+                            TextStyle(color: Theme.of(context).primaryColor)),
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('YES', style: TextStyle(color: Colors.grey)),
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                  ),
+                ],
+              );
+            }).then((value) {
+          if (value) {
+            var user = (widget.userBloc.loginState$.value as LoggedInUser);
+            _roomDetailsBloc.leaveGroup(user.uid);
+          }
+        });
+        break;
+    }
+  }
 }

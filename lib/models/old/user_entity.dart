@@ -67,6 +67,7 @@ class UserEntity extends Equatable implements FirebaseModel {
   final List<String> muted;
   final bool isChurchUpdated;
   final bool isProfileUpdated;
+  final bool isSuspended;
 
   @JsonKey(fromJson: timestampFromJson, toJson: timestampToJson)
   final Timestamp createdAt;
@@ -131,6 +132,7 @@ class UserEntity extends Equatable implements FirebaseModel {
     this.muted,
     this.isChurchUpdated,
     this.isProfileUpdated,
+    this.isSuspended,
   });
 
   String get id => this.documentId;
@@ -197,7 +199,8 @@ class UserEntity extends Equatable implements FirebaseModel {
       churchID,
       muted,
       isChurchUpdated,
-      isProfileUpdated
+      isProfileUpdated,
+      isSuspended,
     ];
   }
 

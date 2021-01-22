@@ -1,12 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
-import 'package:smart_text_view/smart_text_view.dart';
-import '../../util/asset_utils.dart';
+import 'package:treeapp/pages/post_share/post_share_page.dart';
 import '../comments/widgets/comment_list_item.dart';
-import '../../widgets/image_holder.dart';
-import '../comments/comments_state.dart';
 import '../feed/widgets/feed_list_item.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -94,8 +90,45 @@ class _PostDetailsPageState extends State<PostDetailsPage>
                         feedItem: data.postDetails,
                         context: context,
                         tickerProvider: this,
-                        likeFeedItem: (id) => print(id),
+                        likeFeedItem: (item) {
+                          _postDetailsBloc.postToLikeChanged(item);
+                          _postDetailsBloc
+                              .likePostChanged(!data.postDetails.isLiked);
+                          _postDetailsBloc.saveLikeValue();
+                        },
                         isFeed: false,
+                        admin:
+                            (widget.userBloc.loginState$.value as LoggedInUser)
+                                .isAdmin,
+                        answerPoll: (answerIndex) async {
+                          _postDetailsBloc.answerPoll(
+                            data.postDetails.id,
+                            answerIndex,
+                          );
+                        },
+                        deletePost: () =>
+                            _postDetailsBloc.deletePost(data.postDetails.id),
+                        reportPost: () => Navigator.of(context).pushNamed(
+                          '/report_post',
+                          arguments: data.postDetails.id,
+                        ),
+                        share: (comment) async {
+                          if (comment) {
+                            String message = await Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) {
+                                return PostSharePage(
+                                  feedItem: data.postDetails,
+                                  loginState: widget.userBloc.loginState$.value,
+                                );
+                              }),
+                            );
+                            _postDetailsBloc.share(data.postDetails, message);
+                          } else {
+                            _postDetailsBloc.share(data.postDetails, null);
+                          }
+                        },
+                        unconnect: () =>
+                            _postDetailsBloc.unconnect(data.postDetails.userId),
                       ),
                       ListView.builder(
                         reverse: true,

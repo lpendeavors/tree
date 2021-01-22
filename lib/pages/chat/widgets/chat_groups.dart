@@ -1,4 +1,4 @@
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../generated/l10n.dart';
@@ -69,7 +69,7 @@ class _ChatGroupsState extends State<ChatGroups> {
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 5,
-              mainAxisSpacing: 5,     
+              mainAxisSpacing: 5,
               childAspectRatio: 0.8,
             ),
             padding: EdgeInsets.all(8),
@@ -94,16 +94,17 @@ class _ChatGroupsState extends State<ChatGroups> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: <Widget>[
-                      Align(
-                        alignment: Alignment.center,
-                        child: Image(
-                          height: 300,
-                          width: MediaQuery.of(context).size.width,
+                      if (group.image != null && group.image.isNotEmpty)
+                        Align(
                           alignment: Alignment.center,
-                          fit: BoxFit.cover,
-                          image: CacheImage(group.image),
+                          child: CachedNetworkImage(
+                            height: 300,
+                            width: MediaQuery.of(context).size.width,
+                            alignment: Alignment.center,
+                            fit: BoxFit.cover,
+                            imageUrl: group.image,
+                          ),
                         ),
-                      ),
                       Container(
                         decoration: BoxDecoration(
                           color: Theme.of(context).primaryColor,

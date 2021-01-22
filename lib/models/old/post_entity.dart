@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:treeapp/models/old/shared_post.dart';
 import '../../util/model_utils.dart';
 import '../firebase_model.dart';
 import './post_data.dart';
@@ -48,6 +49,8 @@ class PostEntity extends Equatable implements FirebaseModel {
   final List<String> likes;
   final List<String> muted;
   final List<int> pollDuration;
+  final SharedPost sharedPost;
+  final bool isShared;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -99,6 +102,8 @@ class PostEntity extends Equatable implements FirebaseModel {
     this.likes,
     this.muted,
     this.pollDuration,
+    this.sharedPost,
+    this.isShared,
   });
 
   String get id => this.documentId;
@@ -107,6 +112,8 @@ class PostEntity extends Equatable implements FirebaseModel {
       _$PostEntityFromJson(withId(doc));
 
   Map<String, dynamic> toJson() => _$PostEntityToJson(this);
+
+  PostEntity fromJson(Map<String, dynamic> json) => _$PostEntityFromJson(json);
 
   @override
   List get props {
@@ -149,6 +156,8 @@ class PostEntity extends Equatable implements FirebaseModel {
       likes,
       muted,
       pollDuration,
+      sharedPost,
+      isShared,
     ];
   }
 

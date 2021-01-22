@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-//import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:intl/intl.dart';
 import '../../widgets/image_holder.dart';
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -113,7 +114,64 @@ class _EditPollPageState extends State<EditPollPage> {
                         color: Colors.white,
                       ),
                     ),
-                    onPressed: () => _editPollBloc.savePoll(),
+                    onPressed: () async {
+                      var endDate = _editPollBloc.endDate$.value;
+                      var question = _editPollBloc.question$.value;
+                      if (endDate is DateTime &&
+                          endDate.isAfter(DateTime.now())) {
+                        _editPollBloc.savePoll();
+                      } else if (question.isEmpty) {
+                        return showDialog<void>(
+                          context: context,
+                          barrierDismissible: false, // user must tap button!
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Invalid Question'),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: <Widget>[
+                                    Text('Please enter a question.'),
+                                  ],
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        return showDialog<void>(
+                          context: context,
+                          barrierDismissible: false, // user must tap button!
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Invalid End Date'),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: <Widget>[
+                                    Text('Please select a future date.'),
+                                  ],
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
                   ),
                 ),
               ],
@@ -159,7 +217,7 @@ class _EditPollPageState extends State<EditPollPage> {
                                 ),
                               ],
                             ),
-                            StreamBuilder<List<TaggedItem>>(
+                            StreamBuilder<List<Map<String, String>>>(
                               stream: _editPollBloc.tagged$,
                               initialData: _editPollBloc.tagged$.value,
                               builder: (context, snapshot) {
@@ -193,10 +251,10 @@ class _EditPollPageState extends State<EditPollPage> {
                                         return Chip(
                                           avatar: ImageHolder(
                                             size: 30,
-                                            image: tagged[index].image,
+                                            image: tagged[index]["image"],
                                           ),
                                           label: Text(
-                                            tagged[index].name,
+                                            tagged[index]["name"],
                                             style: TextStyle(
                                               fontSize: 10,
                                             ),
@@ -355,55 +413,51 @@ class _EditPollPageState extends State<EditPollPage> {
                                       );
                                     },
                                   ),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      // var date =
-                                      //     await DatePicker.showDatePicker(
-                                      //         context);
-                                      // if (date != null) {
-                                      //   _editPollBloc.endDateChanged(date);
-                                      // }
-                                    },
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Divider(),
-                                          Text('Poll Duration'),
-                                          SizedBox(height: 4),
-                                          StreamBuilder<DateTime>(
-                                            stream: _editPollBloc.endDate$,
-                                            initialData:
-                                                _editPollBloc.endDate$.value,
-                                            builder: (context, snapshot) {
-                                              var endDate = snapshot.data;
-                                              var difference = endDate != null
-                                                  ? endDate
-                                                      .difference(
-                                                          DateTime.now())
-                                                      .inDays
-                                                  : 0;
+                                  SizedBox(height: 20),
+                                  Text('Poll Duration'),
+                                  StreamBuilder<DateTime>(
+                                    initialData: _editPollBloc.endDate$.value,
+                                    builder: (context, snapshot) {
+                                      DateTime existingDate =
+                                          snapshot.data ?? DateTime.now();
 
-                                              return Text(
-                                                endDate == null
-                                                    ? 'Select End Date'
-                                                    : '$difference days left',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: endDate == null
-                                                      ? Colors.grey
-                                                      : Theme.of(context)
-                                                          .primaryColor,
-                                                ),
-                                              );
-                                            },
+                                      return DateTimeField(
+                                        format: DateFormat(
+                                            "MMMM dd, yyyy 'at' h:mma"),
+                                        decoration: InputDecoration(
+                                          helperText: 'Select end date',
+                                          helperStyle: TextStyle(
+                                            color: Colors.grey[300],
                                           ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                        initialValue: existingDate,
+                                        onShowPicker:
+                                            (context, currentValue) async {
+                                          final date = await showDatePicker(
+                                              context: context,
+                                              firstDate: DateTime.now(),
+                                              initialDate: existingDate,
+                                              lastDate: DateTime(2100));
+                                          if (date != null) {
+                                            final time = await showTimePicker(
+                                              context: context,
+                                              initialTime:
+                                                  TimeOfDay.fromDateTime(
+                                                      existingDate),
+                                            );
+                                            _editPollBloc.endDateChanged(
+                                                DateTimeField.combine(
+                                                    date, time));
+                                            return DateTimeField.combine(
+                                                date, time);
+                                          } else {
+                                            return currentValue;
+                                          }
+                                        },
+                                      );
+                                    },
                                   ),
+                                  SizedBox(height: 20),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: List.generate(
@@ -493,8 +547,8 @@ class _EditPollPageState extends State<EditPollPage> {
                           );
 
                           if (tagged != null) {
-                            _editPollBloc
-                                .taggedChanged(tagged as List<TaggedItem>);
+                            _editPollBloc.taggedChanged(
+                                tagged as List<Map<String, String>>);
                           }
                         },
                         child: Row(
@@ -558,6 +612,7 @@ class _EditPollPageState extends State<EditPollPage> {
       answer.label = choices[index];
       answer.answer = '';
       answer.isCorrect = false;
+      answer.responses = List<String>();
       return answer;
     });
 

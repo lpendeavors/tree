@@ -84,7 +84,14 @@ class _TagConnectionsPageState extends State<TagConnectionsPage> {
                 ),
               ),
               onPressed: () async {
-                var tagged = _tagConnectionsBloc.tagged$.value;
+                var tagged = _tagConnectionsBloc.tagged$.value.map((t) {
+                  return {
+                    'id': t.id,
+                    'image': t.image,
+                    'name': t.name,
+                    'about': t.about,
+                  };
+                }).toList();
                 Navigator.of(context).pop(tagged);
               },
             ),

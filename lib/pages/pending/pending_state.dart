@@ -72,6 +72,7 @@ class PendingItem extends Equatable {
   final String churchAddress;
   final String city;
   final String churchName;
+  final String token;
 
   const PendingItem({
     @required this.id,
@@ -82,6 +83,7 @@ class PendingItem extends Equatable {
     @required this.churchAddress,
     @required this.city,
     @required this.churchName,
+    @required this.token,
   });
 
   @override
@@ -94,6 +96,7 @@ class PendingItem extends Equatable {
         churchAddress,
         city,
         churchName,
+        token,
       ];
 
   @override

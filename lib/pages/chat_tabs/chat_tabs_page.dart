@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:treeapp/pages/create_message/create_message_state.dart';
+
 import '../../user_bloc/user_login_state.dart';
 import '../../user_bloc/user_bloc.dart';
 import '../../generated/l10n.dart';
@@ -12,13 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
 
 class ChatTabsPage extends StatefulWidget {
-  final ChatTabsBloc chatBloc;
+  final ChatTabsBloc Function() initChatBloc;
   final UserBloc userBloc;
 
   const ChatTabsPage({
     Key key,
     @required this.userBloc,
-    @required this.chatBloc,
+    @required this.initChatBloc,
   }) : super(key: key);
 
   @override
@@ -36,7 +38,7 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
   void initState() {
     super.initState();
 
-    _chatBloc = widget.chatBloc;
+    _chatBloc = widget.initChatBloc();
     _subscriptions = [
       widget.userBloc.loginState$
           .where((state) => state is Unauthenticated)
@@ -73,8 +75,10 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
                     flex: 1,
                     child: RaisedButton(
                       onPressed: () async {
-                        Navigator.of(context).pushNamed('/search',
-                            arguments: {'searchType': SearchType.CHAT});
+                        Navigator.of(context).pushNamed(
+                          '/search',
+                          arguments: {'searchType': SearchType.CHAT},
+                        );
                       },
                       color: Colors.grey[50],
                       elevation: 0,
@@ -161,14 +165,15 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
         onPageChanged: (page) => _currentPage.value = page,
         children: <Widget>[
           ChatMessages(
-            bloc: widget.chatBloc,
+            bloc: _chatBloc,
             uid: (widget.userBloc.loginState$.value as LoggedInUser).uid,
+            mute: (roomId) => widget.userBloc.mute(roomId),
           ),
           ChatRooms(
-            bloc: widget.chatBloc,
+            bloc: _chatBloc,
           ),
           ChatGroups(
-            bloc: widget.chatBloc,
+            bloc: _chatBloc,
           ),
         ],
       ),
@@ -183,13 +188,19 @@ class _ChatTabsPageState extends State<ChatTabsPage> {
               if (value == 0) {
                 Navigator.of(context).pushNamed(
                   '/create_message',
-                  arguments: 1,
+                  arguments: <String, dynamic>{
+                    "type": 1,
+                    "existingMembers": List<MemberItem>(),
+                  },
                 );
               }
               if (value == 2) {
                 Navigator.of(context).pushNamed(
                   '/create_message',
-                  arguments: 0,
+                  arguments: <String, dynamic>{
+                    "type": 0,
+                    "existingMembers": List<MemberItem>(),
+                  },
                 );
               }
             },

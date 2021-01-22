@@ -115,4 +115,5 @@ class PollAnswerItem {
   String label;
   String answer;
   bool isCorrect;
+  List<String> responses;
 }

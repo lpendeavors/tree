@@ -129,6 +129,8 @@ class FeedItem extends Equatable {
   final bool isShared;
   final List<PollData> pollData;
   final List<String> likes;
+  final FeedItem sharedPost;
+  final int type;
 
   const FeedItem({
     @required this.id,
@@ -147,6 +149,8 @@ class FeedItem extends Equatable {
     @required this.isShared,
     @required this.pollData,
     @required this.likes,
+    @required this.sharedPost,
+    @required this.type,
   });
 
   @override
@@ -167,6 +171,8 @@ class FeedItem extends Equatable {
         isShared,
         pollData,
         likes,
+        sharedPost,
+        type
       ];
 
   @override

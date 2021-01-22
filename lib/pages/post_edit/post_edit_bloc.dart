@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:treeapp/models/old/post_data.dart';
 import '../../bloc/bloc_provider.dart';
 import '../../data/post/firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
@@ -26,7 +27,7 @@ class EditPostBloc implements BaseBloc {
   final void Function(List<String>) postMediaChanged;
   final void Function(int) postMediaTypeChanged;
   final void Function(String) postVideoThumbnailChanged;
-  final void Function(List<TaggedItem>) taggedChanged;
+  final void Function(List<Map<String, String>>) taggedChanged;
 
   ///
   /// Output streams
@@ -38,7 +39,7 @@ class EditPostBloc implements BaseBloc {
   final ValueStream<List<String>> postMedia$;
   final ValueStream<int> postMediaType$;
   final ValueStream<String> postVideoThumbnail$;
-  final ValueStream<List<TaggedItem>> tagged$;
+  final ValueStream<List<Map<String, String>>> tagged$;
 
   ///
   /// Clean up
@@ -86,7 +87,7 @@ class EditPostBloc implements BaseBloc {
     final isPublicSubject = BehaviorSubject<bool>.seeded(true);
     final isOnlyForConnectionsSubject = BehaviorSubject<bool>.seeded(false);
     final messageSubject = BehaviorSubject<String>.seeded('');
-    final taggedSubject = BehaviorSubject<List<TaggedItem>>.seeded([]);
+    final taggedSubject = BehaviorSubject<List<Map<String, String>>>.seeded([]);
     final postMediaSubject =
         BehaviorSubject<List<String>>.seeded(List<String>());
     final postMediaTypeSubject = BehaviorSubject<int>.seeded(null);
@@ -223,12 +224,12 @@ class EditPostBloc implements BaseBloc {
       connectionsOnly: false,
       isPublic: entity.isPostPrivate == 0,
       tagged: entity.tags,
-      images: entity.postData
-          .where((p) => p.type == 0)
+      images: (entity.postData ?? List<PostData>())
+          .where((p) => p.type == 1)
           .map((p) => p.imageUrl)
           .toList(),
-      videos: entity.postData
-          .where((p) => p.type == 1)
+      videos: (entity.postData ?? List<PostData>())
+          .where((p) => p.type == 2)
           .map((p) => p.imageUrl)
           .toList(),
     );
@@ -256,7 +257,7 @@ class EditPostBloc implements BaseBloc {
     String message,
     List<String> postMedia,
     String postVideoThumbnail,
-    List<TaggedItem> tags,
+    List<Map<String, String>> tags,
     String groupId,
     int mediaType,
     Sink<bool> isLoadingSubject,
@@ -286,7 +287,7 @@ class EditPostBloc implements BaseBloc {
           loginState.token,
           0,
           groupId,
-          tags.map((t) => t.id).toList(),
+          tags.map((t) => t["id"]).toList(),
         );
         yield PostAddedMessageSuccess();
       } catch (e) {

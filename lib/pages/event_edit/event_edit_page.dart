@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_map_location_picker/google_map_location_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
@@ -54,8 +55,39 @@ class _EventEditPageState extends State<EventEditPage> {
     ];
   }
 
-  void _showMessageResult(EventEditedMessage message) {
+  void _showMessageResult(EventEditedMessage message) async {
     print('[DEBUG] EventEditedMessage=$message');
+    if (message is EventEditedMessageSuccess) {
+      await _showApprovalAlert();
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _showApprovalAlert() {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pending approval'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('You will be notified if your event is approved'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -122,7 +154,41 @@ class _EventEditPageState extends State<EventEditPage> {
                           ),
                         );
                       }),
-                  onPressed: _eventEditBloc.saveEvent,
+                  onPressed: () {
+                    var startDate = _eventEditBloc.startDate$.value;
+                    var endDate = _eventEditBloc.endDate$.value;
+                    if ((startDate is DateTime &&
+                            startDate.isAfter(DateTime.now())) ||
+                        (endDate is DateTime &&
+                            endDate.isAfter(DateTime.now()))) {
+                      _eventEditBloc.saveEvent();
+                    } else {
+                      return showDialog<void>(
+                        context: context,
+                        barrierDismissible: false, // user must tap button!
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Invalid Event Date'),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: <Widget>[
+                                  Text('Please select a future date.'),
+                                ],
+                              ),
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
                 ),
               ),
             ],
@@ -202,18 +268,18 @@ class _EventEditPageState extends State<EventEditPage> {
                                                             File(newImages[
                                                                 index]),
                                                           )
-                                                        : Image(
+                                                        : CachedNetworkImage(
                                                             height:
                                                                 double.infinity,
                                                             width:
                                                                 double.infinity,
                                                             fit: BoxFit.cover,
-                                                            image: CacheImage(
+                                                            imageUrl:
                                                                 existingEvent
                                                                     .eventDetails
                                                                     .media[
                                                                         index]
-                                                                    .url),
+                                                                    .url,
                                                           ),
                                                   ],
                                                 ),
@@ -310,6 +376,27 @@ class _EventEditPageState extends State<EventEditPage> {
                         }
                       },
                     ),
+                    StreamBuilder<EventImageError>(
+                      stream: _eventEditBloc.imageError$,
+                      initialData: null,
+                      builder: (context, snapshot) {
+                        var error = snapshot.data ?? null;
+
+                        if (error is EventImageError) {
+                          return Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'A photo is required',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Container();
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -340,6 +427,27 @@ class _EventEditPageState extends State<EventEditPage> {
                         ),
                       ),
                     ),
+                    StreamBuilder<EventTitleError>(
+                      stream: _eventEditBloc.titleError$,
+                      initialData: null,
+                      builder: (context, snapshot) {
+                        var error = snapshot.data ?? null;
+
+                        if (error is EventTitleError) {
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'A valid title is required.',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Container();
+                      },
+                    ),
                     SizedBox(height: 15),
                     Container(
                       padding: EdgeInsets.all(15),
@@ -369,168 +477,125 @@ class _EventEditPageState extends State<EventEditPage> {
                           Container(
                             child: Column(
                               children: <Widget>[
-                                GestureDetector(
-                                  onTap: () {
-                                    // DatePicker.showDateTimePicker(context,
-                                    //     showTitleActions: true,
-                                    //     onConfirm: (selectedDate) {
-                                    //   _eventEditBloc
-                                    //       .startDateChanged(selectedDate);
-                                    //   _eventEditBloc
-                                    //       .startTimeChanged(selectedDate);
-                                    // });
+                                StreamBuilder<DateTime>(
+                                  initialData: _eventEditBloc.startDate$.value,
+                                  builder: (context, snapshot) {
+                                    DateTime existingDate =
+                                        snapshot.data ?? DateTime.now();
+
+                                    return DateTimeField(
+                                      format: DateFormat(
+                                          "MMMM dd, yyyy 'at' h:mma"),
+                                      initialValue: existingDate,
+                                      onShowPicker:
+                                          (context, currentValue) async {
+                                        final date = await showDatePicker(
+                                            context: context,
+                                            firstDate: DateTime.now(),
+                                            initialDate: existingDate,
+                                            lastDate: DateTime(2100));
+                                        if (date != null) {
+                                          final time = await showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.fromDateTime(
+                                                existingDate),
+                                          );
+                                          _eventEditBloc.startDateChanged(
+                                              DateTimeField.combine(
+                                                  date, time));
+                                          _eventEditBloc.startTimeChanged(
+                                              DateTimeField.combine(
+                                                  date, time));
+                                          return DateTimeField.combine(
+                                              date, time);
+                                        } else {
+                                          return currentValue;
+                                        }
+                                      },
+                                    );
                                   },
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: <Widget>[
-                                      Flexible(
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          alignment: Alignment.centerLeft,
-                                          child: StreamBuilder<DateTime>(
-                                            stream: _eventEditBloc.startDate$,
-                                            initialData:
-                                                _eventEditBloc.startDate$.value,
-                                            builder: (context, snapshot) {
-                                              var date =
-                                                  existingEvent.eventDetails ==
-                                                          null
-                                                      ? snapshot.data
-                                                      : existingEvent
-                                                          .eventDetails
-                                                          .startDate;
+                                ),
+                                StreamBuilder<EventStartDateError>(
+                                  stream: _eventEditBloc.startDateError$,
+                                  initialData: null,
+                                  builder: (context, snapshot) {
+                                    var error = snapshot.data ?? null;
 
-                                              return Text(
-                                                date != null
-                                                    ? DateFormat.yMMMMd()
-                                                        .format(date)
-                                                    : "Start date",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black
-                                                      .withOpacity(1),
-                                                ),
-                                              );
-                                            },
+                                    if (error is EventStartDateError) {
+                                      return Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'A valid start date is required.',
+                                          style: TextStyle(
+                                            color: Colors.red,
                                           ),
                                         ),
-                                      ),
-                                      Flexible(
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          alignment: Alignment.center,
-                                          child: StreamBuilder<DateTime>(
-                                            stream: _eventEditBloc.startTime$,
-                                            initialData:
-                                                _eventEditBloc.startTime$.value,
-                                            builder: (context, snapshot) {
-                                              var time =
-                                                  existingEvent.eventDetails ==
-                                                          null
-                                                      ? snapshot.data
-                                                      : existingEvent
-                                                          .eventDetails
-                                                          .startTime;
+                                      );
+                                    }
 
-                                              return Text(
-                                                time != null
-                                                    ? DateFormat.jm()
-                                                        .format(time)
-                                                    : 'Start time',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black
-                                                      .withOpacity(1),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    return Container();
+                                  },
                                 ),
                                 SizedBox(height: 10),
-                                GestureDetector(
-                                  onTap: () async {
-                                    // DatePicker.showDateTimePicker(context,
-                                    //     showTitleActions: true,
-                                    //     onConfirm: (selectedDate) {
-                                    //   _eventEditBloc
-                                    //       .endDateChanged(selectedDate);
-                                    //   _eventEditBloc
-                                    //       .endTimeChanged(selectedDate);
-                                    // });
+                                StreamBuilder<DateTime>(
+                                  initialData: _eventEditBloc.endDate$.value,
+                                  builder: (context, snapshot) {
+                                    DateTime existingDate =
+                                        snapshot.data ?? DateTime.now();
+
+                                    return DateTimeField(
+                                      format: DateFormat(
+                                          "MMMM dd, yyyy 'at' h:mma"),
+                                      initialValue: existingDate,
+                                      onShowPicker:
+                                          (context, currentValue) async {
+                                        final date = await showDatePicker(
+                                            context: context,
+                                            firstDate: DateTime.now(),
+                                            initialDate:
+                                                currentValue ?? existingDate,
+                                            lastDate: DateTime(2100));
+                                        if (date != null) {
+                                          final time = await showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.fromDateTime(
+                                                existingDate),
+                                          );
+                                          _eventEditBloc.endDateChanged(
+                                              DateTimeField.combine(
+                                                  date, time));
+                                          _eventEditBloc.endTimeChanged(
+                                              DateTimeField.combine(
+                                                  date, time));
+                                          return DateTimeField.combine(
+                                              date, time);
+                                        } else {
+                                          return currentValue;
+                                        }
+                                      },
+                                    );
                                   },
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: <Widget>[
-                                      Flexible(
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          alignment: Alignment.centerLeft,
-                                          child: StreamBuilder<DateTime>(
-                                            stream: _eventEditBloc.endDate$,
-                                            initialData:
-                                                _eventEditBloc.endDate$.value,
-                                            builder: (context, snapshot) {
-                                              var date =
-                                                  existingEvent.eventDetails ==
-                                                          null
-                                                      ? snapshot.data
-                                                      : existingEvent
-                                                          .eventDetails.endDate;
+                                ),
+                                StreamBuilder<EventEndDateError>(
+                                  stream: _eventEditBloc.endDateError$,
+                                  initialData: null,
+                                  builder: (context, snapshot) {
+                                    var error = snapshot.data ?? null;
 
-                                              return Text(
-                                                date != null
-                                                    ? DateFormat.yMMMMd()
-                                                        .format(date)
-                                                    : "End date",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black
-                                                      .withOpacity(1),
-                                                ),
-                                              );
-                                            },
+                                    if (error is EventEndDateError) {
+                                      return Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'A valid end date is required.',
+                                          style: TextStyle(
+                                            color: Colors.red,
                                           ),
                                         ),
-                                      ),
-                                      Flexible(
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          alignment: Alignment.center,
-                                          child: StreamBuilder<DateTime>(
-                                            stream: _eventEditBloc.endTime$,
-                                            initialData:
-                                                _eventEditBloc.endTime$.value,
-                                            builder: (context, snapshot) {
-                                              var time =
-                                                  existingEvent.eventDetails ==
-                                                          null
-                                                      ? snapshot.data
-                                                      : existingEvent
-                                                          .eventDetails.endTime;
+                                      );
+                                    }
 
-                                              return Text(
-                                                time != null
-                                                    ? DateFormat.jm()
-                                                        .format(time)
-                                                    : 'End time',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black
-                                                      .withOpacity(1),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    return Container();
+                                  },
                                 ),
                               ],
                             ),
@@ -587,6 +652,27 @@ class _EventEditPageState extends State<EventEditPage> {
                                 ),
                               ),
                             ),
+                          ),
+                          StreamBuilder<EventDescriptionError>(
+                            stream: _eventEditBloc.descriptionError$,
+                            initialData: null,
+                            builder: (context, snapshot) {
+                              var error = snapshot.data ?? null;
+
+                              if (error is EventDescriptionError) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'A valid description is required.',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Container();
+                            },
                           ),
                         ],
                       ),
@@ -789,6 +875,27 @@ class _EventEditPageState extends State<EventEditPage> {
                                       );
                                     }),
                               );
+                            },
+                          ),
+                          StreamBuilder<EventVenueError>(
+                            stream: _eventEditBloc.venueError$,
+                            initialData: null,
+                            builder: (context, snapshot) {
+                              var error = snapshot.data ?? null;
+
+                              if (error is EventVenueError) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'A valid location is required',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Container();
                             },
                           ),
                         ],

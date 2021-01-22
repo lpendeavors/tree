@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rxdart/rxdart.dart';
 import '../../models/new/room_entity.dart';
-import 'package:tuple/tuple.dart';
 import './firestore_room_repository.dart';
 
-class FirestoreRoomRepositoryImpl implements FirestoreRoomRepository{
-  final Firestore _firestore;
+class FirestoreRoomRepositoryImpl implements FirestoreRoomRepository {
+  final FirebaseFirestore _firestore;
 
   const FirestoreRoomRepositoryImpl(this._firestore);
 
@@ -26,13 +24,16 @@ class FirestoreRoomRepositoryImpl implements FirestoreRoomRepository{
     List<String> ids = [];
     List<RoomEntity> result = [];
 
-    for(var i = 0; i < querySnapshot.documents.length; i++) {
-      ids.add(querySnapshot.documents[i].data['room']);
+    for (var i = 0; i < querySnapshot.docs.length; i++) {
+      ids.add(querySnapshot.docs[i].data()['room']);
     }
 
     await Future.forEach(ids, (id) async {
-      QuerySnapshot snapshot = await _firestore.collection('(rooms)').where(FieldPath.documentId, isEqualTo: id).getDocuments();
-      result.add(RoomEntity.fromDocumentSnapshot(snapshot.documents[0]));
+      QuerySnapshot snapshot = await _firestore
+          .collection('(rooms)')
+          .where(FieldPath.documentId, isEqualTo: id)
+          .get();
+      result.add(RoomEntity.fromDocumentSnapshot(snapshot.docs[0]));
     });
 
     return result;

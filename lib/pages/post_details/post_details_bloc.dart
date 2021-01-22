@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:treeapp/data/user/firestore_user_repository.dart';
+import 'package:treeapp/models/old/shared_post.dart';
 import '../../util/post_utils.dart';
 import '../comments/comments_state.dart';
 import '../../bloc/bloc_provider.dart';
@@ -27,11 +29,20 @@ class PostDetailsBloc extends BaseBloc {
   ///
   /// Input functions
   ///
+  final Function(String) postToLikeChanged;
+  final Function(bool) likePostChanged;
+  final Function() saveLikeValue;
+  final Function(String) deletePost;
+  final Function(String) unconnect;
+  final Function(FeedItem, String) share;
+  final Function(String, int) answerPoll;
 
   ///
   /// Output streams
   ///
   final ValueStream<PostDetailsState> postDetailsState$;
+  final Stream<FeedUnconnectMessage> unconnectMessage$;
+  final Stream<FeedDeleteMessage> deleteMessage$;
 
   ///
   /// Clean up
@@ -39,7 +50,16 @@ class PostDetailsBloc extends BaseBloc {
   final void Function() _dispose;
 
   PostDetailsBloc._({
+    @required this.unconnect,
+    @required this.deletePost,
+    @required this.saveLikeValue,
+    @required this.postToLikeChanged,
+    @required this.likePostChanged,
+    @required this.share,
+    @required this.answerPoll,
     @required this.postDetailsState$,
+    @required this.unconnectMessage$,
+    @required this.deleteMessage$,
     @required void Function() dispose,
   }) : _dispose = dispose;
 
@@ -47,6 +67,7 @@ class PostDetailsBloc extends BaseBloc {
     @required UserBloc userBloc,
     @required FirestorePostRepository postRepository,
     @required FirestoreCommentRepository commentRepository,
+    @required FirestoreUserRepository userRepository,
     @required String postId,
   }) {
     ///
@@ -54,16 +75,37 @@ class PostDetailsBloc extends BaseBloc {
     ///
     assert(userBloc != null, 'userBloc cannot be null');
     assert(postRepository != null, 'postRepository cannot be null');
+    assert(userRepository != null, 'userRepository cannot be null');
     assert(commentRepository != null, 'commentRepository cannot be null');
     assert(postId != null, 'postId cannot be null');
 
     ///
     /// Stream controllers
     ///
+    final feedItemToLikeSubject = BehaviorSubject<String>.seeded(null);
+    final postLikeSubject = BehaviorSubject<bool>.seeded(false);
+    final savePostLikeSubject = PublishSubject<void>();
+    final unconnectSubject = PublishSubject<String>();
+    final deletePostSubject = PublishSubject<String>();
 
     ///
     /// Streams
     ///
+    final deleteMessage$ = deletePostSubject
+        .switchMap((post) => performDelete(
+              postRepository,
+              post,
+            ))
+        .publish();
+
+    final unconnectMessage$ = unconnectSubject
+        .switchMap((user) => performUnconnect(
+              userRepository,
+              (userBloc.loginState$.value as LoggedInUser).uid,
+              user,
+            ))
+        .publish();
+
     final postDetailsState$ = _getPostDetails(
       userBloc,
       postRepository,
@@ -76,7 +118,18 @@ class PostDetailsBloc extends BaseBloc {
     ];
 
     return PostDetailsBloc._(
+        unconnect: (user) => unconnectSubject.add(user),
+        deletePost: (post) => deletePostSubject.add(post),
+        saveLikeValue: () => savePostLikeSubject.add(null),
+        likePostChanged: postLikeSubject.add,
+        postToLikeChanged: feedItemToLikeSubject.add,
+        share: (post, message) =>
+            _sharePost(post, message, userBloc, postRepository),
+        answerPoll: (poll, answerIndex) =>
+            _answerPoll(poll, answerIndex, userBloc, postRepository),
         postDetailsState$: postDetailsState$,
+        deleteMessage$: deleteMessage$,
+        unconnectMessage$: unconnectMessage$,
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
         });
@@ -106,7 +159,8 @@ class PostDetailsBloc extends BaseBloc {
         commentRepository.getByPost(postId),
         (post, comments) {
           return _kInitialPostDetailsState.copyWith(
-            postDetails: _entityToPostItem(post, loginState.uid),
+            postDetails:
+                _entityToPostItem(post, loginState.uid, loginState.mutedChats),
             commentItems: _entitiesToCommentItems(comments, loginState.uid),
             isLoading: false,
           );
@@ -130,26 +184,32 @@ class PostDetailsBloc extends BaseBloc {
   static FeedItem _entityToPostItem(
     PostEntity entity,
     String uid,
+    List<String> muted,
   ) {
     return FeedItem(
-      id: entity.documentId,
-      tags: entity.tags,
-      timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
-      timePostedString:
-          timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
-      message: entity.postMessage,
-      name: entity.fullName != null ? entity.fullName : entity.churchName,
-      userImage: entity.image ?? "",
-      isPoll: entity.type == PostType.poll.index,
-      postImages: _getPostImages(entity),
-      userId: entity.ownerId,
-      isLiked: (entity.likes ?? []).contains(uid),
-      isMine: entity.ownerId == uid,
-      abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
-      isShared: entity.isPostPrivate == 1,
-      pollData: entity.pollData ?? [],
-      likes: entity.likes ?? [],
-    );
+        id: entity.documentId,
+        tags: entity.tags,
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString:
+            timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+        message: entity.postMessage,
+        name: (entity.isChurch ?? false) ? entity.churchName : entity.fullName,
+        userImage: entity.image ?? "",
+        isPoll: entity.type == PostType.poll.index,
+        postImages: _getPostImages(entity),
+        userId: entity.ownerId,
+        isLiked: (entity.likes ?? []).contains(uid),
+        isMine: entity.ownerId == uid,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+        isShared: entity.isPostPrivate == 1,
+        pollData: entity.pollData ?? [],
+        likes: entity.likes ?? [],
+        sharedPost: entity.sharedPost != null
+            ? _entitiyToSharedItem(entity.sharedPost, uid, muted)
+            : null,
+        type: (entity.postData != null && entity.postData.isNotEmpty)
+            ? entity.postData[0].type ?? 0
+            : 0);
   }
 
   static List<CommentItem> _entitiesToCommentItems(
@@ -200,6 +260,35 @@ class PostDetailsBloc extends BaseBloc {
     }).toList();
   }
 
+  static FeedItem _entitiyToSharedItem(
+    SharedPost entity,
+    String uid,
+    List<String> muted,
+  ) {
+    return FeedItem(
+        id: null,
+        tags: entity.tags,
+        timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+        timePostedString:
+            timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+        message: entity.postMessage,
+        name: (entity.isChurch ?? false) ? entity.churchName : entity.fullName,
+        userImage: entity.image,
+        userId: entity.ownerId,
+        isPoll: entity.type == PostType.poll.index,
+        postImages: _getSharedImages(entity),
+        isMine: entity.ownerId == uid,
+        isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
+        abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+        isShared: entity.isShared ?? false,
+        pollData: entity.pollData ?? [],
+        likes: entity.likes ?? [],
+        sharedPost: null,
+        type: (entity.postData != null && entity.postData.isNotEmpty)
+            ? entity.postData[0].type ?? 0
+            : 0);
+  }
+
   static Stream<PostDetailsState> _getPostDetails(
     UserBloc userBloc,
     FirestorePostRepository postRepository,
@@ -226,5 +315,88 @@ class PostDetailsBloc extends BaseBloc {
     }
 
     return images;
+  }
+
+  static List<String> _getSharedImages(SharedPost entity) {
+    List<String> images = List<String>();
+
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        images = entity.postData.map((data) => data.imageUrl).toList();
+      }
+    }
+
+    return images;
+  }
+
+  static Stream<FeedDeleteMessage> performDelete(
+    FirestorePostRepository postRepository,
+    String postId,
+  ) async* {
+    print('[DEBUG] PostDetailsBloc#performDelete');
+    try {
+      await postRepository.deletePost(postId);
+      yield FeedDeleteSuccess();
+    } catch (e) {
+      yield FeedDeleteError(e);
+    }
+  }
+
+  static Stream<FeedUnconnectMessage> performUnconnect(
+    FirestoreUserRepository userRepository,
+    String userId,
+    String userToUnfollow,
+  ) async* {
+    print('[DEBUG] PostDetailsBloc#performUnconnect');
+    try {
+      await userRepository.removeConnection(userId, userToUnfollow);
+      yield FeedUnconnectSuccess();
+    } catch (e) {
+      yield FeedUnconnectError(e);
+    }
+  }
+
+  static Future<void> _sharePost(
+    FeedItem post,
+    String message,
+    UserBloc userBloc,
+    FirestorePostRepository postRepository,
+  ) async {
+    print('[DEBUG] PostDetailsBloc#sharePost');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      await postRepository.sharePost(
+        post.id,
+        loginState.isAdmin,
+        loginState.uid,
+        loginState.fullName,
+        loginState.email,
+        loginState.image,
+        loginState.token,
+        loginState.isVerified,
+        loginState.isChurch,
+        message,
+        loginState.connections,
+      );
+    }
+  }
+
+  static Future<void> _answerPoll(
+    String poll,
+    int answerIndex,
+    UserBloc userBloc,
+    FirestorePostRepository postRepository,
+  ) async {
+    print('[DEBUG] PostDetailsBloc#answerPoll');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      await postRepository.answerPoll(
+        poll,
+        answerIndex,
+        loginState.uid,
+      );
+    }
   }
 }

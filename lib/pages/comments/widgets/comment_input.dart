@@ -137,7 +137,7 @@ class _CommentInputState extends State<CommentInput> {
                               });
                             } else {
                               widget.commentsBloc.addComment();
-                              _keyboardFocus.unfocus();
+                              Navigator.of(context).pop();
                             }
                           },
                         ),

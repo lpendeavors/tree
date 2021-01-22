@@ -13,6 +13,7 @@ class UserBloc implements BaseBloc {
   ///
   final Sink<void> signOut;
   final Function(String) mute;
+  final Function(String) updateToken;
 
   ///
   /// Streams
@@ -56,7 +57,12 @@ class UserBloc implements BaseBloc {
       user$,
       signOutController,
       signOutMessage$,
-      (id) async => await _mute(userRepository, user$.value, id),
+      (id) async {
+        await _mute(userRepository, user$.value, id);
+      },
+      (token) async {
+        await _saveToken(userRepository, user$.value, token);
+      },
     );
   }
 
@@ -66,6 +72,7 @@ class UserBloc implements BaseBloc {
     this.signOut,
     this.message$,
     this.mute,
+    this.updateToken,
   );
 
   @override
@@ -76,8 +83,12 @@ class UserBloc implements BaseBloc {
       return const Unauthenticated();
     }
 
+    print(userEntity.uid);
+
     return LoggedInUser(
-      fullName: "${userEntity.firstName} ${userEntity.lastName}",
+      fullName: (userEntity.isChurch ?? false)
+          ? userEntity.churchName
+          : "${userEntity.firstName} ${userEntity.lastName}",
       email: userEntity.email,
       uid: userEntity.id,
       isAdmin: userEntity.isAdmin ?? false,
@@ -96,6 +107,8 @@ class UserBloc implements BaseBloc {
       isChurchUpdated: userEntity.isChurchUpdated ?? false,
       isProfileUpdated: userEntity.isProfileUpdated ?? false,
       receivedRequests: userEntity.receivedRequests ?? [],
+      sentRequests: userEntity.sentRequests ?? [],
+      isSuspended: userEntity.isSuspended ?? false,
     );
   }
 
@@ -108,6 +121,19 @@ class UserBloc implements BaseBloc {
       await userRepository.mute(
         loginState.uid,
         id,
+      );
+    }
+  }
+
+  static Future<void> _saveToken(
+    FirestoreUserRepository userRepository,
+    LoginState loginState,
+    String token,
+  ) async {
+    if (loginState is LoggedInUser) {
+      await userRepository.updateToken(
+        loginState.uid,
+        token,
       );
     }
   }

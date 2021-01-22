@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:treeapp/data/group/firestore_group_repository.dart';
 import 'package:treeapp/data/request/firestore_request_repository.dart';
+import 'package:treeapp/models/old/shared_post.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
 import '../../util/post_utils.dart';
 import '../../data/post/firestore_post_repository.dart';
@@ -46,8 +47,11 @@ class ProfileBloc implements BaseBloc {
   final void Function(bool) likePostChanged;
   final void Function() saveLikeValue;
   final Function(String) deletePost;
-  final Function() suspendUser;
-  final Function() deleteUser;
+  final Function(String) suspendUser;
+  final Function(String) deleteUser;
+  final Function(String) unconnect;
+  final Function(FeedItem, String) share;
+  final Function(String, int) answerPoll;
 
   ///
   /// Output streams
@@ -66,6 +70,9 @@ class ProfileBloc implements BaseBloc {
   final void Function() _dispose;
 
   ProfileBloc._({
+    @required this.unconnect,
+    @required this.share,
+    @required this.answerPoll,
     @required this.profileState$,
     @required this.recentFeedState$,
     @required this.dmState$,
@@ -122,6 +129,7 @@ class ProfileBloc implements BaseBloc {
     final deleteUserSubject = PublishSubject<void>();
     final suspendUserSubject = PublishSubject<void>();
     final isLoadingSubject = BehaviorSubject<bool>.seeded(false);
+    final unconnectSubject = PublishSubject<String>();
 
     final sendConnectRequest$ = sendConnectRequestController
         .exhaustMap((request) => _sendConnectRequest(
@@ -169,6 +177,14 @@ class ProfileBloc implements BaseBloc {
             ))
         .publish();
 
+    final unconnectMessage$ = unconnectSubject
+        .switchMap((user) => performUnconnect(
+              userRepository,
+              (userBloc.loginState$.value as LoggedInUser).uid,
+              user,
+            ))
+        .publish();
+
     ///
     /// Streams
     ///
@@ -196,6 +212,7 @@ class ProfileBloc implements BaseBloc {
       dm$.connect(),
       likeMessage$.connect(),
       deleteMessage$.connect(),
+      unconnectMessage$.connect(),
     ];
 
     final controllers = <StreamController>[
@@ -229,8 +246,13 @@ class ProfileBloc implements BaseBloc {
         postToLikeChanged: feedItemToLikeSubject.add,
         deleteMessage$: deleteMessage$,
         likeMessage$: likeMessage$,
-        suspendUser: () => _suspendUser(userBloc, userRepository, userId),
-        deleteUser: () => _deleteUser(userBloc, userRepository, userId),
+        suspendUser: (user) => _suspendUser(userBloc, userRepository, user),
+        deleteUser: (user) => _deleteUser(userBloc, userRepository, user),
+        unconnect: (user) => unconnectSubject.add(user),
+        share: (post, message) =>
+            _sharePost(post, message, userBloc, postRepository),
+        answerPoll: (poll, answerIndex) =>
+            _answerPoll(poll, answerIndex, userBloc, postRepository),
         dispose: () async {
           await Future.wait(subscriptions.map((s) => s.cancel()));
           await Future.wait(controllers.map((c) => c.close()));
@@ -323,28 +345,75 @@ class ProfileBloc implements BaseBloc {
   ) {
     return entities.map((entity) {
       return FeedItem(
-        id: entity.documentId,
+          id: entity.documentId,
+          tags: entity.tags,
+          timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
+          timePostedString:
+              timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
+          message: entity.postMessage,
+          name:
+              (entity.isChurch ?? false) ? entity.churchName : entity.fullName,
+          userImage: entity.image ?? "",
+          isPoll: entity.type == PostType.poll.index,
+          postImages: _getPostImages(entity),
+          userId: entity.ownerId,
+          isLiked: (entity.likes ?? []).contains(uid),
+          isMine: entity.ownerId == uid,
+          abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
+          isShared: entity.isShared ?? false,
+          pollData: entity.pollData ?? [],
+          likes: entity.likes ?? [],
+          sharedPost: entity.sharedPost != null
+              ? _entityToSharedItem(entity.sharedPost, uid, [])
+              : null,
+          type: (entity.postData != null && entity.postData.isNotEmpty)
+              ? entity.postData[0].type ?? 0
+              : 0);
+    }).toList();
+  }
+
+  static FeedItem _entityToSharedItem(
+    SharedPost entity,
+    String uid,
+    List<String> muted,
+  ) {
+    return FeedItem(
+        id: null,
         tags: entity.tags,
         timePosted: DateTime.fromMillisecondsSinceEpoch(entity.time),
         timePostedString:
             timeago.format(DateTime.fromMillisecondsSinceEpoch(entity.time)),
         message: entity.postMessage,
-        name: entity.fullName != null ? entity.fullName : entity.churchName,
-        userImage: entity.image ?? "",
-        isPoll: entity.type == PostType.poll.index,
-        postImages: _getPostImages(entity),
+        name: (entity.isChurch ?? false) ? entity.churchName : entity.fullName,
+        userImage: entity.image,
         userId: entity.ownerId,
-        isLiked: (entity.likes ?? []).contains(uid),
+        isPoll: entity.type == PostType.poll.index,
+        postImages: _getSharedImages(entity),
         isMine: entity.ownerId == uid,
+        isLiked: entity.likes != null ? entity.likes.contains(uid) : false,
         abbreviatedPost: getAbbreviatedPost(entity.postMessage ?? ""),
-        isShared: entity.isPostPrivate == 1,
+        isShared: entity.isShared ?? false,
         pollData: entity.pollData ?? [],
         likes: entity.likes ?? [],
-      );
-    }).toList();
+        sharedPost: null,
+        type: (entity.postData != null && entity.postData.isNotEmpty)
+            ? entity.postData[0].type ?? 0
+            : 0);
   }
 
   static List<String> _getPostImages(PostEntity entity) {
+    List<String> images = List<String>();
+
+    if (entity.postData != null) {
+      if (entity.postData.length > 0) {
+        images = entity.postData.map((data) => data.imageUrl).toList();
+      }
+    }
+
+    return images;
+  }
+
+  static List<String> _getSharedImages(SharedPost entity) {
     List<String> images = List<String>();
 
     if (entity.postData != null) {
@@ -413,9 +482,10 @@ class ProfileBloc implements BaseBloc {
       return postRepository
           .postsByOwner(uid: userId)
           .map((posts) {
-            var userPosts = _entitiesToFeedItems(posts, loginState.uid);
             return _kInitialRecentFeedState.copyWith(
-                feedItems: userPosts, isLoading: false);
+              feedItems: _entitiesToFeedItems(posts, loginState.uid),
+              isLoading: false,
+            );
           })
           .startWith(_kInitialRecentFeedState)
           .onErrorReturnWith((e) {
@@ -553,6 +623,64 @@ class ProfileBloc implements BaseBloc {
 
     if (loginState is LoggedInUser && loginState.isAdmin) {
       userRepository.deleteUser(userId);
+    }
+  }
+
+  static Stream<FeedUnconnectMessage> performUnconnect(
+    FirestoreUserRepository userRepository,
+    String userId,
+    String userToUnfollow,
+  ) async* {
+    print('[DEBUG] ProfileBloc#performUnconnect');
+    try {
+      await userRepository.removeConnection(userId, userToUnfollow);
+      yield FeedUnconnectSuccess();
+    } catch (e) {
+      yield FeedUnconnectError(e);
+    }
+  }
+
+  static Future<void> _sharePost(
+    FeedItem post,
+    String message,
+    UserBloc userBloc,
+    FirestorePostRepository postRepository,
+  ) async {
+    print('[DEBUG] ProfileBloc#sharePost');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      await postRepository.sharePost(
+        post.id,
+        loginState.isAdmin,
+        loginState.uid,
+        loginState.fullName,
+        loginState.email,
+        loginState.image,
+        loginState.token,
+        loginState.isVerified,
+        loginState.isChurch,
+        message,
+        loginState.connections,
+      );
+    }
+  }
+
+  static Future<void> _answerPoll(
+    String poll,
+    int answerIndex,
+    UserBloc userBloc,
+    FirestorePostRepository postRepository,
+  ) async {
+    print('[DEBUG] ProfileBloc#answerPoll');
+    var loginState = userBloc.loginState$.value;
+
+    if (loginState is LoggedInUser) {
+      await postRepository.answerPoll(
+        poll,
+        answerIndex,
+        loginState.uid,
+      );
     }
   }
 }

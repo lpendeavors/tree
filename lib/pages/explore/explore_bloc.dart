@@ -156,7 +156,7 @@ class ExploreBloc implements BaseBloc {
     }
 
     if (loginState is LoggedInUser) {
-      print(loginState.receivedRequests);
+      print('recieved=${loginState.receivedRequests}');
       return Rx.combineLatest6(
           userRepository.getSuggestionsByChurch(church: loginState.church),
           userRepository.getSuggestionsByCity(city: loginState.city),
@@ -169,13 +169,14 @@ class ExploreBloc implements BaseBloc {
               : Stream.value(List<UserEntity>()),
           (churchUsers, cityUsers, publicFigures, newestUsers, posts,
               requests) {
+        print(requests);
         var filiteredPosts = (posts as List<PostEntity>).where((p) {
           return p.postData != null && p.postData.length > 0;
         }).toList();
 
         filiteredPosts.sort((a, b) => b.time.compareTo(a.time));
-        (newestUsers as List<UserEntity>)
-            .sort((a, b) => b.time.compareTo(a.time));
+        // (newestUsers as List<UserEntity>)
+        //     .sort((a, b) => b.time.compareTo(a.time));
 
         var suggestions = churchUsers as List<UserEntity>;
         suggestions.addAll(publicFigures);
@@ -187,15 +188,18 @@ class ExploreBloc implements BaseBloc {
 
         suggestions.toSet().toList();
 
-        // (requests as List<UserEntity>)
-        //     .removeWhere((r) => loginState.connections.contains(r.id));
+        var reqs = requests as List<UserEntity>;
+        reqs.removeWhere((r) => loginState.connections.contains(r.id));
 
-        print(requests);
+        suggestions.removeWhere((s) => reqs.map((r) => r.id).contains(s.id));
 
         return _kInitialExploreState.copyWith(
-          connectionItems: _userEntitiesToItems(suggestions, List<String>()),
+          connectionItems: _userEntitiesToSuggestions(suggestions,
+                  loginState.sentRequests ?? [], loginState.mutedChats ?? [])
+              .toSet()
+              .toList(),
           postItems: _postEntitiesToItems(filiteredPosts),
-          requestItems: _userEntitiesToItems(requests, loginState.mutedChats),
+          requestItems: _userEntitiesToRequests(requests),
           isLoading: false,
         );
       }).startWith(_kInitialExploreState).onErrorReturnWith((e) {
@@ -214,9 +218,35 @@ class ExploreBloc implements BaseBloc {
     );
   }
 
-  static List<ConnectionItem> _userEntitiesToItems(
+  static List<ConnectionItem> _userEntitiesToSuggestions(
     List<UserEntity> entities,
+    List<String> requests,
     List<String> muted,
+  ) {
+    print('muted=${muted.length}');
+    return entities
+        .map((entity) {
+          return ConnectionItem(
+            id: entity.id,
+            city: entity.city ?? "None",
+            church: entity.churchInfo != null
+                ? entity.churchInfo.churchName
+                : "None",
+            isChurch: entity.isChurch ?? false,
+            image: entity.image,
+            name: entity.isChurch ? entity.churchName : entity.fullName,
+            denomination: entity.churchInfo != null
+                ? entity.churchInfo.churchDenomination
+                : "None",
+            requested: (requests ?? []).contains(entity.id),
+          );
+        })
+        .where((r) => !muted.contains(r.id))
+        .toList();
+  }
+
+  static List<ConnectionItem> _userEntitiesToRequests(
+    List<UserEntity> entities,
   ) {
     return entities.map((entity) {
       return ConnectionItem(
@@ -226,13 +256,12 @@ class ExploreBloc implements BaseBloc {
             entity.churchInfo != null ? entity.churchInfo.churchName : "None",
         isChurch: entity.isChurch ?? false,
         image: entity.image,
-        name: entity.isChurch ? entity.churchName : entity.fullName,
+        name: (entity.isChurch ?? false) ? entity.churchName : entity.fullName,
         denomination: entity.churchInfo != null
             ? entity.churchInfo.churchDenomination
             : "None",
+        requested: false,
       );
-    }).where((item) {
-      return !muted.contains(item.id);
     }).toList();
   }
 
@@ -298,7 +327,8 @@ class ExploreBloc implements BaseBloc {
     LoginState loginState,
   ) async* {
     print('[DEBUG] ExploreBloc#saveAddConnection');
-    if (loginState is LoggedInUser) {
+    if (loginState is LoggedInUser &&
+        !loginState.sentRequests.contains(connection.id)) {
       try {
         requestRepository.addRequest(
           image: loginState.image,
@@ -320,10 +350,10 @@ class ExploreBloc implements BaseBloc {
     ConnectionItem connection,
     LoginState loginState,
   ) async* {
-    print('[DEBUG] ExploreBloc#saveAddConnection');
+    print('[DEBUG] ExploreBloc#saveAcceptConnection');
     if (loginState is LoggedInUser) {
       try {
-        requestRepository.acceptRequest(
+        await requestRepository.acceptRequest(
           image: loginState.image,
           toName: connection.name,
           toId: connection.id,
@@ -331,6 +361,7 @@ class ExploreBloc implements BaseBloc {
           fromId: loginState.uid,
           token: loginState.token,
         );
+        yield ConnectionAddedSuccess();
       } catch (e) {
         yield ConnectionAddedError(e);
       }
@@ -342,10 +373,10 @@ class ExploreBloc implements BaseBloc {
     ConnectionItem connection,
     LoginState loginState,
   ) async* {
-    print('[DEBUG] ExploreBloc#saveAddConnection');
+    print('[DEBUG] ExploreBloc#saveDeclineConnection');
     if (loginState is LoggedInUser) {
       try {
-        requestRepository.declineRequest(
+        await requestRepository.declineRequest(
           image: loginState.image,
           toName: connection.name,
           toId: connection.id,
@@ -353,6 +384,7 @@ class ExploreBloc implements BaseBloc {
           fromId: loginState.uid,
           token: loginState.token,
         );
+        yield ConnectionAddedSuccess();
       } catch (e) {
         yield ConnectionAddedError(e);
       }

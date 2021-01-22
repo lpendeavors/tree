@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:cache_image/cache_image.dart';
 import '../notifications_state.dart';
 
 class NotificationsListItem extends StatefulWidget {

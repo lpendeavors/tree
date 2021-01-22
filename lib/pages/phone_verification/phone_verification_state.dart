@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 class VerificationMessage {}
 
 class PhoneVerificationSuccess implements VerificationMessage {
-  final AuthResult result;
+  final UserCredential result;
   const PhoneVerificationSuccess(this.result);
 }
 

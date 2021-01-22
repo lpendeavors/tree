@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:treeapp/models/old/user_entity.dart';
+import 'package:treeapp/notification_util.dart';
 import 'package:uuid/uuid.dart';
 import './firestore_post_repository.dart';
 import '../../models/old/post_entity.dart';
 
 class FirestorePostRepositoryImpl implements FirestorePostRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
   const FirestorePostRepositoryImpl(
@@ -46,12 +48,10 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
       'isAdmin': ownerIsAdmin,
       'isChurch': ownerIsChurch,
       'isGroup': groupId == null ? false : true,
-      'postId': groupId == null ? '' : groupId,
       'isHidden': isHidden,
       'isPostPrivate': isPrivate,
       'isVerified': isVerified,
       'ownerId': ownerId,
-      'parties': parties,
       'postMessage': message,
       'pushNotificationToken': ownerNotificationToken,
       'tags': tagged,
@@ -61,20 +61,30 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
+    if (groupId != null) {
+      post.addAll({
+        'parties': List<String>(),
+        'postId': groupId,
+      });
+    } else {
+      post.addAll({
+        'parties': parties,
+      });
+    }
+
     if (postId != null) {
       await _firestore
           .collection('postBase')
-          .document(postId)
-          .setData(post, merge: true);
+          .doc(postId)
+          .set(post, SetOptions(merge: true));
     } else {
       List<String> imageUrls = await Future.wait(
         media.map((image) async {
           String id = Uuid().v1();
-          StorageReference storageRef = _storage.ref().child(id);
-          StorageUploadTask upload = storageRef.putFile(File(image));
-          StorageTaskSnapshot task = await upload.onComplete;
+          Reference storageRef = _storage.ref().child(id);
+          UploadTask upload = storageRef.putFile(File(image));
+          TaskSnapshot task = await upload;
           String url = await task.ref.getDownloadURL();
-
           return url;
         }).toList(),
       );
@@ -98,16 +108,16 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
           }).toList(),
         });
       }
-
-      await _firestore.collection('postBase').add(post);
     }
+
+    await _firestore.collection('postBase').add(post);
   }
 
   @override
   Stream<PostEntity> postById({String postId}) {
     return _firestore
         .collection('postBase')
-        .document(postId)
+        .doc(postId)
         .snapshots()
         .map((snapshot) => PostEntity.fromDocumentSnapshot(snapshot));
   }
@@ -130,6 +140,8 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     return _firestore
         .collection('postBase')
         .where('ownerId', isEqualTo: uid)
+        .where('isGroup', isEqualTo: false)
+        .orderBy('time', descending: true)
         .snapshots()
         .map(_toEntities);
   }
@@ -139,6 +151,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     return _firestore
         .collection('postBase')
         .where('byAdmin', isEqualTo: true)
+        .where('isGroup', isEqualTo: false)
         .snapshots()
         .map(_toEntities);
   }
@@ -163,20 +176,23 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   }
 
   List<PostEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return PostEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
 
   @override
-  Future<void> likeOrUnlikePost(
-      {bool shouldLike, String postId, String userId}) async {
+  Future<void> likeOrUnlikePost({
+    bool shouldLike,
+    String postId,
+    String userId,
+  }) async {
     if (shouldLike) {
-      return _firestore.document('postBase/$postId').updateData({
+      return _firestore.doc('postBase/$postId').update({
         'likes': FieldValue.arrayUnion([userId])
       });
     } else {
-      return _firestore.document('postBase/$postId').updateData({
+      return _firestore.doc('postBase/$postId').update({
         'likes': FieldValue.arrayRemove([userId])
       });
     }
@@ -238,8 +254,8 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
     if (pollId != null) {
       await _firestore
           .collection('postBase')
-          .document(pollId)
-          .setData(poll, merge: true);
+          .doc(pollId)
+          .set(poll, SetOptions(merge: true));
     } else {
       poll.addAll({
         'isReported': false,
@@ -258,6 +274,67 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
 
   @override
   Future<void> deletePost(String postId) {
-    return _firestore.collection('postBase').document(postId).delete();
+    return _firestore.collection('postBase').doc(postId).delete();
+  }
+
+  @override
+  Future<void> sharePost(
+    String postId,
+    bool byAdmin,
+    String ownerId,
+    String ownerName,
+    String ownerEmail,
+    String ownerImage,
+    String ownerToken,
+    bool ownerVerified,
+    bool isChurch,
+    String message,
+    List<String> parties,
+  ) async {
+    var post = await _firestore.doc('postBase/$postId').snapshots().first;
+
+    var newPost = <String, dynamic>{
+      'sharedPost': post.data(),
+      'byAdmin': byAdmin,
+      'churchName': isChurch ? ownerName : '',
+      'createdAt': FieldValue.serverTimestamp(),
+      'email': ownerEmail,
+      'fullName': isChurch ? '' : ownerName,
+      'image': ownerImage,
+      'isChurch': isChurch,
+      'isHidden': true,
+      'isReported': false,
+      'isShared': true,
+      'isGroup': false,
+      'isVerified': ownerVerified,
+      'ownerId': ownerId,
+      'pushNotificationToken': ownerToken,
+      'time': DateTime.now().millisecondsSinceEpoch,
+      'timeUpdated': DateTime.now().millisecondsSinceEpoch,
+      'tokenID': ownerToken,
+      'uid': ownerId,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'visibility': 0,
+      'postMessage': message,
+    };
+
+    await _firestore.collection('postBase').add(newPost);
+  }
+
+  @override
+  Future<void> answerPoll(
+    String pollId,
+    int answerIndex,
+    String userId,
+  ) async {
+    var postRef = _firestore.doc('postBase/$pollId');
+    var postSnapshot = await postRef.snapshots().first;
+    var post = PostEntity.fromDocumentSnapshot(postSnapshot);
+    var answer = post.pollData[answerIndex];
+
+    answer.answerResponse.add(userId);
+    post.pollData[answerIndex] = answer;
+
+    postRef.update(post.toJson());
   }
 }

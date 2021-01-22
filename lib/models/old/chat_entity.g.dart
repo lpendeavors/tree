@@ -24,6 +24,7 @@ ChatEntity _$ChatEntityFromJson(Map<String, dynamic> json) {
     isRoom: json['isRoom'] as bool,
     readBy: (json['readBy'] as List)?.map((e) => e as String)?.toList(),
     showDate: json['showDate'] as bool,
+    imagePath: json['imagePath'] as String,
   );
 }
 
@@ -43,6 +44,7 @@ Map<String, dynamic> _$ChatEntityToJson(ChatEntity instance) =>
       'showDate': instance.showDate,
       'time': instance.time,
       'type': instance.type,
+      'imagePath': instance.imagePath,
       'createdAt': timestampToJson(instance.createdAt),
       'updatedAt': timestampToJson(instance.updatedAt),
     };

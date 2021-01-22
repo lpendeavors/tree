@@ -9,7 +9,7 @@ import '../../models/old/event_entity.dart';
 import 'dart:async';
 
 class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
   const FirestoreEventRepositoryImpl(this._firestore, this._storage);
@@ -23,6 +23,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
         .collection('eventBase')
         .where('eventStartDate',
             isGreaterThanOrEqualTo: yesterday.millisecondsSinceEpoch)
+        .where('status', isEqualTo: 1)
         .snapshots()
         .map(_toEntities);
   }
@@ -31,7 +32,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   Stream<EventEntity> getById(String eventId) {
     return _firestore
         .collection('eventBase')
-        .document(eventId)
+        .doc(eventId)
         .snapshots()
         .map((snapshot) => EventEntity.fromDocumentSnapshot(snapshot));
   }
@@ -119,17 +120,16 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     if (id != null) {
       return _firestore
           .collection('eventBase')
-          .document(id)
-          .setData(event, merge: true);
+          .doc(id)
+          .set(event, SetOptions(merge: true));
     } else {
       List<String> imageUrls = await Future.wait(
         images.map((image) async {
-          String id = Uuid().v1();
-          StorageReference storageRef = _storage.ref().child(id);
-          StorageUploadTask upload = storageRef.putFile(File(image));
-          StorageTaskSnapshot task = await upload.onComplete;
-          String url = await task.ref.getDownloadURL();
-
+          var refId = new Uuid().v1();
+          Reference storageReference = _storage.ref().child(refId);
+          UploadTask uploadTask = storageReference.putFile(File(image));
+          var task = await uploadTask;
+          var url = task.ref.getDownloadURL();
           return url;
         }).toList(),
       );
@@ -148,7 +148,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
   }
 
   List<EventEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return EventEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -159,7 +159,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
         .collection('eventBase')
         .where('searchData', arrayContains: query.trim())
         .limit(30)
-        .getDocuments()
+        .get()
         .then(_toEntities);
   }
 
@@ -170,11 +170,11 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     String userId,
   ) async {
     if (isAttending) {
-      return _firestore.document('eventBase/$eventId').updateData({
+      return _firestore.doc('eventBase/$eventId').update({
         'attending': FieldValue.arrayUnion([userId]),
       });
     } else {
-      return _firestore.document('eventBase/$eventId').updateData({
+      return _firestore.doc('eventBase/$eventId').update({
         'attending': FieldValue.arrayRemove([userId]),
       });
     }
@@ -182,8 +182,9 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
 
   @override
   Future<void> approveEvent(String eventId) {
-    // TODO: implement approveEvent
-    throw UnimplementedError();
+    return _firestore.doc('eventBase/$eventId').update({
+      'status': 1,
+    });
   }
 
   @override
@@ -191,7 +192,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     return _firestore
         .collection('eventBase')
         .where('status', isEqualTo: 4)
-        .orderBy('time')
+        // .orderBy('time')
         .snapshots()
         .map(_toEntities);
   }
@@ -201,7 +202,7 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     return _firestore
         .collection('eventBase')
         .where('status', isEqualTo: 3)
-        .orderBy('time')
+        // .orderBy('time')
         .snapshots()
         .map(_toEntities);
   }
@@ -211,8 +212,20 @@ class FirestoreEventRepositoryImpl implements FirestoreEventRepository {
     return _firestore
         .collection('eventBase')
         .where('status', isEqualTo: 0)
-        .orderBy('time')
+        // .orderBy('time')
         .snapshots()
         .map(_toEntities);
+  }
+
+  @override
+  Future<void> deleteEvent(String eventId) {
+    return _firestore.doc('eventBase/$eventId').delete();
+  }
+
+  @override
+  Future<void> updateStatus(String eventId, int status) {
+    return _firestore.doc('eventBase/$eventId').update({
+      'status': status,
+    });
   }
 }

@@ -993,7 +993,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                                 SizedBox(width: 15.0),
                                 Flexible(
                                   child: TextField(
-                                    textInputAction: TextInputAction.done,
+                                    textInputAction: TextInputAction.newline,
                                     textCapitalization: TextCapitalization.none,
                                     decoration: InputDecoration(
                                         border: InputBorder.none,
@@ -1860,7 +1860,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
                 SizedBox(width: 10.0),
                 Flexible(
                   child: TextField(
-                    textInputAction: TextInputAction.done,
+                    textInputAction: TextInputAction.newline,
                     textCapitalization: TextCapitalization.none,
                     decoration: InputDecoration(
                         border: InputBorder.none,
@@ -2647,6 +2647,10 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage> {
 
     if (message is SettingsMessageSuccess) {
       _showSnackBar("Changes saved!");
+    }
+
+    if (message is SettingsMessageError) {
+      _showSnackBar(message.error);
     }
 
     if (message is LoginMessageSuccess) {

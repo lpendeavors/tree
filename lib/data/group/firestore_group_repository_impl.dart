@@ -1,14 +1,23 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:treeapp/models/old/group_member.dart';
 import 'package:treeapp/pages/create_message/create_message_state.dart';
 import 'package:treeapp/user_bloc/user_login_state.dart';
+import 'package:uuid/uuid.dart';
 import './firestore_group_repository.dart';
 import '../../models/old/group_entity.dart';
 import '../../util/model_utils.dart';
 
 class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
 
-  const FirestoreGroupRepositoryImpl(this._firestore);
+  const FirestoreGroupRepositoryImpl(
+    this._firestore,
+    this._storage,
+  );
 
   @override
   Stream<List<GroupEntity>> get() {
@@ -19,13 +28,13 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
   Stream<GroupEntity> getById({String groupId}) {
     return _firestore
         .collection('groupBase')
-        .document(groupId)
+        .doc(groupId)
         .snapshots()
         .map((snapshot) => GroupEntity.fromDocumentSnapshot(snapshot));
   }
 
   List<GroupEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return GroupEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -42,16 +51,21 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
     bool byAdmin,
     bool isVerified,
     String groupName,
+    String groupImage,
+    String groupDescription,
+    bool mediaChanged,
   ) async {
     final TransactionHandler transactionHandler = (transaction) async {
       final group = <String, dynamic>{
         'byAdmin': byAdmin,
         'createdAt': FieldValue.serverTimestamp(),
         'groupMembers': members.map((member) {
-          return <String, String>{
+          return <String, dynamic>{
             'fullName': member.name,
             'image': member.image,
             'uid': member.id,
+            'groupAdmin': member.groupAdmin,
+            'tokenID': member.token,
           };
         }).toList(),
         'isConversation': isConversation,
@@ -61,22 +75,60 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         'isVerified': isVerified,
         'ownerId': ownerId,
         'updatedAt': FieldValue.serverTimestamp(),
+        'parties': members.map((m) => m.id).toList(),
       };
 
-      if (isGroup) {
+      if (groupName != null) {
         group.addAll({
-          'searchData': createSearchData(groupName),
+          'groupName': groupName,
         });
       }
 
-      var room =
-          await _firestore.collection('groupBase').add(group).then((doc) {
-        return <String, dynamic>{
-          'roomId': doc.documentID,
-          'isRoom': isRoom,
-          'isGroup': isGroup,
-        };
-      });
+      if (groupDescription != null) {
+        group.addAll({
+          'groupDescription': groupDescription,
+        });
+      }
+
+      if (isGroup) {
+        if (groupName != null) {
+          group.addAll({
+            'searchData': createSearchData(groupName),
+          });
+        }
+
+        if (groupImage != null && groupImage.isNotEmpty && mediaChanged) {
+          var refId = new Uuid().v1();
+          Reference storageReference = _storage.ref().child(refId);
+          UploadTask uploadTask = storageReference.putFile(File(groupImage));
+          await uploadTask
+              .then((value) => value.ref.getDownloadURL())
+              .then((url) {
+            group.addAll({
+              'groupImage': url,
+            });
+          });
+        }
+      }
+
+      var room = groupId == null
+          ? await _firestore.collection('groupBase').add(group).then((doc) {
+              return <String, dynamic>{
+                'roomId': doc.id,
+                'isRoom': isRoom,
+                'isGroup': isGroup,
+              };
+            })
+          : await _firestore
+              .doc('groupBase/$groupId')
+              .update(group)
+              .then((doc) {
+              return <String, dynamic>{
+                'roomId': groupId,
+                'isRoom': isRoom,
+                'isGroup': isGroup,
+              };
+            });
 
       final chat = <String, dynamic>{
         'chatId': room['roomId'],
@@ -114,7 +166,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
   Future<Map<String, dynamic>> launchDM(
       String userID, LoggedInUser loginState) async {
     final TransactionHandler transactionHandler = (transaction) async {
-      var otherUser = await _firestore.document('userBase/$userID').get();
+      var otherUser = await _firestore.doc('userBase/$userID').get();
 
       var personalMember = <String, String>{
         'fullName': loginState.fullName,
@@ -123,18 +175,18 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
       };
 
       var otherMember = <String, String>{
-        'fullName': otherUser.data['fullName'],
-        'image': otherUser.data['image'],
+        'fullName': otherUser.data()['fullName'],
+        'image': otherUser.data()['image'],
         'uid': userID,
       };
 
       var check = await _firestore.collection('groupBase').where('groupMembers',
-          isEqualTo: [personalMember, otherMember]).getDocuments();
-      if (check.documents.length != 0) {
+          isEqualTo: [personalMember, otherMember]).get();
+      if (check.docs.length != 0) {
         return <String, dynamic>{
-          'roomId': check.documents[0].documentID,
+          'roomId': check.docs[0].id,
           'isRoom': false,
-          'isGroup': true,
+          'isGroup': false,
         };
       } else {
         final group = <String, dynamic>{
@@ -142,7 +194,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
           'createdAt': FieldValue.serverTimestamp(),
           'groupMembers': [personalMember, otherMember],
           'isConversation': true,
-          'isGroup': true,
+          'isGroup': false,
           'isGroupPrivate': true,
           'isRoom': false,
           'isVerified': loginState.isVerified,
@@ -153,9 +205,9 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         var room =
             await _firestore.collection('groupBase').add(group).then((doc) {
           return <String, dynamic>{
-            'roomId': doc.documentID,
+            'roomId': doc.id,
             'isRoom': false,
-            'isGroup': true,
+            'isGroup': false,
           };
         });
 
@@ -167,7 +219,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
           'image': '',
           'isChurch': false,
           'isConversation': true,
-          'isGroup': true,
+          'isGroup': false,
           'isRoom': false,
           'isTree': false,
           'pushNotificationToken': '',
@@ -176,16 +228,13 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
           'userImage': '',
         };
 
-        await _firestore
-            .collection('userBase')
-            .document(loginState.uid)
-            .updateData({
-          'myChatsList13': FieldValue.arrayUnion([chat]),
-        });
+        // await _firestore.collection('userBase').doc(loginState.uid).update({
+        //   'myChatsList13': FieldValue.arrayUnion([chat]),
+        // });
 
-        await _firestore.collection('userBase').document(userID).updateData({
-          'myChatsList13': FieldValue.arrayUnion([chat]),
-        });
+        // await _firestore.collection('userBase').doc(userID).update({
+        //   'myChatsList13': FieldValue.arrayUnion([chat]),
+        // });
 
         return room;
       }
@@ -203,7 +252,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         .collection("groupBase")
         .where("searchData", arrayContains: query.trim())
         .limit(30)
-        .getDocuments()
+        .get()
         .then(_toEntities);
   }
 
@@ -212,6 +261,7 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
     return _firestore
         .collection('groupBase')
         .where('byAdmin', isEqualTo: true)
+        .where('isRoom', isEqualTo: true)
         .where('isGroupPrivate', isEqualTo: false)
         .snapshots()
         .map(_toEntities);
@@ -233,16 +283,33 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
     return _firestore
         .collection('groupBase')
         .where('byAdmin', isEqualTo: false)
+        .where('isRoom', isEqualTo: true)
         .where('parties', arrayContains: uid)
         .snapshots()
         .map(_toEntities);
   }
 
   @override
-  Future<void> joinGroup(String groupId, String uid) async {
-    await _firestore.document('groupBase/$groupId').updateData({
-      'parties': FieldValue.arrayUnion([uid]),
-    });
+  Future<void> joinGroup(
+    String groupId,
+    String uid,
+    String image,
+    String name,
+  ) async {
+    final TransactionHandler transactionHandler = (transaction) async {
+      Map<String, String> memberDetails = {
+        'uid': uid,
+        'fullName': name,
+        'image': image,
+      };
+
+      await _firestore.doc('groupBase/$groupId').update({
+        'parties': FieldValue.arrayUnion([uid]),
+        'groupMembers': FieldValue.arrayUnion([memberDetails]),
+      });
+    };
+
+    await _firestore.runTransaction(transactionHandler);
   }
 
   @override
@@ -252,5 +319,71 @@ class FirestoreGroupRepositoryImpl implements FirestoreGroupRepository {
         .where('ownerId', isEqualTo: churchId)
         .snapshots()
         .map(_toEntities);
+  }
+
+  @override
+  Future<void> delete(
+    String groupId,
+    bool permanent,
+  ) async {
+    if (permanent) {
+      await _firestore.doc('groupBase/$groupId').delete();
+    } else {
+      await _firestore.doc('groupBase/$groupId').update({
+        'isSuspended': true,
+      });
+    }
+  }
+
+  @override
+  Future<void> leave(String groupId, String userId) async {
+    var groupDoc = _firestore.doc('groupBase/$groupId');
+    var groupSnaps = groupDoc.snapshots();
+    var groupSnap = await groupSnaps.first;
+    GroupEntity group = GroupEntity.fromDocumentSnapshot(groupSnap);
+    var me = group.groupMembers.where((m) => m.uid == userId).toList();
+    if (me.isNotEmpty) {
+      group.groupMembers.remove(me[0]);
+      await groupDoc.update(group.toJson());
+      await groupDoc.update({
+        'parties': FieldValue.arrayRemove([userId]),
+      });
+
+      var chatsSnap = _firestore
+          .collection('chatBase')
+          .where('chatId', isEqualTo: groupId)
+          .where('parties', arrayContains: userId)
+          .snapshots();
+
+      if (chatsSnap != null) {
+        var chats = await chatsSnap.first;
+        for (var doc in chats.docs) {
+          await _firestore.doc('chatBase/${doc.id}').update({
+            'parties': FieldValue.arrayRemove([userId]),
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  Future<void> makeAdmin(String groupId, String userId) async {
+    var groupDoc = _firestore.doc('groupBase/$groupId');
+    var groupSnap = await groupDoc.snapshots().first;
+    GroupEntity group = GroupEntity.fromDocumentSnapshot(groupSnap);
+    var me = group.groupMembers.where((m) => m.uid == userId).first;
+    group.groupMembers.remove(me);
+
+    var newMe = GroupMember(
+      uid: me.uid,
+      groupAdmin: true,
+      image: me.image,
+      fullName: me.fullName,
+      tokenID: me.tokenID,
+    );
+
+    group.groupMembers.add(newMe);
+
+    await groupDoc.update(group.toJson());
   }
 }

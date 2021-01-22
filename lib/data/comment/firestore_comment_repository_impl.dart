@@ -1,18 +1,13 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:uuid/uuid.dart';
 import './firestore_comment_repository.dart';
 import '../../models/old/comment_entity.dart';
 
 class FirestoreCommentRepositoryImpl implements FirestoreCommentRepository {
-  final Firestore _firestore;
-  final FirebaseStorage _storage;
+  final FirebaseFirestore _firestore;
 
   const FirestoreCommentRepositoryImpl(
     this._firestore,
-    this._storage,
   );
 
   @override
@@ -25,7 +20,7 @@ class FirestoreCommentRepositoryImpl implements FirestoreCommentRepository {
   }
 
   List<CommentEntity> _toEntities(QuerySnapshot querySnapshot) {
-    return querySnapshot.documents.map((documentSnapshot) {
+    return querySnapshot.docs.map((documentSnapshot) {
       return CommentEntity.fromDocumentSnapshot(documentSnapshot);
     }).toList();
   }
@@ -61,36 +56,28 @@ class FirestoreCommentRepositoryImpl implements FirestoreCommentRepository {
       'timeUpdated': DateTime.now().millisecondsSinceEpoch,
       'tokenID': ownerToken,
       'uid': ownerId,
-      'updatedAt': FieldValue.serverTimestamp(),
       'userImage': ownerImage,
       'visibility': 0,
       'isGIF': isGif,
     };
 
-    if (commentId != null) {
-      // if (isReply) {
-      //   await _firestore.document('commentsBase/$commentId').updateData({
-      //     'replies': FieldValue.arrayUnion([
-      //       <String, dynamic>{
-      //         'test': 'working',
-      //         'works': true,
-      //       }
-      //     ]),
-      //   });
-      // } else {
-      // await _firestore
-      //     .collection('commentsBase')
-      //     .document(commentId)
-      //     .setData(comment, merge: true);
-      // }
+    if (commentId.isNotEmpty) {
+      if (isReply) {
+        comment.addAll({'time': DateTime.now().millisecondsSinceEpoch});
+        await _firestore.doc('commentsBase/$commentId').update({
+          'replies': FieldValue.arrayUnion([
+            comment,
+          ]),
+        });
+      } else {
+        comment.addAll({'updatedAt': FieldValue.serverTimestamp()});
+        await _firestore
+            .collection('commentsBase')
+            .doc(commentId)
+            .set(comment, SetOptions(merge: true));
+      }
     } else {
       if (isGif) {
-        // String id = Uuid().v1();
-        // StorageReference storageRef = _storage.ref().child(id);
-        // StorageUploadTask upload = storageRef.putFile(File(gif));
-        // StorageTaskSnapshot task = await upload.onComplete;
-        // String url = await task.ref.getDownloadURL();
-
         comment.addAll({
           'imagePath': gif,
         });
@@ -111,11 +98,11 @@ class FirestoreCommentRepositoryImpl implements FirestoreCommentRepository {
   Future<void> likeOrUnlikeComment(
       String commentId, bool shouldLike, String uid) async {
     if (shouldLike) {
-      return _firestore.document('commentsBase/$commentId').updateData({
+      return _firestore.doc('commentsBase/$commentId').update({
         'likes': FieldValue.arrayUnion([uid])
       });
     } else {
-      return _firestore.document('commentsBase/$commentId').updateData({
+      return _firestore.doc('commentsBase/$commentId').update({
         'likes': FieldValue.arrayRemove([uid])
       });
     }

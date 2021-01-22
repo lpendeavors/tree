@@ -4,6 +4,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:treeapp/pages/events/events_state.dart';
 import 'package:treeapp/pages/perform_search/perform_search_page.dart';
+import 'package:treeapp/pages/report_group/report_group_bloc.dart';
+import 'package:treeapp/pages/report_group/report_group_page.dart';
+import 'package:treeapp/pages/report_user/report_user_bloc.dart';
+import 'package:treeapp/pages/report_user/report_user_page.dart';
+import 'package:treeapp/pages/reported_users/reported_users_bloc.dart';
+import 'package:treeapp/pages/reported_users/reported_users_page.dart';
 import 'package:treeapp/pages/settings/settings_state.dart';
 import 'package:treeapp/widgets/modals/info_dialog.dart';
 import '../pages/settings/profile/profile_settings_bloc.dart';
@@ -68,10 +74,14 @@ import '../pages/pending/pending_page.dart';
 import '../pages/pending/pending_bloc.dart';
 import '../pages/report_post/report_post_page.dart';
 import '../pages/report_post/report_post_bloc.dart';
+import '../pages/poll_responders/poll_responders_page.dart';
+import '../pages/poll_responders/poll_responders_bloc.dart';
 import '../user_bloc/user_bloc.dart';
 import '../user_bloc/user_login_state.dart';
 
 class MyApp extends StatelessWidget {
+  final RouteObserver<PageRoute> routeObserver = RouteObserver();
+
   final appTheme = ThemeData(
     primarySwatch: Colors.green,
     primaryColor: Color(0xFF6CA748),
@@ -346,7 +356,10 @@ class MyApp extends StatelessWidget {
             return EditPostBloc(
               userBloc: BlocProvider.of<UserBloc>(context),
               postRepository: Injector.of(context).postRepository,
-              postId: routerSettings.arguments as String,
+              postId:
+                  (routerSettings.arguments as Map<String, dynamic>)["postId"],
+              groupId:
+                  (routerSettings.arguments as Map<String, dynamic>)["groupId"],
             );
           },
         );
@@ -361,7 +374,10 @@ class MyApp extends StatelessWidget {
             return EditPollBloc(
               userBloc: BlocProvider.of<UserBloc>(context),
               postRepository: Injector.of(context).postRepository,
-              pollId: routerSettings.arguments as String,
+              pollId:
+                  (routerSettings.arguments as Map<String, dynamic>)["pollId"],
+              groupId:
+                  (routerSettings.arguments as Map<String, dynamic>)["groupId"],
             );
           },
         );
@@ -372,13 +388,17 @@ class MyApp extends StatelessWidget {
       return MaterialPageRoute(builder: (context) {
         return CreateMessagePage(
           userBloc: BlocProvider.of<UserBloc>(context),
+          existingMembers: (routerSettings.arguments
+              as Map<String, dynamic>)["existingMembers"],
           initCreateMessageBloc: () {
             return CreateMessageBloc(
               userBloc: BlocProvider.of<UserBloc>(context),
               groupRepository: Injector.of(context).groupRepository,
               chatRepository: Injector.of(context).chatRepository,
               userRepository: Injector.of(context).userRepository,
-              type: routerSettings.arguments as int,
+              type: (routerSettings.arguments as Map<String, dynamic>)["type"],
+              groupId:
+                  (routerSettings.arguments as Map<String, dynamic>)["groupId"],
             );
           },
         );
@@ -391,9 +411,10 @@ class MyApp extends StatelessWidget {
           userBloc: BlocProvider.of<UserBloc>(context),
           initCreateGroupBloc: () {
             return CreateGroupBloc(
-              groupRepository: Injector.of(context).groupRepository,
-              members: routerSettings.arguments as List<MemberItem>,
-            );
+                userBloc: BlocProvider.of<UserBloc>(context),
+                groupRepository: Injector.of(context).groupRepository,
+                members: (routerSettings.arguments as Map)['members'],
+                groupId: (routerSettings.arguments as Map)['groupId']);
           },
         );
       });
@@ -408,6 +429,7 @@ class MyApp extends StatelessWidget {
               userBloc: BlocProvider.of<UserBloc>(context),
               postRepository: Injector.of(context).postRepository,
               commentRepository: Injector.of(context).commentRepository,
+              userRepository: Injector.of(context).userRepository,
               postId: routerSettings.arguments as String,
             );
           },
@@ -418,6 +440,7 @@ class MyApp extends StatelessWidget {
     if (routerSettings.name == '/search') {
       return MaterialPageRoute(builder: (context) {
         return PerformSearch(
+          userBloc: BlocProvider.of<UserBloc>(context),
           userRepository: Injector.of(context).userRepository,
           eventRepository: Injector.of(context).eventRepository,
           groupRepository: Injector.of(context).groupRepository,
@@ -516,7 +539,71 @@ class MyApp extends StatelessWidget {
             return ReportPostBloc(
               userBloc: BlocProvider.of<UserBloc>(context),
               reportRepository: Injector.of(context).reportRepository,
-              postId: routerSettings.arguments as String,
+              postId: (routerSettings.arguments as Map<String, String>)["post"],
+              userId: (routerSettings.arguments as Map<String, String>)["user"],
+            );
+          },
+        );
+      });
+    }
+
+    if (routerSettings.name == '/report_group') {
+      return MaterialPageRoute(builder: (context) {
+        return ReportGroupPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initReportGroupBloc: () {
+            return ReportGroupBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              reportRepository: Injector.of(context).reportRepository,
+              groupId:
+                  (routerSettings.arguments as Map<String, String>)["group"],
+              userId: (routerSettings.arguments as Map<String, String>)["user"],
+            );
+          },
+        );
+      });
+    }
+
+    if (routerSettings.name == '/report_user') {
+      return MaterialPageRoute(builder: (context) {
+        return ReportUserPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initReportUserBloc: () {
+            return ReportUserBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              reportRepository: Injector.of(context).reportRepository,
+              userId: routerSettings.arguments as String,
+            );
+          },
+        );
+      });
+    }
+
+    if (routerSettings.name == '/poll_responders') {
+      return MaterialPageRoute(builder: (context) {
+        return PollRespondersPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initPollRespondersBloc: () {
+            return PollRespondersBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              postRepository: Injector.of(context).postRepository,
+              userRepository: Injector.of(context).userRepository,
+              pollId: (routerSettings.arguments as Map)['pollId'],
+              responderIds: (routerSettings.arguments as Map)['responders'],
+            );
+          },
+        );
+      });
+    }
+
+    if (routerSettings.name == '/reports') {
+      return MaterialPageRoute(builder: (context) {
+        return ReportedUsersPage(
+          userBloc: BlocProvider.of<UserBloc>(context),
+          initReportedUsersBloc: () {
+            return ReportedUsersBloc(
+              userBloc: BlocProvider.of<UserBloc>(context),
+              reportRepository: Injector.of(context).reportRepository,
             );
           },
         );
@@ -565,6 +652,7 @@ class MyApp extends StatelessWidget {
           initialRoute: '/splash',
           routes: appRoutes,
           onGenerateRoute: onGenerateRoute,
+          navigatorObservers: [routeObserver],
         );
       },
     );

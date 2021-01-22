@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -24,9 +25,10 @@ import './shared_pref_util.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-  final firestore = Firestore.instance;
-  final crashlytics = Crashlytics.instance;
+  final firestore = FirebaseFirestore.instance;
+  final crashlytics = FirebaseCrashlytics.instance;
   final firebaseAuth = FirebaseAuth.instance;
   final firebaseStorage = FirebaseStorage.instance;
   final sharedPrefUtil = SharedPrefUtil.instance;
@@ -34,7 +36,7 @@ Future<void> main() async {
   ///
   /// Setup firestore
   ///
-  await firestore.settings(persistenceEnabled: false);
+  // await firestore.enablePersistence();
 
   ///
   /// Setup crashlytics
@@ -49,9 +51,9 @@ Future<void> main() async {
   final eventRepository =
       FirestoreEventRepositoryImpl(firestore, firebaseStorage);
   final chatRepository = FirestoreChatRepositoryImpl(firestore);
-  final groupRepository = FirestoreGroupRepositoryImpl(firestore);
-  final commentRepository =
-      FirestoreCommentRepositoryImpl(firestore, firebaseStorage);
+  final groupRepository =
+      FirestoreGroupRepositoryImpl(firestore, firebaseStorage);
+  final commentRepository = FirestoreCommentRepositoryImpl(firestore);
   final requestReposirory = FirestoreRequestRepositoryImpl(firestore);
   final reportRepository = FirestoreReportRepositoryImpl(firestore);
   final userBloc = UserBloc(userRepository);

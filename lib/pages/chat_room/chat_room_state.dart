@@ -131,6 +131,7 @@ class ChatMessageItem extends Equatable {
   final String message;
   final String userId;
   final List<String> members;
+  final String gif;
 
   const ChatMessageItem({
     @required this.id,
@@ -144,6 +145,7 @@ class ChatMessageItem extends Equatable {
     @required this.message,
     @required this.userId,
     @required this.members,
+    @required this.gif,
   });
 
   @override
@@ -159,6 +161,7 @@ class ChatMessageItem extends Equatable {
         message,
         userId,
         members,
+        gif,
       ];
 
   @override

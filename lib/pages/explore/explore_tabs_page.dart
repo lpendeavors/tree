@@ -13,12 +13,12 @@ import 'package:flutter/material.dart';
 
 class ExploreTabsPage extends StatefulWidget {
   final UserBloc userBloc;
-  final ExploreBloc exploreBloc;
+  final ExploreBloc Function() initExploreBloc;
 
   const ExploreTabsPage({
     Key key,
     @required this.userBloc,
-    @required this.exploreBloc,
+    @required this.initExploreBloc,
   }) : super(key: key);
 
   @override
@@ -36,17 +36,17 @@ class _ExploreTabsPageState extends State<ExploreTabsPage> {
   void initState() {
     super.initState();
 
-    _exploreBloc = widget.exploreBloc;
+    _exploreBloc = widget.initExploreBloc();
     _subscriptions = [
       widget.userBloc.loginState$
           .where((state) => state is Unauthenticated)
           .listen((_) =>
               Navigator.popUntil(context, ModalRoute.withName('/login'))),
-      widget.exploreBloc.addConnectionMessage$
+      _exploreBloc.addConnectionMessage$
           .listen((message) => showMessage(message)),
-      widget.exploreBloc.acceptConnectionMessage$
+      _exploreBloc.acceptConnectionMessage$
           .listen((message) => showMessage(message)),
-      widget.exploreBloc.declineConnectionMessage$
+      _exploreBloc.declineConnectionMessage$
           .listen((message) => showMessage(message)),
     ];
   }

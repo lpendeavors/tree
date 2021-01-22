@@ -42,6 +42,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
   // final int visibility;
   // final List<String> hidden;
   // final bool deleted;
+  final String imagePath;
 
   @JsonKey(
     fromJson: timestampFromJson,
@@ -89,6 +90,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
     this.showDate,
     // this.deleted,
     // this.hidden,
+    this.imagePath,
   });
 
   String get id => this.documentId;
@@ -135,6 +137,7 @@ class ChatEntity extends Equatable implements FirebaseModel {
       // showDate,
       // hidden,
       // deleted
+      imagePath,
     ];
   }
 

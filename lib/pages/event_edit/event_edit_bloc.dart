@@ -81,7 +81,7 @@ class EventEditBloc implements BaseBloc {
   final void Function(String) webAddressChanged;
   final void Function(String) costChanged;
   final void Function(String) venueChanged;
-  final void Function(Tuple2<double, double>) venueGeoChanged; 
+  final void Function(Tuple2<double, double>) venueGeoChanged;
   final void Function(String) budgetChanged;
   final void Function(bool) isSponsoredChanged;
   final void Function(bool) geoLoadingChanged;
@@ -166,16 +166,16 @@ class EventEditBloc implements BaseBloc {
   @override
   void dispose() => _dispose;
 
-  factory EventEditBloc({
-    String eventId,
-    int eventType,
-    @required UserBloc userBloc,
-    @required FirestoreEventRepository eventRepository
-  }) {
+  factory EventEditBloc(
+      {String eventId,
+      int eventType,
+      @required UserBloc userBloc,
+      @required FirestoreEventRepository eventRepository}) {
     ///
     /// Assert
     ///
-    assert((eventId != null || eventType != null), 'eventId and eventType cannot be null');
+    assert((eventId != null || eventType != null),
+        'eventId and eventType cannot be null');
     assert(userBloc != null, 'userBloc cannot be null');
     assert(eventRepository != null, 'eventRepository cannot be null');
 
@@ -192,7 +192,8 @@ class EventEditBloc implements BaseBloc {
     final webAddressSubject = BehaviorSubject<String>.seeded('');
     final costSubject = BehaviorSubject<String>.seeded('0.00');
     final venueSubject = BehaviorSubject<String>.seeded('');
-    final venueGeoSubject = BehaviorSubject<Tuple2<double, double>>.seeded(null);
+    final venueGeoSubject =
+        BehaviorSubject<Tuple2<double, double>>.seeded(null);
     final budgetSubject = BehaviorSubject<String>.seeded('0.00');
     final isSponsoredSubject = BehaviorSubject<bool>.seeded(false);
     final saveEventSubject = PublishSubject<void>();
@@ -282,37 +283,35 @@ class EventEditBloc implements BaseBloc {
     );
 
     final message$ = saveEventSubject
-      .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
-      .where((isValid) => isValid)
-      .exhaustMap(
-        (_) => performSave(
-          eventId ?? null,
-          userBloc,
-          eventRepository,
-          titleSubject.value,
-          descriptionSubject.value,
-          eventType,
-          startDateSubject.value,
-          startTimeSubject.value,
-          endDateSubject.value,
-          endTimeSubject.value,
-          imagesSubject.value,
-          webAddressSubject.value,
-          double.parse(costSubject.value),
-          venueSubject.value,
-          venueGeoSubject.value,
-          double.parse(budgetSubject.value),
-          isSponsoredSubject.value,
-          isLoadingSubject,
-        )
-      ).publish();
+        .withLatestFrom(allFieldsAreValid$, (_, bool isValid) => isValid)
+        .where((isValid) => isValid)
+        .exhaustMap((_) => performSave(
+              eventId ?? null,
+              userBloc,
+              eventRepository,
+              titleSubject.value,
+              descriptionSubject.value,
+              eventType,
+              startDateSubject.value,
+              startTimeSubject.value,
+              endDateSubject.value,
+              endTimeSubject.value,
+              imagesSubject.value,
+              webAddressSubject.value,
+              double.parse(costSubject.value),
+              venueSubject.value,
+              venueGeoSubject.value,
+              double.parse(budgetSubject.value),
+              isSponsoredSubject.value,
+              isLoadingSubject,
+            ))
+        .publish();
 
     final eventEditState$ = _getEventDetails(
       userBloc,
       eventRepository,
       eventId,
     ).publishValueSeeded(_kInitialEventDetailsState);
-
 
     ///
     /// Controllers and subscriptions
@@ -338,50 +337,49 @@ class EventEditBloc implements BaseBloc {
     ];
 
     return EventEditBloc._(
-      titleChanged: titleSubject.add,
-      descriptionChanged: descriptionSubject.add,
-      startDateChanged: startDateSubject.add,
-      startTimeChanged: startTimeSubject.add,
-      endDateChanged: endDateSubject.add,
-      endTimeChanged: endTimeSubject.add,
-      imagesChanged: imagesSubject.add,
-      webAddressChanged: webAddressSubject.add,
-      costChanged: costSubject.add,
-      venueChanged: venueSubject.add,
-      venueGeoChanged: venueGeoSubject.add,
-      budgetChanged: budgetSubject.add,
-      isSponsoredChanged: isSponsoredSubject.add,
-      geoLoadingChanged: geoLoadingSubject.add,
-      startDate$: startDateSubject.stream,
-      startTime$: startTimeSubject.stream,
-      endDate$: endDateSubject.stream,
-      endTime$: endTimeSubject.stream,
-      isSponsored$: isSponsoredSubject.stream,
-      images$: imagesSubject.stream,
-      cost$: costSubject.stream,
-      venue$: venueSubject.stream,
-      budget$: budgetSubject.stream,
-      titleError$: titleError$,
-      descriptionError$: descriptionError$,
-      startDateError$: startDateError$,
-      startTimeError$: startTimeError$,
-      endDateError$: endDateError$,
-      endTimeError$: endTimeError$,
-      imageError$: imageError$,
-      webAddressError$: webAddressError$,
-      costError$: costError$,
-      venueError$: venueError$,
-      budgetError$: budgetError$,
-      eventEditState$: eventEditState$,
-      isLoading$: isLoadingSubject,
-      geoLoading$: geoLoadingSubject,
-      saveEvent: () => saveEventSubject.add(null),
-      message$: message$,
-      dispose: () async {
-        await Future.wait(subscriptions.map((s) => s.cancel()));
-        await Future.wait(controllers.map((c) => c.close()));
-      }
-    );
+        titleChanged: titleSubject.add,
+        descriptionChanged: descriptionSubject.add,
+        startDateChanged: startDateSubject.add,
+        startTimeChanged: startTimeSubject.add,
+        endDateChanged: endDateSubject.add,
+        endTimeChanged: endTimeSubject.add,
+        imagesChanged: imagesSubject.add,
+        webAddressChanged: webAddressSubject.add,
+        costChanged: costSubject.add,
+        venueChanged: venueSubject.add,
+        venueGeoChanged: venueGeoSubject.add,
+        budgetChanged: budgetSubject.add,
+        isSponsoredChanged: isSponsoredSubject.add,
+        geoLoadingChanged: geoLoadingSubject.add,
+        startDate$: startDateSubject.stream,
+        startTime$: startTimeSubject.stream,
+        endDate$: endDateSubject.stream,
+        endTime$: endTimeSubject.stream,
+        isSponsored$: isSponsoredSubject.stream,
+        images$: imagesSubject.stream,
+        cost$: costSubject.stream,
+        venue$: venueSubject.stream,
+        budget$: budgetSubject.stream,
+        titleError$: titleError$,
+        descriptionError$: descriptionError$,
+        startDateError$: startDateError$,
+        startTimeError$: startTimeError$,
+        endDateError$: endDateError$,
+        endTimeError$: endTimeError$,
+        imageError$: imageError$,
+        webAddressError$: webAddressError$,
+        costError$: costError$,
+        venueError$: venueError$,
+        budgetError$: budgetError$,
+        eventEditState$: eventEditState$,
+        isLoading$: isLoadingSubject,
+        geoLoading$: geoLoadingSubject,
+        saveEvent: () => saveEventSubject.add(null),
+        message$: message$,
+        dispose: () async {
+          await Future.wait(subscriptions.map((s) => s.cancel()));
+          await Future.wait(controllers.map((c) => c.close()));
+        });
   }
 
   static Stream<EventEditState> _toState(
@@ -392,33 +390,32 @@ class EventEditBloc implements BaseBloc {
     if (loginState is Unauthenticated) {
       return Stream.value(
         _kInitialEventDetailsState.copyWith(
-          error: NotLoggedInError(),
-          isLoading: false
-        ),
+            error: NotLoggedInError(), isLoading: false),
       );
     }
 
     if (loginState is LoggedInUser) {
       if (eventId != null) {
-        return eventRepository.getById(eventId)
-          .map((entity) {
-            return _entityToEventItem(
-              entity,
-            );
-        })
-        .map((eventItem) {
-          return _kInitialEventDetailsState.copyWith(
-            eventDetails: eventItem,
-            isLoading: false,
-          );
-        })
-        .startWith(_kInitialEventDetailsState)
-        .onErrorReturnWith((e) {
-          return _kInitialEventDetailsState.copyWith(
-            error: e,
-            isLoading: false,
-          );
-        });
+        return eventRepository
+            .getById(eventId)
+            .map((entity) {
+              return _entityToEventItem(
+                entity,
+              );
+            })
+            .map((eventItem) {
+              return _kInitialEventDetailsState.copyWith(
+                eventDetails: eventItem,
+                isLoading: false,
+              );
+            })
+            .startWith(_kInitialEventDetailsState)
+            .onErrorReturnWith((e) {
+              return _kInitialEventDetailsState.copyWith(
+                error: e,
+                isLoading: false,
+              );
+            });
       } else {
         return Stream.value(
           _kInitialEventDetailsState.copyWith(
@@ -436,9 +433,7 @@ class EventEditBloc implements BaseBloc {
     );
   }
 
-  static EventEditItem _entityToEventItem(
-    EventEntity entity
-  ) {
+  static EventEditItem _entityToEventItem(EventEntity entity) {
     return EventEditItem(
       id: entity.documentId,
       title: entity.eventTitle,
@@ -462,11 +457,7 @@ class EventEditBloc implements BaseBloc {
     String eventId,
   ) {
     return userBloc.loginState$.switchMap((loginState) {
-      return _toState(
-        loginState,
-        eventRepository,
-        eventId
-      );
+      return _toState(loginState, eventRepository, eventId);
     });
   }
 
