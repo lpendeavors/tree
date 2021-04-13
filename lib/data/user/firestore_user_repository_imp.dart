@@ -421,7 +421,9 @@ class FirestoreUserRepositoryImpl implements FirestoreUserRepository {
 
   @override
   Future<void> approveAccount(String uid) {
-    return _firestore.doc('userBase/$uid').update({'isVerified': true});
+    return _firestore.doc('userBase/$uid').update({
+      'isVerified': true,
+    });
   }
 
   Stream<List<UserEntity>> getMyConnections(List<String> connections) async* {

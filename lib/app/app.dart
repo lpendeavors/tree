@@ -709,7 +709,7 @@ class _BodyChildState extends State<BodyChild> {
   }
 
   void _showSnackBar(String message) {
-    Scaffold.of(context, nullOk: true)?.showSnackBar(
+    Scaffold.of(context)?.showSnackBar(
       SnackBar(
         content: Text(message),
         duration: Duration(seconds: 2),

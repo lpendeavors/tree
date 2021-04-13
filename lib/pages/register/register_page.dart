@@ -657,7 +657,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<bool> _onWillPop() async {}
 
   void _showSnackBar(message) {
-    Scaffold.of(context, nullOk: true)?.showSnackBar(
+    Scaffold.of(context)?.showSnackBar(
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 2),

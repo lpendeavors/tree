@@ -37,9 +37,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     _forgotPasswordBloc = ForgotPasswordBloc(widget.userRepository);
 
-    _subscriptions = [
-      _forgotPasswordBloc.message$.listen(_showResetMessage)
-    ];
+    _subscriptions = [_forgotPasswordBloc.message$.listen(_showResetMessage)];
   }
 
   @override
@@ -76,14 +74,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               color: Colors.black.withOpacity(0.2),
               margin: EdgeInsets.only(bottom: 10),
             ),
-            Text(
-              s.password_reset_tip, 
-              style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: Colors.black45,
-              fontFamily: 'NirmalaB'
-            )),
+            Text(s.password_reset_tip,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black45,
+                    fontFamily: 'NirmalaB')),
             SizedBox(height: 40),
             Container(
               height: 50,
@@ -119,7 +115,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void _showSnackBar(message) {
-    Scaffold.of(context, nullOk: true)?.showSnackBar(
+    Scaffold.of(context)?.showSnackBar(
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 2),

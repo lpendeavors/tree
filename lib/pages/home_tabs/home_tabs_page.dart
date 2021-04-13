@@ -413,56 +413,42 @@ class _HomeTabsPageState extends State<HomeTabsPage> {
   }
 
   void _setupFbMessaging() async {
-    var fbMessaging = FirebaseMessaging();
-    fbMessaging.configure(
-      onMessage: notificationOnMessage,
-      onLaunch: notificationOnLaunch,
-      onResume: notificationOnResume,
-      onBackgroundMessage: onBackgroundMessage,
+    var fbMessaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await fbMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
     );
-    fbMessaging.setAutoInitEnabled(true);
-    // fbMessaging.subscribeToTopic('all');
-    fbMessaging.requestNotificationPermissions(
-        const IosNotificationSettings(sound: true, badge: true, alert: true));
-    fbMessaging.onIosSettingsRegistered
-        .listen((IosNotificationSettings settings) {});
-    Stream<String> fcmStream = fbMessaging.onTokenRefresh;
 
-    fcmStream.listen((token) async {
-      if (token != null) {
-        widget.userBloc.updateToken(token);
+    print('User granted permission: ${settings.authorizationStatus}');
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
       }
+
+      showNotification(message.data);
     });
 
-    fbMessaging.getToken().then((String token) async {
-      if (token != null) {
-        widget.userBloc.updateToken(token);
-      }
-    });
+    FirebaseMessaging.onBackgroundMessage(
+        (message) => showNotification(message.data));
+
+    String token = await fbMessaging.getToken();
+    if (token != null) {
+      widget.userBloc.updateToken(token);
+    }
   }
 }
 
-Future onBackgroundMessage(Map<String, dynamic> message) async {
-  print("Maugost B ${message}");
-  await showNotification(message);
-}
-
-Future notificationOnMessage(Map<String, dynamic> message) async {
-  print("Maugost M ${message}");
-  await showNotification(message);
-}
-
-Future notificationOnResume(Map<String, dynamic> message) async {
-  print("Maugost R ${message}");
-  await showNotification(message);
-}
-
-Future notificationOnLaunch(Map<String, dynamic> message) async {
-  print("Maugost L ${message}");
-  await showNotification(message);
-}
-
-showNotification(Map<String, String> notification) async {
+Future<void> showNotification(Map<String, String> notification) async {
   var notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   var android = AndroidNotificationDetails(

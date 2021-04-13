@@ -58,7 +58,7 @@ class _CommentsPanelState extends State<CommentsPanel> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black.withOpacity(0.5),
-      resizeToAvoidBottomPadding: true,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: <Widget>[
           SafeArea(

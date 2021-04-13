@@ -96,7 +96,7 @@ class _PerformSearchState extends State<PerformSearch> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: true,
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: searchAppBar(),
       body: searchBody(),
