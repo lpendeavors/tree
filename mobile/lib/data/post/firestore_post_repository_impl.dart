@@ -150,7 +150,7 @@ class FirestorePostRepositoryImpl implements FirestorePostRepository {
   Stream<List<PostEntity>> getByAdmin() {
     return _firestore
         .collection('postBase')
-        .where('byAdmin', isEqualTo: true)
+        // .where('byAdmin', isEqualTo: true)
         .where('isGroup', isEqualTo: false)
         .snapshots()
         .map(_toEntities);

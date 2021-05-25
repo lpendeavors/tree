@@ -13,12 +13,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '2'
+    flutterVersionCode = '6013'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '6.0.0'
+    flutterVersionName = '6.0.1'
 }
 
 apply plugin: 'com.android.application'
@@ -78,7 +78,8 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'com.google.firebase:firebase-messaging:21.0.1'
+    implementation 'androidx.browser:browser:1.0.0' 
+    // implementation 'com.google.firebase:firebase-messaging:21.0.1'
 }
 
 apply plugin: 'io.fabric'

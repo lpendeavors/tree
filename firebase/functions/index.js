@@ -19,10 +19,17 @@ exports.markChatsRead = functions.https.onCall(async (data, context) => {
     functions.logger.info(`Marking chats read for group ${groupId}`);
 
     const chatCollectionRef = db.collection('chatBase');
-    const chatMessages = await chatCollectionRef.where('chatId', '==', groupId).get();
-    chatMessages.forEach(async (m) => {
+    const chatMessages = await chatCollectionRef
+      .where('chatId', '==', groupId)
+      .where('parties', 'array-contains', userId)
+      .get();
+
+    chatMessages
+      .docs()
+      .filter(m => !m.readBy.contains(userId))
+      .forEach(async (m) => {
         await m.ref.update({
-            'readBy': admin.firestore.FieldValue.arrayUnion(userId),
+          'readBy': admin.firestore.FieldValue.arrayUnion(userId),
         });
     });
 

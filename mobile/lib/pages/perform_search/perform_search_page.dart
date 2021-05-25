@@ -13,6 +13,7 @@ import 'package:treeapp/models/old/user_entity.dart';
 import 'package:treeapp/models/old/group_entity.dart';
 import 'package:treeapp/pages/perform_search/perform_search_bloc.dart';
 import 'package:treeapp/pages/perform_search/perform_search_state.dart';
+import 'package:treeapp/user_bloc/user_login_state.dart';
 import 'package:treeapp/util/asset_utils.dart';
 import 'package:treeapp/util/event_utils.dart';
 import '../../user_bloc/user_bloc.dart';
@@ -470,32 +471,36 @@ class _PerformSearchState extends State<PerformSearch> {
                           }
                         },
                         onLongPress: () async {
-                          await showDialog(
-                            context: context,
-                            builder: (context) {
-                              var alreadyAdmin = item.isAdmin ?? false;
-                              var adminAction = alreadyAdmin
-                                  ? 'Remove this user from'
-                                  : 'Add this user to';
-                              return AlertDialog(
-                                title: Text('Admin'),
-                                content: Text('$adminAction admins?'),
-                                actions: [
-                                  FlatButton(
-                                    child: Text('Confirm'),
-                                    onPressed: () {
-                                      if (alreadyAdmin) {
-                                        _searchBloc.removeAdmin(item.uid);
-                                      } else {
-                                        _searchBloc.makeAdmin(item.uid);
-                                      }
-                                      Navigator.of(context).pop();
-                                    },
-                                  )
-                                ],
-                              );
-                            },
-                          );
+                          if ((widget.userBloc.loginState$.value
+                                  as LoggedInUser)
+                              .isAdmin) {
+                            await showDialog(
+                              context: context,
+                              builder: (context) {
+                                var alreadyAdmin = item.isAdmin ?? false;
+                                var adminAction = alreadyAdmin
+                                    ? 'Remove this user from'
+                                    : 'Add this user to';
+                                return AlertDialog(
+                                  title: Text('Admin'),
+                                  content: Text('$adminAction admins?'),
+                                  actions: [
+                                    FlatButton(
+                                      child: Text('Confirm'),
+                                      onPressed: () {
+                                        if (alreadyAdmin) {
+                                          _searchBloc.removeAdmin(item.uid);
+                                        } else {
+                                          _searchBloc.makeAdmin(item.uid);
+                                        }
+                                        Navigator.of(context).pop();
+                                      },
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         },
                         child: Container(
                           padding: EdgeInsets.all(15),
